@@ -205,7 +205,10 @@ const Home = () => {
                 </CardDescription>
                 <Button 
                   onClick={() => handleSelectRitual(ritual.id)}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02]"
+                  style={{
+                    background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+                  }}
+                  className="w-full text-white border-0 font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] hover:opacity-90"
                 >
                   Solicitar Ritual
                 </Button>
