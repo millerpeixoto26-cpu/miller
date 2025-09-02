@@ -105,17 +105,29 @@
 user_problem_statement: Sistema de venda de rituais espirituais com painel administrativo. Usuario solicitou adicionar integração com API real do Instagram no painel administrativo, além da versão manual já implementada.
 
 backend:
-  - task: "Instagram API Integration - Models and Endpoints"
+  - task: "Dashboard de Vendas - Backend API"
     implemented: true
-    working: true
+    working: "NA"
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Implementação concluída. Adicionados novos modelos Pydantic (InstagramApiConfig, InstagramApiToken, InstagramApiSync) e endpoints OAuth2 completos: /api/admin/instagram/api/config, /api/admin/instagram/api/connect, /api/admin/instagram/api/callback, /api/admin/instagram/api/status, /api/admin/instagram/api/sync, /api/admin/instagram/api/disconnect, /api/admin/instagram/api/sync/history"
+        comment: "Implementado painel de vendas completo: modelos Consulta/MetaMensal, endpoint /api/admin/dashboard/vendas com estatísticas dia/mês, /api/admin/dashboard/vendas/consultas, /api/admin/metas para configurar metas mensais, função para criar meta padrão R$ 5.000"
+
+  - task: "Dashboard de Vendas - Frontend UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implementado na aba pedidos: cards de métricas (vendas dia/mês, meta, progresso), abas separadas Rituais/Consultas, modal para configurar meta mensal, dashboard visual com gráficos de progresso"
       - working: true
         agent: "testing"
         comment: "✅ TODOS OS ENDPOINTS TESTADOS COM SUCESSO! Configuração: GET/POST funcionando corretamente, app_secret mascarado na resposta. Status: retorna não conectado inicialmente. Connect: gera URL OAuth2 válida após configuração. Sync: rejeita corretamente sem conexão (400). History: retorna array vazio inicialmente. Disconnect: funciona sem tokens ativos. Autenticação JWT funcionando em todos endpoints. Implementação completa e robusta!"
