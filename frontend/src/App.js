@@ -1354,6 +1354,121 @@ const AdminPanel = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="usuarios" className="mt-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">Usuários do Sistema</h2>
+              <Button
+                onClick={() => setShowAddUser(true)}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Adicionar Usuário
+              </Button>
+            </div>
+
+            {showAddUser && (
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm mb-6">
+                <CardHeader>
+                  <CardTitle className="text-white">Novo Usuário</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleAddUser} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="new_username" className="text-white">Nome de Usuário</Label>
+                        <Input
+                          id="new_username"
+                          value={novoUsuario.username}
+                          onChange={(e) => setNovoUsuario({...novoUsuario, username: e.target.value})}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="new_email" className="text-white">Email</Label>
+                        <Input
+                          id="new_email"
+                          type="email"
+                          value={novoUsuario.email}
+                          onChange={(e) => setNovoUsuario({...novoUsuario, email: e.target.value})}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="new_password" className="text-white">Senha</Label>
+                      <Input
+                        id="new_password"
+                        type="password"
+                        value={novoUsuario.password}
+                        onChange={(e) => setNovoUsuario({...novoUsuario, password: e.target.value})}
+                        className="bg-white/5 border-purple-300/30 text-white"
+                        required
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                        Criar Usuário
+                      </Button>
+                      <Button 
+                        type="button" 
+                        onClick={() => {
+                          setShowAddUser(false);
+                          setNovoUsuario({ username: "", email: "", password: "" });
+                        }}
+                        className="bg-gray-600 hover:bg-gray-700"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="grid gap-4">
+              {usuarios.map((usuario) => (
+                <Card key={usuario.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="p-3 bg-purple-500/20 rounded-full">
+                          <Users className="w-6 h-6 text-purple-300" />
+                        </div>
+                        <div>
+                          <h3 className="text-white font-semibold text-lg">{usuario.username}</h3>
+                          <p className="text-purple-200">{usuario.email}</p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            {usuario.is_active && (
+                              <Badge className="bg-green-500/20 text-green-300 border-green-400/30 text-xs">
+                                Ativo
+                              </Badge>
+                            )}
+                            {usuario.is_admin && (
+                              <Badge className="bg-blue-500/20 text-blue-300 border-blue-400/30 text-xs">
+                                Admin
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {usuario.id !== user?.id && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleDeleteUser(usuario.id)}
+                          className="bg-red-600 hover:bg-red-700 p-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
           <TabsContent value="config" className="mt-6">
             <div className="grid gap-6">
               <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
