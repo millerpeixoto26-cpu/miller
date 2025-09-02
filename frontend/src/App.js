@@ -824,6 +824,13 @@ const AdminPanel = () => {
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [cupons, setCupons] = useState([]);
   const [indicacoes, setIndicacoes] = useState([]);
+  const [siteConfig, setSiteConfig] = useState(null);
+  const [siteSections, setSiteSections] = useState([]);
+  const [siteContent, setSiteContent] = useState([]);
+  const [googleFonts, setGoogleFonts] = useState([]);
+  const [showSiteEditor, setShowSiteEditor] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [selectedSection, setSelectedSection] = useState(null);
   const [backups, setBackups] = useState([]);
   const [avaliacoes, setAvaliacoes] = useState([]);
   const [showAddCupom, setShowAddCupom] = useState(false);
