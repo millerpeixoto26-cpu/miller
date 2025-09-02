@@ -1211,6 +1211,42 @@ const AdminPanel = () => {
     }
   };
 
+  const fetchSiteConfig = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/site-config`);
+      setSiteConfig(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar configuração do site:", error);
+    }
+  };
+
+  const fetchSiteSections = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/site-sections`);
+      setSiteSections(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar seções do site:", error);
+    }
+  };
+
+  const fetchSiteContent = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/site-content`);
+      setSiteContent(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar conteúdo do site:", error);
+    }
+  };
+
+  const fetchGoogleFonts = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/google-fonts`);
+      setGoogleFonts(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar fontes:", error);
+    }
+  };
+
   const fetchBackups = async () => {
     try {
       const response = await axios.get(`${API}/admin/backups`);
