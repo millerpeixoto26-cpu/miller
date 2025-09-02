@@ -166,7 +166,34 @@ class RitualsAPITester:
 
     def test_root_endpoint(self):
         """Test root API endpoint"""
-        return self.run_test("Root API", "GET", "", 200)
+        # The root endpoint is at the base URL, not /api/
+        url = f"{self.base_url}/"
+        headers = {'Content-Type': 'application/json'}
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Root API...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            print(f"   Status Code: {response.status_code}")
+            
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    response_data = response.json()
+                    print(f"   Response: {json.dumps(response_data, indent=2)[:200]}...")
+                    return True, response_data
+                except:
+                    return True, {}
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False, {}
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
 
     def test_get_rituais(self):
         """Test getting all rituais"""
