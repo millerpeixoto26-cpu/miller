@@ -513,6 +513,18 @@ const AdminPanel = () => {
     }
   };
 
+  const handleUpdateConfig = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`${API}/config`, configForm);
+      toast.success("Configurações atualizadas com sucesso!");
+      fetchConfiguracao();
+    } catch (error) {
+      console.error("Erro ao atualizar configurações:", error);
+      toast.error("Erro ao atualizar configurações");
+    }
+  };
+
   const getIconForRitual = (nome) => {
     if (nome.toLowerCase().includes("amarração")) return <Heart className="w-6 h-6" />;
     if (nome.toLowerCase().includes("proteção")) return <Shield className="w-6 h-6" />;
