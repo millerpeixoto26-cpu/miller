@@ -3721,44 +3721,429 @@ const AdminPanel = () => {
 
           <TabsContent value="editor" className="mt-6">
             <div className="space-y-6">
-              {/* Editor de Site */}
+              {/* Configurações Gerais do Site */}
               <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
-                    <Paintbrush className="w-5 h-5 mr-2" />
-                    Editor de Site
+                    <Settings className="w-5 h-5 mr-2" />
+                    Configurações Gerais
                   </CardTitle>
                   <CardDescription className="text-purple-200">
-                    Personalize a aparência e conteúdo do seu site
+                    Configure informações básicas, cores e fontes do site
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-12">
-                    <Paintbrush className="w-16 h-16 text-purple-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">Editor de Site</h3>
-                    <p className="text-purple-200 mb-6">
-                      Funcionalidade em desenvolvimento. Em breve você poderá personalizar completamente seu site.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-                      <div className="bg-white/5 p-4 rounded-lg">
-                        <Type className="w-8 h-8 text-purple-300 mx-auto mb-2" />
-                        <h4 className="text-white font-medium mb-1">Textos</h4>
-                        <p className="text-purple-200 text-sm">Edite títulos e descrições</p>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* SEO e Meta Tags */}
+                    <div className="space-y-4">
+                      <h3 className="text-white font-semibold flex items-center">
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        SEO e Meta Tags
+                      </h3>
+                      <div>
+                        <Label className="text-white">Título do Site</Label>
+                        <Input
+                          value={siteConfig?.meta_titulo || ""}
+                          onChange={(e) => setSiteConfig({...siteConfig, meta_titulo: e.target.value})}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="Rituais Espirituais - Transforme sua vida"
+                        />
                       </div>
-                      <div className="bg-white/5 p-4 rounded-lg">
-                        <Palette className="w-8 h-8 text-purple-300 mx-auto mb-2" />
-                        <h4 className="text-white font-medium mb-1">Cores</h4>
-                        <p className="text-purple-200 text-sm">Personalize a paleta de cores</p>
+                      <div>
+                        <Label className="text-white">Descrição Meta</Label>
+                        <Textarea
+                          value={siteConfig?.meta_descricao || ""}
+                          onChange={(e) => setSiteConfig({...siteConfig, meta_descricao: e.target.value})}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="Rituais espirituais poderosos para limpeza energética..."
+                          rows={3}
+                        />
                       </div>
-                      <div className="bg-white/5 p-4 rounded-lg">
-                        <Layout className="w-8 h-8 text-purple-300 mx-auto mb-2" />
-                        <h4 className="text-white font-medium mb-1">Layout</h4>
-                        <p className="text-purple-200 text-sm">Organize seções e elementos</p>
+                      <div>
+                        <Label className="text-white">Palavras-chave</Label>
+                        <Input
+                          value={siteConfig?.meta_palavras_chave || ""}
+                          onChange={(e) => setSiteConfig({...siteConfig, meta_palavras_chave: e.target.value})}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="rituais, espiritual, tarot, consulta"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Cores e Visual */}
+                    <div className="space-y-4">
+                      <h3 className="text-white font-semibold flex items-center">
+                        <Palette className="w-4 h-4 mr-2" />
+                        Cores e Visual
+                      </h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-white">Cor Primária</Label>
+                          <div className="flex gap-2 items-center">
+                            <Input
+                              type="color"
+                              value={siteConfig?.cor_primaria || "#8B5CF6"}
+                              onChange={(e) => setSiteConfig({...siteConfig, cor_primaria: e.target.value})}
+                              className="w-12 h-10 p-1 bg-white/5 border-purple-300/30"
+                            />
+                            <Input
+                              value={siteConfig?.cor_primaria || "#8B5CF6"}
+                              onChange={(e) => setSiteConfig({...siteConfig, cor_primaria: e.target.value})}
+                              className="bg-white/5 border-purple-300/30 text-white flex-1"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-white">Cor Secundária</Label>
+                          <div className="flex gap-2 items-center">
+                            <Input
+                              type="color"
+                              value={siteConfig?.cor_secundaria || "#EC4899"}
+                              onChange={(e) => setSiteConfig({...siteConfig, cor_secundaria: e.target.value})}
+                              className="w-12 h-10 p-1 bg-white/5 border-purple-300/30"
+                            />
+                            <Input
+                              value={siteConfig?.cor_secundaria || "#EC4899"}
+                              onChange={(e) => setSiteConfig({...siteConfig, cor_secundaria: e.target.value})}
+                              className="bg-white/5 border-purple-300/30 text-white flex-1"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-white">Fonte Primária</Label>
+                          <Select 
+                            value={siteConfig?.fonte_primaria || "Inter"}
+                            onValueChange={(value) => setSiteConfig({...siteConfig, fonte_primaria: value})}
+                          >
+                            <SelectTrigger className="bg-white/5 border-purple-300/30 text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {googleFonts.filter(f => f.category === 'sans-serif').map((font) => (
+                                <SelectItem key={font.name} value={font.name}>
+                                  {font.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-white">Fonte Secundária</Label>
+                          <Select 
+                            value={siteConfig?.fonte_secundaria || "Playfair Display"}
+                            onValueChange={(value) => setSiteConfig({...siteConfig, fonte_secundaria: value})}
+                          >
+                            <SelectTrigger className="bg-white/5 border-purple-300/30 text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {googleFonts.filter(f => f.category === 'serif').map((font) => (
+                                <SelectItem key={font.name} value={font.name}>
+                                  {font.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
                   </div>
+                  
+                  <div className="flex gap-4 pt-6">
+                    <Button 
+                      onClick={async () => {
+                        try {
+                          await axios.post(`${API}/admin/site-config`, siteConfig);
+                          toast.success("Configurações salvas com sucesso!");
+                          fetchSiteConfig();
+                        } catch (error) {
+                          toast.error("Erro ao salvar configurações");
+                        }
+                      }}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Salvar Configurações
+                    </Button>
+                    <Button 
+                      onClick={() => setPreviewMode(!previewMode)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {previewMode ? <Monitor className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+                      {previewMode ? "Sair do Preview" : "Ver Preview"}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
+
+              {/* Gerenciamento de Seções */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Layout className="w-5 h-5 mr-2" />
+                    Seções do Site
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Organize as seções da homepage, ative/desative e reordene
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {siteSections.map((section, index) => (
+                      <Card key={section.id} className="bg-white/5 border-purple-400/20">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="flex flex-col gap-1">
+                                <Button
+                                  size="sm"
+                                  disabled={index === 0}
+                                  onClick={() => {
+                                    const newSections = [...siteSections];
+                                    [newSections[index], newSections[index - 1]] = [newSections[index - 1], newSections[index]];
+                                    setSiteSections(newSections);
+                                  }}
+                                  className="bg-purple-600 hover:bg-purple-700 h-6 w-6 p-0"
+                                >
+                                  <Move className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  disabled={index === siteSections.length - 1}
+                                  onClick={() => {
+                                    const newSections = [...siteSections];
+                                    [newSections[index], newSections[index + 1]] = [newSections[index + 1], newSections[index]];
+                                    setSiteSections(newSections);
+                                  }}
+                                  className="bg-purple-600 hover:bg-purple-700 h-6 w-6 p-0"
+                                >
+                                  <Move className="w-3 h-3 rotate-180" />
+                                </Button>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-white">{section.nome}</h4>
+                                <p className="text-purple-300 text-sm">Tipo: {section.tipo}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={section.ativo}
+                                onCheckedChange={async (checked) => {
+                                  try {
+                                    await axios.put(`${API}/admin/site-sections/${section.id}`, {
+                                      ...section,
+                                      ativo: checked
+                                    });
+                                    fetchSiteSections();
+                                    toast.success(`Seção ${checked ? 'ativada' : 'desativada'}`);
+                                  } catch (error) {
+                                    toast.error("Erro ao atualizar seção");
+                                  }
+                                }}
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => setSelectedSection(section)}
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  <Button 
+                    onClick={async () => {
+                      try {
+                        const sectionIds = siteSections.map(s => s.id);
+                        await axios.post(`${API}/admin/site-sections/reorder`, sectionIds);
+                        toast.success("Ordem das seções atualizada!");
+                      } catch (error) {
+                        toast.error("Erro ao reordenar seções");
+                      }
+                    }}
+                    className="bg-green-600 hover:bg-green-700 mt-4"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Salvar Ordem das Seções
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Editor de Conteúdo */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Type className="w-5 h-5 mr-2" />
+                    Editor de Conteúdo
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Edite textos, imagens e conteúdo de cada seção
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <Label className="text-white">Selecionar Seção</Label>
+                      <Select onValueChange={(value) => {
+                        const section = siteSections.find(s => s.id === value);
+                        setSelectedSection(section);
+                      }}>
+                        <SelectTrigger className="bg-white/5 border-purple-300/30 text-white">
+                          <SelectValue placeholder="Escolha uma seção para editar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {siteSections.map((section) => (
+                            <SelectItem key={section.id} value={section.id}>
+                              {section.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-white">Upload de Imagem</Label>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            try {
+                              const response = await axios.post(`${API}/admin/upload-image`, formData, {
+                                headers: { 'Content-Type': 'multipart/form-data' }
+                              });
+                              toast.success("Imagem enviada com sucesso!");
+                              // Aqui você pode usar response.data.url
+                            } catch (error) {
+                              toast.error("Erro ao enviar imagem");
+                            }
+                          }
+                        }}
+                        className="bg-white/5 border-purple-300/30 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  {selectedSection && (
+                    <div className="mt-6 p-4 bg-white/5 rounded-lg">
+                      <h3 className="text-white font-semibold mb-4">
+                        Editando: {selectedSection.nome}
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <Label className="text-white">Título</Label>
+                          <Input
+                            value={selectedSection.configuracoes?.titulo || ""}
+                            onChange={(e) => setSelectedSection({
+                              ...selectedSection,
+                              configuracoes: {
+                                ...selectedSection.configuracoes,
+                                titulo: e.target.value
+                              }
+                            })}
+                            className="bg-white/5 border-purple-300/30 text-white"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-white">Subtítulo</Label>
+                          <Input
+                            value={selectedSection.configuracoes?.subtitulo || ""}
+                            onChange={(e) => setSelectedSection({
+                              ...selectedSection,
+                              configuracoes: {
+                                ...selectedSection.configuracoes,
+                                subtitulo: e.target.value
+                              }
+                            })}
+                            className="bg-white/5 border-purple-300/30 text-white"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-white">Conteúdo</Label>
+                          <Textarea
+                            value={selectedSection.configuracoes?.conteudo || ""}
+                            onChange={(e) => setSelectedSection({
+                              ...selectedSection,
+                              configuracoes: {
+                                ...selectedSection.configuracoes,
+                                conteudo: e.target.value
+                              }
+                            })}
+                            className="bg-white/5 border-purple-300/30 text-white"
+                            rows={6}
+                          />
+                        </div>
+                        <Button 
+                          onClick={async () => {
+                            try {
+                              await axios.put(`${API}/admin/site-sections/${selectedSection.id}`, selectedSection);
+                              toast.success("Seção atualizada com sucesso!");
+                              fetchSiteSections();
+                            } catch (error) {
+                              toast.error("Erro ao atualizar seção");
+                            }
+                          }}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          Salvar Alterações
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Preview do Site */}
+              {previewMode && (
+                <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center">
+                      <Monitor className="w-5 h-5 mr-2" />
+                      Preview do Site
+                    </CardTitle>
+                    <CardDescription className="text-purple-200">
+                      Visualize como seu site ficará
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-white rounded-lg p-4 min-h-[400px]">
+                      <div className="text-center py-8">
+                        <h3 className="text-2xl font-bold mb-2" style={{color: siteConfig?.cor_primaria}}>
+                          {siteConfig?.meta_titulo || "Rituais Espirituais"}
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          {siteConfig?.meta_descricao || "Transforme sua vida através do poder dos rituais ancestrais"}
+                        </p>
+                        <div className="space-y-4">
+                          {siteSections.filter(s => s.ativo).map((section) => (
+                            <div key={section.id} className="border rounded p-4">
+                              <h4 className="font-semibold" style={{color: siteConfig?.cor_secundaria}}>
+                                {section.configuracoes?.titulo || section.nome}
+                              </h4>
+                              {section.configuracoes?.subtitulo && (
+                                <p className="text-gray-500 text-sm">
+                                  {section.configuracoes.subtitulo}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
 
