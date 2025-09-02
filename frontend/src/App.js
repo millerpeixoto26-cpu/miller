@@ -1520,7 +1520,7 @@ const AdminPanel = () => {
         <Tabs defaultValue="pedidos" className="w-full">
           {/* Navigation - Desktop */}
           <div className="hidden md:block">
-            <TabsList className="grid w-full grid-cols-9 bg-white/10 backdrop-blur-sm p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-10 bg-white/10 backdrop-blur-sm p-1 rounded-lg">
               <TabsTrigger 
                 value="pedidos" 
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
@@ -1543,6 +1543,13 @@ const AdminPanel = () => {
                 Agendamentos
               </TabsTrigger>
               <TabsTrigger 
+                value="promocoes" 
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
+              >
+                <Gift className="w-4 h-4 mr-1" />
+                Promoções
+              </TabsTrigger>
+              <TabsTrigger 
                 value="semana" 
                 className="data-[state-active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
               >
@@ -1555,6 +1562,13 @@ const AdminPanel = () => {
               >
                 <Users className="w-4 h-4 mr-1" />
                 Users ({usuarios.length})
+              </TabsTrigger>
+              <TabsTrigger 
+                value="backups" 
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
+              >
+                <HardDrive className="w-4 h-4 mr-1" />
+                Backups
               </TabsTrigger>
               <TabsTrigger 
                 value="pagamentos" 
