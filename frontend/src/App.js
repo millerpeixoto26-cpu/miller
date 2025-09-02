@@ -565,7 +565,7 @@ const AdminPanel = () => {
 
   const fetchRituais = async () => {
     try {
-      const response = await axios.get(`${API}/rituais`);
+      const response = await axios.get(`${API}/admin/rituais`);
       setRituais(response.data);
     } catch (error) {
       console.error("Erro ao buscar rituais:", error);
