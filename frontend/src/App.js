@@ -1412,7 +1412,7 @@ const AdminPanel = () => {
         <Tabs defaultValue="pedidos" className="w-full">
           {/* Navigation - Desktop */}
           <div className="hidden md:block">
-            <TabsList className="grid w-full grid-cols-8 bg-white/10 backdrop-blur-sm p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-9 bg-white/10 backdrop-blur-sm p-1 rounded-lg">
               <TabsTrigger 
                 value="pedidos" 
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
@@ -1436,7 +1436,7 @@ const AdminPanel = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="semana" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
+                className="data-[state-active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
               >
                 <Calendar className="w-4 h-4 mr-1" />
                 Semana
@@ -1454,6 +1454,13 @@ const AdminPanel = () => {
               >
                 <CreditCard className="w-4 h-4 mr-1" />
                 Pagamentos
+              </TabsTrigger>
+              <TabsTrigger 
+                value="whatsapp" 
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
+              >
+                <Phone className="w-4 h-4 mr-1" />
+                WhatsApp
               </TabsTrigger>
               <TabsTrigger 
                 value="instagram" 
