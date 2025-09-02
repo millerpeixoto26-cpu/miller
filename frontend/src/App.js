@@ -852,6 +852,8 @@ const AdminPanel = () => {
     fetchInstagramApiConfig();
     fetchInstagramApiStatus();
     fetchInstagramSyncHistory();
+    fetchDashboardVendas();
+    fetchConsultasVendas();
     fetchConfiguracao();
     fetchRituaisSemana();
   }, []);
