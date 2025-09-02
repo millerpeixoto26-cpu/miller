@@ -870,6 +870,33 @@ const AdminPanel = () => {
     }
   };
 
+  const fetchInstagramApiConfig = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/instagram/api/config`);
+      setInstagramApiConfig(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar configuração Instagram API:", error);
+    }
+  };
+
+  const fetchInstagramApiStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/instagram/api/status`);
+      setInstagramApiStatus(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar status Instagram API:", error);
+    }
+  };
+
+  const fetchInstagramSyncHistory = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/instagram/api/sync/history`);
+      setInstagramSyncHistory(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar histórico de sincronização:", error);
+    }
+  };
+
   const fetchGateways = async () => {
     try {
       const response = await axios.get(`${API}/payment-gateways`);
