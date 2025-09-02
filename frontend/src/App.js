@@ -960,6 +960,32 @@ const AdminPanel = () => {
     }
   };
 
+  const handleUpdateGateway = async (gatewayId, updateData) => {
+    try {
+      await axios.put(`${API}/payment-gateways/${gatewayId}`, updateData);
+      toast.success("Gateway atualizado com sucesso!");
+      fetchGateways();
+      setEditingGateway(null);
+    } catch (error) {
+      console.error("Erro ao atualizar gateway:", error);
+      toast.error("Erro ao atualizar gateway");
+    }
+  };
+
+  const handleTestGateway = async (gatewayId) => {
+    try {
+      const response = await axios.post(`${API}/payment-gateways/${gatewayId}/test`);
+      if (response.data.success) {
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.error("Erro ao testar gateway:", error);
+      toast.error("Erro ao testar gateway");
+    }
+  };
+
   const getIconForRitual = (nome) => {
     if (nome.toLowerCase().includes("amarração")) return <Heart className="w-6 h-6" />;
     if (nome.toLowerCase().includes("proteção")) return <Shield className="w-6 h-6" />;
