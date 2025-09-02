@@ -732,9 +732,20 @@ const AdminPanel = () => {
   useEffect(() => {
     fetchPedidos();
     fetchRituais();
+    fetchUsuarios();
     fetchConfiguracao();
     fetchRituaisSemana();
   }, []);
+
+  const fetchUsuarios = async () => {
+    try {
+      const response = await axios.get(`${API}/auth/users`);
+      setUsuarios(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+      toast.error("Erro ao carregar usuários");
+    }
+  };
 
   const fetchPedidos = async () => {
     try {
