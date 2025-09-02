@@ -3219,6 +3219,134 @@ const AdminPanel = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="indicacoes" className="mt-6">
+            <div className="space-y-6">
+              {/* Sistema de Indicações de Amigos */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-white flex items-center">
+                        <Users className="w-5 h-5 mr-2" />
+                        Sistema de Indicações de Amigos
+                      </CardTitle>
+                      <CardDescription className="text-purple-200">
+                        Gerencie o programa de indicação de amigos e recompensas
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {indicacoes.map((indicacao) => (
+                      <Card key={indicacao.id} className="bg-white/5 border-purple-400/20">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-lg font-mono font-bold">
+                                {indicacao.codigo_indicacao}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-white">{indicacao.nome_indicador}</h4>
+                                <p className="text-purple-300 text-sm">
+                                  Indicou: {indicacao.nome_indicado || 'Aguardando cadastro'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge className={`text-xs ${
+                                indicacao.status === 'concluida' 
+                                  ? 'bg-green-500/20 text-green-300' 
+                                  : indicacao.status === 'convertido'
+                                  ? 'bg-blue-500/20 text-blue-300'
+                                  : 'bg-yellow-500/20 text-yellow-300'
+                              }`}>
+                                {indicacao.status === 'concluida' ? 'Concluída' : 
+                                 indicacao.status === 'convertido' ? 'Convertido' : 'Pendente'}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="grid md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <p className="text-purple-200">WhatsApp Indicador:</p>
+                              <p className="text-white">{indicacao.whatsapp_indicador}</p>
+                            </div>
+                            <div>
+                              <p className="text-purple-200">WhatsApp Indicado:</p>
+                              <p className="text-white">{indicacao.whatsapp_indicado || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-purple-200">Recompensa:</p>
+                              <p className="text-white">
+                                {indicacao.recompensa_liberada ? '✅ Liberada' : '⏳ Pendente'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-purple-200">Criado em:</p>
+                              <p className="text-white">{new Date(indicacao.created_at).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                          </div>
+                          {indicacao.data_conversao && (
+                            <div className="mt-3 p-2 bg-green-500/10 border border-green-400/30 rounded">
+                              <p className="text-green-300 text-sm">
+                                🎉 Conversão realizada em {new Date(indicacao.data_conversao).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+
+                    {indicacoes.length === 0 && (
+                      <div className="text-center py-8">
+                        <Users className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-white mb-2">Nenhuma indicação ainda</h3>
+                        <p className="text-purple-200">As indicações de amigos aparecerão aqui</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Estatísticas de Indicações */}
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-blue-200 text-sm font-medium">Total de Indicações</p>
+                          <p className="text-2xl font-bold text-white">{indicacoes.length}</p>
+                        </div>
+                        <Users className="w-8 h-8 text-blue-400" />
+                      </div>
+                    </div>
+                    <div className="bg-green-500/10 border border-green-400/30 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-green-200 text-sm font-medium">Convertidas</p>
+                          <p className="text-2xl font-bold text-white">
+                            {indicacoes.filter(i => i.status === 'convertido' || i.status === 'concluida').length}
+                          </p>
+                        </div>
+                        <DollarSign className="w-8 h-8 text-green-400" />
+                      </div>
+                    </div>
+                    <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-purple-200 text-sm font-medium">Taxa de Conversão</p>
+                          <p className="text-2xl font-bold text-white">
+                            {indicacoes.length > 0 
+                              ? Math.round((indicacoes.filter(i => i.status === 'convertido' || i.status === 'concluida').length / indicacoes.length) * 100)
+                              : 0}%
+                          </p>
+                        </div>
+                        <BarChart3 className="w-8 h-8 text-purple-400" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="whatsapp" className="mt-6">
             <div className="space-y-6">
               {/* Configuração WhatsApp */}
