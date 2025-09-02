@@ -764,7 +764,40 @@ const AdminPanel = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-white">Funcionalidade em desenvolvimento...</p>
+                <div className="grid gap-4">
+                  {["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"].map((dia) => (
+                    <div key={dia} className="flex items-center justify-between p-4 bg-black/20 rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-20 text-white font-medium capitalize">
+                          {dia === "terca" ? "Terça" : 
+                           dia === "quarta" ? "Quarta" : 
+                           dia === "quinta" ? "Quinta" : 
+                           dia === "sexta" ? "Sexta" : 
+                           dia === "sabado" ? "Sábado" : 
+                           dia === "domingo" ? "Domingo" : "Segunda"}
+                        </div>
+                        <Select>
+                          <SelectTrigger className="w-60 bg-white/5 border-purple-300/30 text-white">
+                            <SelectValue placeholder="Escolher ritual..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {rituais.map((ritual) => (
+                              <SelectItem key={ritual.id} value={ritual.id}>
+                                {ritual.nome} - R$ {ritual.preco.toFixed(2)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Switch />
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6">
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                    Salvar Rituais da Semana
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
