@@ -131,21 +131,21 @@ backend:
 
 frontend:
   - task: "Instagram API Integration - Admin Panel UI"
-    implemented: false
+    implemented: true
     working: "NA"
-    file: "/app/frontend/src/AdminPanel.jsx"
+    file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Adicionando controles no painel admin para conectar conta Instagram via API, sincronizar automaticamente perfil e posts"
+        comment: "Implementação concluída. Adicionados na tab Instagram: seção de configuração da API (App ID, App Secret, Redirect URI), seção de status da conexão com botões para conectar/desconectar/sincronizar, mantida seção manual existente. Criados componentes InstagramApiConfigSection e InstagramApiStatusSection usando React.createElement."
 
   - task: "Instagram Manual Integration (Existing)"
     implemented: true
     working: true
-    file: "/app/frontend/src/AdminPanel.jsx"
+    file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "medium"
     needs_retesting: false
