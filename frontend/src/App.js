@@ -899,6 +899,10 @@ const AdminPanel = () => {
     fetchWhatsappMessages();
     fetchCupons();
     fetchIndicacoes();
+    fetchSiteConfig();
+    fetchSiteSections();
+    fetchSiteContent();
+    fetchGoogleFonts();
     fetchBackups();
     fetchAvaliacoes();
     fetchConfiguracao();
