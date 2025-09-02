@@ -101,3 +101,73 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: Sistema de venda de rituais espirituais com painel administrativo. Usuario solicitou adicionar integração com API real do Instagram no painel administrativo, além da versão manual já implementada.
+
+backend:
+  - task: "Instagram API Integration - Models and Endpoints"
+    implemented: false
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Iniciando implementação da integração com Instagram API. Adicionando novos modelos Pydantic e endpoints para conectar conta Instagram via OAuth2."
+
+  - task: "Instagram Manual Integration (Existing)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Versão manual do Instagram já está implementada e funcionando - modelos InstagramProfile e InstagramPost existem"
+
+frontend:
+  - task: "Instagram API Integration - Admin Panel UI"
+    implemented: false
+    working: "NA"
+    file: "/app/frontend/src/AdminPanel.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Adicionando controles no painel admin para conectar conta Instagram via API, sincronizar automaticamente perfil e posts"
+
+  - task: "Instagram Manual Integration (Existing)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/AdminPanel.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Tab Instagram no AdminPanel já existe com formulário manual para perfil e posts"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Instagram API Integration - Models and Endpoints"
+    - "Instagram API Integration - Admin Panel UI"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Implementando integração com Instagram Basic Display API. IMPORTANTE: API será depreciada em dezembro 2024, precisa migrar para Instagram Graph API futuramente. Por enquanto implementando versão atual para demonstrar funcionalidade."
