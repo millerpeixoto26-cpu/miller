@@ -223,7 +223,65 @@ async def get_stripe_checkout():
     """Dependency to get Stripe checkout instance"""
     return StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
 
-# Routes
+# Funções de Autenticação
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except jwt.PyJWTError:
+        raise credentials_exception
+    
+    user = await db.users.find_one({"username": username})
+    if user is None:
+        raise credentials_exception
+    
+    # Remove _id do MongoDB
+    if "_id" in user:
+        del user["_id"]
+    
+    return User(**user)
+
+async def get_current_active_user(current_user: User = Depends(get_current_user)):
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+# Função para criar usuário admin padrão
+async def create_default_admin():
+    admin_exists = await db.users.find_one({"username": "admin"})
+    if not admin_exists:
+        default_admin = User(
+            username="admin",
+            email="admin@ritual.com",
+            hashed_password=get_password_hash("admin123"),
+            is_active=True,
+            is_admin=True
+        )
+        await db.users.insert_one(default_admin.dict())
+        print("✅ Usuário admin padrão criado - Login: admin / Senha: admin123")
 @api_router.get("/")
 async def root():
     return {"message": "Sistema de Rituais API"}
