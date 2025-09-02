@@ -219,6 +219,35 @@ class InstagramPost(BaseModel):
     order: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Novos modelos para API Integration
+class InstagramApiConfig(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    app_id: str
+    app_secret: str
+    redirect_uri: str
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class InstagramApiToken(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    access_token: str
+    token_type: str = "Bearer"
+    expires_at: Optional[datetime] = None
+    instagram_user_id: Optional[str] = None
+    instagram_username: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class InstagramApiSync(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    sync_type: str  # "profile", "posts", "both"
+    status: str  # "pending", "in_progress", "completed", "failed"
+    items_synced: int = 0
+    error_message: Optional[str] = None
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: Optional[datetime] = None
+
 class InstagramProfileCreate(BaseModel):
     username: str
     display_name: str
