@@ -1572,16 +1572,26 @@ const AdminPanel = () => {
 // Componente principal App
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/sucesso" element={<Sucesso />} />
-          <Route path="/admin" element={<AdminPanel />} />
-        </Routes>
-      </BrowserRouter>
-      <Toaster position="top-right" />
-    </div>
+    <AuthProvider>
+      <div className="App">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/sucesso" element={<Sucesso />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <AdminPanel />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </BrowserRouter>
+        <Toaster position="top-right" />
+      </div>
+    </AuthProvider>
   );
 }
 
