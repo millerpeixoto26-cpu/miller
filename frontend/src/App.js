@@ -14,6 +14,7 @@ import { Loader2, Heart, Shield, Sparkles, Star, Phone, Settings, Palette, Layou
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
 import AgendamentosTab from "./components/AgendamentosTab";
+import AgendamentoPublico from "./components/AgendamentoPublico";
 import "./App.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
