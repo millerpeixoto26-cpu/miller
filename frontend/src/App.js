@@ -1602,6 +1602,262 @@ const AdminPanel = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="pagamentos" className="mt-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-white mb-2">Gateways de Pagamento</h2>
+              <p className="text-purple-200">Configure os provedores de pagamento do seu site</p>
+            </div>
+
+            <div className="grid gap-6">
+              {gateways.map((gateway) => (
+                <Card key={gateway.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className={`p-3 rounded-lg ${
+                          gateway.name === 'stripe' ? 'bg-blue-500/20 text-blue-300' :
+                          gateway.name === 'pagbank' ? 'bg-orange-500/20 text-orange-300' :
+                          gateway.name === 'mercadopago' ? 'bg-cyan-500/20 text-cyan-300' :
+                          'bg-purple-500/20 text-purple-300'
+                        }`}>
+                          <CreditCard className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-white text-xl">{gateway.display_name}</CardTitle>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Badge className={`text-xs ${
+                              gateway.is_active 
+                                ? 'bg-green-500/20 text-green-300 border-green-400/30' 
+                                : 'bg-red-500/20 text-red-300 border-red-400/30'
+                            }`}>
+                              {gateway.is_active ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                            {gateway.is_default && (
+                              <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-400/30 text-xs">
+                                Padrão
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleTestGateway(gateway.id)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <TestTube className="w-4 h-4 mr-2" />
+                          Testar
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => setEditingGateway(gateway)}
+                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-purple-200 text-sm">Métodos Suportados:</p>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {gateway.supported_methods.map((method) => (
+                            <Badge key={method} variant="outline" className="text-xs bg-white/5 text-purple-200">
+                              {method === 'credit_card' ? 'Cartão de Crédito' :
+                               method === 'pix' ? 'PIX' :
+                               method === 'boleto' ? 'Boleto' : method}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            checked={gateway.is_active}
+                            onCheckedChange={(checked) => 
+                              handleUpdateGateway(gateway.id, { is_active: checked })
+                            }
+                          />
+                          <Label className="text-white text-sm">Ativo</Label>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            checked={gateway.is_default}
+                            onCheckedChange={(checked) => 
+                              handleUpdateGateway(gateway.id, { is_default: checked })
+                            }
+                          />
+                          <Label className="text-white text-sm">Padrão</Label>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Modal de Edição de Gateway */}
+            {editingGateway && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <CardHeader>
+                    <CardTitle className="text-white">Configurar {editingGateway.display_name}</CardTitle>
+                    <CardDescription className="text-purple-200">
+                      Configure as chaves de API e parâmetros do gateway
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.target);
+                        const config = {};
+                        
+                        // Coleta as configurações baseado no gateway
+                        if (editingGateway.name === 'stripe') {
+                          config.api_key = formData.get('api_key');
+                          config.webhook_secret = formData.get('webhook_secret');
+                          config.currency = formData.get('currency') || 'brl';
+                        } else if (editingGateway.name === 'pagbank') {
+                          config.client_id = formData.get('client_id');
+                          config.client_secret = formData.get('client_secret');
+                          config.sandbox = formData.get('sandbox') === 'on' ? 'true' : 'false';
+                        } else if (editingGateway.name === 'mercadopago') {
+                          config.access_token = formData.get('access_token');
+                          config.public_key = formData.get('public_key');
+                          config.sandbox = formData.get('sandbox') === 'on' ? 'true' : 'false';
+                        }
+                        
+                        handleUpdateGateway(editingGateway.id, { config });
+                      }}
+                      className="space-y-4"
+                    >
+                      {editingGateway.name === 'stripe' && (
+                        <>
+                          <div>
+                            <Label htmlFor="api_key" className="text-white">API Key</Label>
+                            <Input
+                              id="api_key"
+                              name="api_key"
+                              type="password"
+                              defaultValue={editingGateway.config?.api_key || ''}
+                              className="bg-white/5 border-purple-300/30 text-white"
+                              placeholder="sk_test_..."
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="webhook_secret" className="text-white">Webhook Secret</Label>
+                            <Input
+                              id="webhook_secret"
+                              name="webhook_secret"
+                              type="password"
+                              defaultValue={editingGateway.config?.webhook_secret || ''}
+                              className="bg-white/5 border-purple-300/30 text-white"
+                              placeholder="whsec_..."
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="currency" className="text-white">Moeda</Label>
+                            <Input
+                              id="currency"
+                              name="currency"
+                              defaultValue={editingGateway.config?.currency || 'brl'}
+                              className="bg-white/5 border-purple-300/30 text-white"
+                            />
+                          </div>
+                        </>
+                      )}
+                      
+                      {editingGateway.name === 'pagbank' && (
+                        <>
+                          <div>
+                            <Label htmlFor="client_id" className="text-white">Client ID</Label>
+                            <Input
+                              id="client_id"
+                              name="client_id"
+                              defaultValue={editingGateway.config?.client_id || ''}
+                              className="bg-white/5 border-purple-300/30 text-white"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="client_secret" className="text-white">Client Secret</Label>
+                            <Input
+                              id="client_secret"
+                              name="client_secret"
+                              type="password"
+                              defaultValue={editingGateway.config?.client_secret || ''}
+                              className="bg-white/5 border-purple-300/30 text-white"
+                            />
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id="sandbox"
+                              name="sandbox"
+                              defaultChecked={editingGateway.config?.sandbox === 'true'}
+                            />
+                            <Label htmlFor="sandbox" className="text-white">Modo Sandbox</Label>
+                          </div>
+                        </>
+                      )}
+                      
+                      {editingGateway.name === 'mercadopago' && (
+                        <>
+                          <div>
+                            <Label htmlFor="access_token" className="text-white">Access Token</Label>
+                            <Input
+                              id="access_token"
+                              name="access_token"
+                              type="password"
+                              defaultValue={editingGateway.config?.access_token || ''}
+                              className="bg-white/5 border-purple-300/30 text-white"
+                              placeholder="APP_USR-..."
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="public_key" className="text-white">Public Key</Label>
+                            <Input
+                              id="public_key"
+                              name="public_key"
+                              defaultValue={editingGateway.config?.public_key || ''}
+                              className="bg-white/5 border-purple-300/30 text-white"
+                              placeholder="APP_USR-..."
+                            />
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id="sandbox"
+                              name="sandbox"
+                              defaultChecked={editingGateway.config?.sandbox === 'true'}
+                            />
+                            <Label htmlFor="sandbox" className="text-white">Modo Sandbox</Label>
+                          </div>
+                        </>
+                      )}
+                      
+                      <div className="flex gap-2 pt-4">
+                        <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                          Salvar Configurações
+                        </Button>
+                        <Button 
+                          type="button" 
+                          onClick={() => setEditingGateway(null)}
+                          className="bg-gray-600 hover:bg-gray-700"
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </TabsContent>
+
           <TabsContent value="config" className="mt-6">
             <div className="grid gap-6">
               <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
