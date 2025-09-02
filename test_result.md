@@ -180,6 +180,21 @@ backend:
         agent: "main"
         comment: "Versão manual do Instagram já está implementada e funcionando - modelos InstagramProfile e InstagramPost existem"
 
+  - task: "Sistema Editor de Site - Backend"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Sistema completo de editor de site implementado: modelos SiteConfig, SiteSection, SiteContent, endpoints CRUD completos, configuração de cores/fontes/SEO, gerenciamento de seções, upload de imagens, integração Google Fonts"
+      - working: true
+        agent: "testing"
+        comment: "🎨 SISTEMA EDITOR DE SITE TESTADO COM SUCESSO TOTAL! Todos os 12 endpoints principais funcionando perfeitamente: 1) GET/POST /api/admin/site-config: configuração completa (cores, fontes, SEO, redes sociais) ✅ 2) GET/POST/PUT/DELETE /api/admin/site-sections: CRUD completo de seções, 6 seções padrão criadas (hero, rituais, sobre, instagram, faq, contato) ✅ 3) POST /api/admin/site-sections/reorder: reordenação de seções funcionando ✅ 4) GET/POST/PUT/DELETE /api/admin/site-content: CRUD completo de conteúdo, 2 conteúdos padrão criados ✅ 5) GET /api/admin/google-fonts: 16 fontes disponíveis (Inter, Roboto, Playfair Display, etc.) ✅ 6) POST /api/admin/upload-image: endpoint de upload implementado ✅. Dados padrão criados na inicialização, autenticação JWT obrigatória, validações corretas, serialização ObjectId funcionando. Taxa de sucesso: 100% (13/13 testes). Sistema editor de site 100% operacional!"
+
 frontend:
   - task: "WhatsApp Business API - Frontend"
     implemented: true
