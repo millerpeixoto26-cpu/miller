@@ -823,6 +823,7 @@ const AdminPanel = () => {
   const [showAddTemplate, setShowAddTemplate] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [cupons, setCupons] = useState([]);
+  const [indicacoes, setIndicacoes] = useState([]);
   const [backups, setBackups] = useState([]);
   const [avaliacoes, setAvaliacoes] = useState([]);
   const [showAddCupom, setShowAddCupom] = useState(false);
