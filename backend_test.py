@@ -1416,6 +1416,11 @@ def main():
     print("-" * 40)
     tester.test_whatsapp_system_comprehensive()
     
+    # Test Cupons and Indicacoes System
+    print("\n🎫 CUPONS AND INDICACOES SYSTEM TESTS")
+    print("-" * 40)
+    tester.test_cupons_indicacoes_comprehensive()
+    
     # Test Instagram API Integration
     print("\n📸 INSTAGRAM API INTEGRATION TESTS")
     print("-" * 40)
