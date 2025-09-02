@@ -2108,7 +2108,7 @@ const AdminPanel = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <InstagramApiStatusSection />
+                  {React.createElement(window.InstagramApiStatusSection)}
                 </CardContent>
               </Card>
 
