@@ -1945,6 +1945,305 @@ const AdminPanel = () => {
             )}
           </TabsContent>
 
+          <TabsContent value="instagram" className="mt-6">
+            <div className="space-y-6">
+              {/* Perfil Instagram */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Instagram className="w-5 h-5 mr-2" />
+                    Perfil Instagram
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Configure seu perfil Instagram que aparecerá na página inicial
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target);
+                      const profileData = {
+                        username: formData.get('username'),
+                        display_name: formData.get('display_name'),
+                        bio: formData.get('bio'),
+                        profile_image_url: formData.get('profile_image_url'),
+                        instagram_url: formData.get('instagram_url'),
+                        followers_count: parseInt(formData.get('followers_count')) || null,
+                        is_active: formData.get('is_active') === 'on'
+                      };
+                      handleUpdateInstagramProfile(profileData);
+                    }}
+                    className="space-y-4"
+                  >
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="username" className="text-white">Nome de usuário (@)</Label>
+                        <Input
+                          id="username"
+                          name="username"
+                          defaultValue={instagramProfile?.username || ''}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="meu_instagram"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="display_name" className="text-white">Nome de exibição</Label>
+                        <Input
+                          id="display_name"
+                          name="display_name"
+                          defaultValue={instagramProfile?.display_name || ''}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="Meu Nome"
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="bio" className="text-white">Bio</Label>
+                      <Textarea
+                        id="bio"
+                        name="bio"
+                        defaultValue={instagramProfile?.bio || ''}
+                        className="bg-white/5 border-purple-300/30 text-white"
+                        placeholder="Sua descrição do Instagram..."
+                        rows={3}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="profile_image_url" className="text-white">URL da foto de perfil</Label>
+                        <Input
+                          id="profile_image_url"
+                          name="profile_image_url"
+                          defaultValue={instagramProfile?.profile_image_url || ''}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="https://exemplo.com/foto.jpg"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="instagram_url" className="text-white">Link do Instagram</Label>
+                        <Input
+                          id="instagram_url"
+                          name="instagram_url"
+                          defaultValue={instagramProfile?.instagram_url || ''}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="https://instagram.com/meu_instagram"
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="followers_count" className="text-white">Número de seguidores (opcional)</Label>
+                        <Input
+                          id="followers_count"
+                          name="followers_count"
+                          type="number"
+                          defaultValue={instagramProfile?.followers_count || ''}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="1000"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2 pt-6">
+                        <Switch
+                          id="is_active"
+                          name="is_active"
+                          defaultChecked={instagramProfile?.is_active !== false}
+                        />
+                        <Label htmlFor="is_active" className="text-white">Mostrar na página inicial</Label>
+                      </div>
+                    </div>
+                    
+                    <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                      Salvar Perfil
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Posts Instagram */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-white flex items-center">
+                        <Image className="w-5 h-5 mr-2" />
+                        Posts Instagram
+                      </CardTitle>
+                      <CardDescription className="text-purple-200">
+                        Gerencie os posts que aparecem na página inicial
+                      </CardDescription>
+                    </div>
+                    <Button
+                      onClick={() => setShowAddPost(true)}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Adicionar Post
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {/* Formulário para adicionar post */}
+                  {showAddPost && (
+                    <Card className="bg-white/5 border-purple-300/20 mb-6">
+                      <CardHeader>
+                        <CardTitle className="text-white text-lg">Novo Post</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <form 
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.target);
+                            const postData = {
+                              image_url: formData.get('image_url'),
+                              caption: formData.get('caption'),
+                              post_url: formData.get('post_url'),
+                              is_active: formData.get('is_active') === 'on',
+                              order: parseInt(formData.get('order')) || 0
+                            };
+                            handleAddInstagramPost(postData);
+                          }}
+                          className="space-y-4"
+                        >
+                          <div>
+                            <Label htmlFor="image_url" className="text-white">URL da Imagem</Label>
+                            <Input
+                              id="image_url"
+                              name="image_url"
+                              className="bg-white/5 border-purple-300/30 text-white"
+                              placeholder="https://exemplo.com/imagem.jpg"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="caption" className="text-white">Legenda</Label>
+                            <Textarea
+                              id="caption"
+                              name="caption"
+                              className="bg-white/5 border-purple-300/30 text-white"
+                              placeholder="Legenda do post..."
+                              rows={3}
+                              required
+                            />
+                          </div>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="post_url" className="text-white">Link do Post (opcional)</Label>
+                              <Input
+                                id="post_url"
+                                name="post_url"
+                                className="bg-white/5 border-purple-300/30 text-white"
+                                placeholder="https://instagram.com/p/..."
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="order" className="text-white">Ordem</Label>
+                              <Input
+                                id="order"
+                                name="order"
+                                type="number"
+                                className="bg-white/5 border-purple-300/30 text-white"
+                                placeholder="0"
+                                defaultValue="0"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id="is_active"
+                              name="is_active"
+                              defaultChecked={true}
+                            />
+                            <Label htmlFor="is_active" className="text-white">Ativo</Label>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                              Adicionar Post
+                            </Button>
+                            <Button 
+                              type="button" 
+                              onClick={() => setShowAddPost(false)}
+                              className="bg-gray-600 hover:bg-gray-700"
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
+                        </form>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Lista de posts */}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {instagramPosts.map((post) => (
+                      <Card key={post.id} className="bg-white/5 border-purple-300/20">
+                        <CardContent className="p-4">
+                          <div className="aspect-square mb-3 rounded-lg overflow-hidden bg-gray-700">
+                            <img 
+                              src={post.image_url} 
+                              alt={post.caption}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23374151"/><text x="50" y="50" text-anchor="middle" dominant-baseline="central" fill="white" font-family="Arial" font-size="12">Imagem não encontrada</text></svg>';
+                              }}
+                            />
+                          </div>
+                          <p className="text-white text-sm line-clamp-2 mb-3">{post.caption}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <Badge className={`text-xs ${
+                                post.is_active 
+                                  ? 'bg-green-500/20 text-green-300 border-green-400/30' 
+                                  : 'bg-red-500/20 text-red-300 border-red-400/30'
+                              }`}>
+                                {post.is_active ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs bg-white/5 text-purple-200">
+                                #{post.order}
+                              </Badge>
+                            </div>
+                            <div className="flex space-x-1">
+                              <Button
+                                size="sm"
+                                onClick={() => setEditingPost(post)}
+                                className="bg-blue-600 hover:bg-blue-700 p-1"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleDeleteInstagramPost(post.id)}
+                                className="bg-red-600 hover:bg-red-700 p-1"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {instagramPosts.length === 0 && (
+                    <div className="text-center py-8">
+                      <Image className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+                      <p className="text-white">Nenhum post adicionado ainda</p>
+                      <p className="text-purple-200 text-sm">Clique em "Adicionar Post" para começar</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="config" className="mt-6">
             <div className="grid gap-6">
               <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
