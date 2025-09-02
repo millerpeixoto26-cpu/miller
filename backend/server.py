@@ -2291,12 +2291,67 @@ async def create_default_meta_mensal():
         await db.metas_mensais.insert_one(meta_padrao.dict())
         print(f"✅ Meta padrão criada para {hoje.month}/{hoje.year}: R$ 5.000")
 
+# Função para criar tipos de consulta padrão
+async def create_default_tipos_consulta():
+    tipos_existentes = await db.tipos_consulta.count_documents({})
+    if tipos_existentes == 0:
+        tipos_padrao = [
+            TipoConsulta(
+                nome="Consulta de Tarot",
+                descricao="Leitura completa de cartas de tarot para orientação espiritual",
+                preco=80.0,
+                duracao_minutos=60,
+                cor_tema="#8b5cf6",
+                ordem=1
+            ),
+            TipoConsulta(
+                nome="Mapa Astral",
+                descricao="Análise completa do seu mapa astral personalizado",
+                preco=120.0,
+                duracao_minutos=90,
+                cor_tema="#ec4899",
+                ordem=2
+            ),
+            TipoConsulta(
+                nome="Consulta Espiritual",
+                descricao="Orientação espiritual e aconselhamento pessoal",
+                preco=100.0,
+                duracao_minutos=75,
+                cor_tema="#f59e0b",
+                ordem=3
+            )
+        ]
+        
+        for tipo in tipos_padrao:
+            await db.tipos_consulta.insert_one(tipo.dict())
+        
+        print("✅ Tipos de consulta padrão criados")
+
+# Função para criar horários padrão
+async def create_default_horarios():
+    horarios_existentes = await db.horarios_disponiveis.count_documents({})
+    if horarios_existentes == 0:
+        # Horários de segunda a sexta: 9h às 18h
+        for dia in range(5):  # 0-4 (segunda a sexta)
+            horario = HorarioDisponivel(
+                dia_semana=dia,
+                hora_inicio="09:00",
+                hora_fim="18:00",
+                intervalo_minutos=60,
+                ativo=True
+            )
+            await db.horarios_disponiveis.insert_one(horario.dict())
+        
+        print("✅ Horários padrão criados (Segunda a Sexta: 9h-18h)")
+
 @app.on_event("startup")
 async def startup_event():
     await create_default_admin()
     await create_default_gateways()
     await create_default_instagram_config()
     await create_default_meta_mensal()
+    await create_default_tipos_consulta()
+    await create_default_horarios()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
