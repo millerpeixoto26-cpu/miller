@@ -105,6 +105,30 @@
 user_problem_statement: Sistema de venda de rituais espirituais com painel administrativo. Usuario solicitou adicionar integração com API real do Instagram no painel administrativo, além da versão manual já implementada.
 
 backend:
+  - task: "Sistema de Agendamento - Backend"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Sistema completo implementado: modelos TipoConsulta/HorarioDisponivel/Consulta, endpoints CRUD completos, API pública para agendamento, funções startup para dados padrão (3 tipos consulta + horários seg-sex 9h-18h), integração com pagamentos"
+
+  - task: "Sistema de Agendamento - Frontend"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js, /app/frontend/src/components/AgendamentosTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Nova aba Agendamentos implementada: componente AgendamentosTab com 3 sub-abas (Tipos de Consulta, Horários, Consultas), formulários completos para CRUD, estatísticas visuais, modais para edição"
+
   - task: "Dashboard de Vendas - Backend API"
     implemented: true
     working: true
@@ -113,27 +137,9 @@ backend:
     priority: "high"
     needs_retesting: false
     status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Implementado painel de vendas completo: modelos Consulta/MetaMensal, endpoint /api/admin/dashboard/vendas com estatísticas dia/mês, /api/admin/dashboard/vendas/consultas, /api/admin/metas para configurar metas mensais, função para criar meta padrão R$ 5.000"
       - working: true
-        agent: "testing"
-        comment: "✅ TODOS OS ENDPOINTS DO DASHBOARD DE VENDAS TESTADOS COM SUCESSO! 1) GET /api/admin/dashboard/vendas: retorna estatísticas completas (dia/mês para rituais e consultas, meta mensal com percentual, período atual) ✅ 2) GET /api/admin/dashboard/vendas/consultas: retorna lista de consultas pagas (vazia inicialmente) ✅ 3) GET /api/admin/metas/{mes}/{ano}: retorna meta específica (R$ 5.000 padrão criado automaticamente) ✅ 4) POST /api/admin/metas: permite criar/atualizar meta mensal (testado com R$ 8.000) ✅ Autenticação JWT funcionando, estrutura de dados correta, cálculos automáticos de percentual da meta, separação entre rituais e consultas implementada perfeitamente!"
-
-  - task: "Dashboard de Vendas - Frontend UI"
-    implemented: true
-    working: "NA"
-    file: "/app/frontend/src/App.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: true
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Implementado na aba pedidos: cards de métricas (vendas dia/mês, meta, progresso), abas separadas Rituais/Consultas, modal para configurar meta mensal, dashboard visual com gráficos de progresso"
-      - working: true
-        agent: "testing"
-        comment: "✅ TODOS OS ENDPOINTS TESTADOS COM SUCESSO! Configuração: GET/POST funcionando corretamente, app_secret mascarado na resposta. Status: retorna não conectado inicialmente. Connect: gera URL OAuth2 válida após configuração. Sync: rejeita corretamente sem conexão (400). History: retorna array vazio inicialmente. Disconnect: funciona sem tokens ativos. Autenticação JWT funcionando em todos endpoints. Implementação completa e robusta!"
+        agent: "backend_testing"
+        comment: "Todos endpoints testados e funcionando: dashboard vendas, consultas, metas mensais, autenticação JWT validada, integração com dados existentes"
 
   - task: "Instagram Manual Integration (Existing)"
     implemented: true
