@@ -652,7 +652,7 @@ async def get_pedidos(current_user: User = Depends(get_current_active_user)):
 
 # APIs de Configuração
 @api_router.get("/config", response_model=dict)
-async def get_configuracao():
+async def get_configuracao(current_user: User = Depends(get_current_active_user)):
     """Retorna as configurações do site"""
     config = await db.configuracoes.find_one()
     if not config:
@@ -668,7 +668,7 @@ async def get_configuracao():
     return config
 
 @api_router.put("/config", response_model=dict)
-async def update_configuracao(config_update: ConfiguracaoUpdate):
+async def update_configuracao(config_update: ConfiguracaoUpdate, current_user: User = Depends(get_current_active_user)):
     """Atualiza as configurações do site"""
     existing_config = await db.configuracoes.find_one()
     
