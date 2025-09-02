@@ -88,7 +88,114 @@ const useAuth = () => {
   return context;
 };
 
-// Componente para Home
+// Componente de Login
+const LoginPage = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    username: "",
+    password: ""
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    const result = await login(formData.username, formData.password);
+    
+    if (result.success) {
+      toast.success("Login realizado com sucesso!");
+      navigate("/admin");
+    } else {
+      toast.error(result.error);
+    }
+    
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 px-4">
+      <Card className="w-full max-w-md bg-white/10 border-purple-300/30 backdrop-blur-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold text-white">Painel Administrativo</CardTitle>
+          <CardDescription className="text-purple-200">
+            Faça login para acessar o sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="username" className="text-white">Usuário</Label>
+              <Input
+                id="username"
+                type="text"
+                required
+                value={formData.username}
+                onChange={(e) => setFormData({...formData, username: e.target.value})}
+                className="bg-white/5 border-purple-300/30 text-white placeholder:text-purple-300"
+                placeholder="Digite seu usuário"
+              />
+            </div>
+            <div>
+              <Label htmlFor="password" className="text-white">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                className="bg-white/5 border-purple-300/30 text-white placeholder:text-purple-300"
+                placeholder="Digite sua senha"
+              />
+            </div>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Entrando...
+                </>
+              ) : (
+                "Entrar"
+              )}
+            </Button>
+          </form>
+          
+          <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-400/30 rounded-lg">
+            <p className="text-yellow-200 text-sm text-center">
+              <strong>Login Padrão:</strong><br />
+              Usuário: <code className="bg-black/20 px-1 rounded">admin</code><br />
+              Senha: <code className="bg-black/20 px-1 rounded">admin123</code>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Componente de Proteção de Rotas
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
 const Home = () => {
   const [rituais, setRituais] = useState([]);
   const [rituaisHoje, setRituaisHoje] = useState([]);
