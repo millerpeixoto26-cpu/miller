@@ -408,7 +408,7 @@ async def get_rituais():
     return rituais
 
 @api_router.get("/admin/rituais", response_model=List[dict])
-async def get_all_rituais():
+async def get_all_rituais(current_user: User = Depends(get_current_active_user)):
     """Retorna todos os rituais (incluindo ocultos) para o admin"""
     rituais = await db.rituais.find().to_list(1000)
     if not rituais:
