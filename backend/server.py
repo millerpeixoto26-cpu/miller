@@ -1509,6 +1509,305 @@ async def instagram_api_sync_history(current_user: User = Depends(get_current_ac
     
     return syncs
 
+# APIs para Dashboard de Vendas
+@api_router.get("/admin/dashboard/vendas")
+async def get_dashboard_vendas(current_user: User = Depends(get_current_active_user)):
+    """Retorna estatísticas do dashboard de vendas"""
+    from datetime import date
+    import calendar
+    
+    hoje = date.today()
+    primeiro_dia_mes = date(hoje.year, hoje.month, 1)
+    
+    # Vendas do dia (Rituais)
+    vendas_dia_rituais = await db.pedidos.count_documents({
+        "status_pagamento": "paid",
+        "created_at": {
+            "$gte": datetime.combine(hoje, datetime.min.time()),
+            "$lt": datetime.combine(hoje, datetime.max.time())
+        }
+    })
+    
+    # Vendas do mês (Rituais)
+    vendas_mes_rituais = await db.pedidos.count_documents({
+        "status_pagamento": "paid",
+        "created_at": {
+            "$gte": datetime.combine(primeiro_dia_mes, datetime.min.time()),
+            "$lt": datetime.now(timezone.utc)
+        }
+    })
+    
+    # Faturamento do dia (Rituais)
+    pipeline_dia_rituais = [
+        {
+            "$match": {
+                "status_pagamento": "paid",
+                "created_at": {
+                    "$gte": datetime.combine(hoje, datetime.min.time()),
+                    "$lt": datetime.combine(hoje, datetime.max.time())
+                }
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "total": {"$sum": "$valor_total"}
+            }
+        }
+    ]
+    
+    faturamento_dia_rituais = 0
+    result = await db.pedidos.aggregate(pipeline_dia_rituais).to_list(1)
+    if result:
+        faturamento_dia_rituais = result[0]["total"]
+    
+    # Faturamento do mês (Rituais)
+    pipeline_mes_rituais = [
+        {
+            "$match": {
+                "status_pagamento": "paid",
+                "created_at": {
+                    "$gte": datetime.combine(primeiro_dia_mes, datetime.min.time()),
+                    "$lt": datetime.now(timezone.utc)
+                }
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "total": {"$sum": "$valor_total"}
+            }
+        }
+    ]
+    
+    faturamento_mes_rituais = 0
+    result = await db.pedidos.aggregate(pipeline_mes_rituais).to_list(1)
+    if result:
+        faturamento_mes_rituais = result[0]["total"]
+    
+    # Consultas do dia
+    vendas_dia_consultas = await db.consultas.count_documents({
+        "status_pagamento": "paid",
+        "created_at": {
+            "$gte": datetime.combine(hoje, datetime.min.time()),
+            "$lt": datetime.combine(hoje, datetime.max.time())
+        }
+    })
+    
+    # Consultas do mês
+    vendas_mes_consultas = await db.consultas.count_documents({
+        "status_pagamento": "paid",
+        "created_at": {
+            "$gte": datetime.combine(primeiro_dia_mes, datetime.min.time()),
+            "$lt": datetime.now(timezone.utc)
+        }
+    })
+    
+    # Faturamento do dia (Consultas)
+    pipeline_dia_consultas = [
+        {
+            "$match": {
+                "status_pagamento": "paid",
+                "created_at": {
+                    "$gte": datetime.combine(hoje, datetime.min.time()),
+                    "$lt": datetime.combine(hoje, datetime.max.time())
+                }
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "total": {"$sum": "$preco"}
+            }
+        }
+    ]
+    
+    faturamento_dia_consultas = 0
+    result = await db.consultas.aggregate(pipeline_dia_consultas).to_list(1)
+    if result:
+        faturamento_dia_consultas = result[0]["total"]
+    
+    # Faturamento do mês (Consultas)
+    pipeline_mes_consultas = [
+        {
+            "$match": {
+                "status_pagamento": "paid",
+                "created_at": {
+                    "$gte": datetime.combine(primeiro_dia_mes, datetime.min.time()),
+                    "$lt": datetime.now(timezone.utc)
+                }
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "total": {"$sum": "$preco"}
+            }
+        }
+    ]
+    
+    faturamento_mes_consultas = 0
+    result = await db.consultas.aggregate(pipeline_mes_consultas).to_list(1)
+    if result:
+        faturamento_mes_consultas = result[0]["total"]
+    
+    # Meta do mês
+    meta_mes = await db.metas_mensais.find_one({
+        "mes": hoje.month,
+        "ano": hoje.year
+    })
+    
+    valor_meta = meta_mes["valor_meta"] if meta_mes else 0
+    faturamento_total_mes = faturamento_mes_rituais + faturamento_mes_consultas
+    percentual_meta = (faturamento_total_mes / valor_meta * 100) if valor_meta > 0 else 0
+    
+    return {
+        "dia": {
+            "rituais": {
+                "quantidade": vendas_dia_rituais,
+                "faturamento": faturamento_dia_rituais
+            },
+            "consultas": {
+                "quantidade": vendas_dia_consultas,
+                "faturamento": faturamento_dia_consultas
+            },
+            "total": {
+                "quantidade": vendas_dia_rituais + vendas_dia_consultas,
+                "faturamento": faturamento_dia_rituais + faturamento_dia_consultas
+            }
+        },
+        "mes": {
+            "rituais": {
+                "quantidade": vendas_mes_rituais,
+                "faturamento": faturamento_mes_rituais
+            },
+            "consultas": {
+                "quantidade": vendas_mes_consultas,
+                "faturamento": faturamento_mes_consultas
+            },
+            "total": {
+                "quantidade": vendas_mes_rituais + vendas_mes_consultas,
+                "faturamento": faturamento_total_mes
+            }
+        },
+        "meta": {
+            "valor_meta": valor_meta,
+            "faturamento_atual": faturamento_total_mes,
+            "percentual_atingido": round(percentual_meta, 2),
+            "falta_para_meta": max(0, valor_meta - faturamento_total_mes)
+        },
+        "periodo": {
+            "mes_nome": calendar.month_name[hoje.month],
+            "ano": hoje.year,
+            "dia_atual": hoje.day
+        }
+    }
+
+@api_router.get("/admin/dashboard/vendas/consultas")
+async def get_consultas_vendas(current_user: User = Depends(get_current_active_user)):
+    """Retorna lista de consultas pagas"""
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "clientes",
+                "localField": "cliente_id",
+                "foreignField": "id",
+                "as": "cliente"
+            }
+        },
+        {
+            "$unwind": "$cliente"
+        },
+        {
+            "$match": {
+                "status_pagamento": "paid"
+            }
+        },
+        {
+            "$sort": {
+                "created_at": -1
+            }
+        }
+    ]
+    
+    consultas = await db.consultas.aggregate(pipeline).to_list(1000)
+    
+    # Remove _id do MongoDB
+    for consulta in consultas:
+        if "_id" in consulta:
+            del consulta["_id"]
+        if "_id" in consulta.get("cliente", {}):
+            del consulta["cliente"]["_id"]
+    
+    return consultas
+
+@api_router.get("/admin/metas/{mes}/{ano}")
+async def get_meta_mensal(
+    mes: int, 
+    ano: int, 
+    current_user: User = Depends(get_current_active_user)
+):
+    """Retorna meta mensal específica"""
+    meta = await db.metas_mensais.find_one({"mes": mes, "ano": ano})
+    if not meta:
+        return {"mes": mes, "ano": ano, "valor_meta": 0}
+    
+    if "_id" in meta:
+        del meta["_id"]
+    
+    return meta
+
+@api_router.post("/admin/metas")
+async def create_or_update_meta_mensal(
+    meta_data: MetaMensalCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Cria ou atualiza meta mensal"""
+    existing_meta = await db.metas_mensais.find_one({
+        "mes": meta_data.mes,
+        "ano": meta_data.ano
+    })
+    
+    if existing_meta:
+        # Atualiza meta existente
+        await db.metas_mensais.update_one(
+            {"mes": meta_data.mes, "ano": meta_data.ano},
+            {"$set": {"valor_meta": meta_data.valor_meta}}
+        )
+        return {
+            "message": "Meta atualizada com sucesso",
+            "mes": meta_data.mes,
+            "ano": meta_data.ano,
+            "valor_meta": meta_data.valor_meta
+        }
+    else:
+        # Cria nova meta
+        meta_obj = MetaMensal(**meta_data.dict())
+        await db.metas_mensais.insert_one(meta_obj.dict())
+        return {
+            "message": "Meta criada com sucesso",
+            "mes": meta_data.mes,
+            "ano": meta_data.ano,
+            "valor_meta": meta_data.valor_meta
+        }
+
+@api_router.post("/consultas")
+async def create_consulta(consulta: ConsultaCreate, session_id: str):
+    """Cria uma nova consulta após pagamento confirmado"""
+    # Verifica se o pagamento foi bem-sucedido
+    transaction = await db.payment_transactions.find_one({"session_id": session_id})
+    if not transaction or transaction["payment_status"] != "paid":
+        raise HTTPException(status_code=400, detail="Pagamento não confirmado")
+    
+    consulta_dict = consulta.dict()
+    consulta_dict["session_id"] = session_id
+    consulta_dict["status_pagamento"] = "paid"
+    consulta_obj = Consulta(**consulta_dict)
+    
+    await db.consultas.insert_one(consulta_obj.dict())
+    
+    return consulta_obj
+
 # Configuração CORS
 app.add_middleware(
     CORSMiddleware,
