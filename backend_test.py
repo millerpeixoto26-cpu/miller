@@ -1789,6 +1789,11 @@ def main():
     print("\n   ❌ Disconnect Tests:")
     tester.test_instagram_api_disconnect()
     
+    # Test Site Editor System
+    print("\n🎨 SITE EDITOR SYSTEM TESTS")
+    print("-" * 40)
+    tester.test_site_editor_comprehensive()
+    
     # Print final results
     print("\n" + "=" * 60)
     print(f"📊 FINAL RESULTS")
