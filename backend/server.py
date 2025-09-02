@@ -71,6 +71,43 @@ class Pedido(BaseModel):
     session_id: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class Configuracao(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    logo_url: Optional[str] = None
+    whatsapp_numero: Optional[str] = None
+    cores: Dict[str, str] = Field(default_factory=lambda: {
+        "primary": "#8b5cf6",
+        "secondary": "#ec4899", 
+        "background": "#1a1a2e",
+        "text": "#ffffff"
+    })
+    layout_sections: List[str] = Field(default_factory=lambda: [
+        "hero", "rituais", "testimonials", "footer"
+    ])
+    stripe_snippet_id: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class RitualSemana(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    dia_semana: str  # segunda, terca, quarta, quinta, sexta, sabado, domingo
+    ritual_id: str
+    imagem_destaque: Optional[str] = None
+    ativo: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ConfiguracaoUpdate(BaseModel):
+    logo_url: Optional[str] = None
+    whatsapp_numero: Optional[str] = None
+    cores: Optional[Dict[str, str]] = None
+    layout_sections: Optional[List[str]] = None
+    stripe_snippet_id: Optional[str] = None
+
+class RitualSemanaCreate(BaseModel):
+    dia_semana: str
+    ritual_id: str
+    imagem_destaque: Optional[str] = None
+    ativo: bool = True
+
 class PaymentTransaction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     amount: float
