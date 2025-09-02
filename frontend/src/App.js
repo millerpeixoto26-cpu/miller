@@ -881,6 +881,9 @@ const AdminPanel = () => {
     fetchConsultasVendas();
     fetchTiposConsulta();
     fetchHorariosDisponiveis();
+    fetchWhatsappConfig();
+    fetchWhatsappTemplates();
+    fetchWhatsappMessages();
     fetchConfiguracao();
     fetchRituaisSemana();
   }, []);
