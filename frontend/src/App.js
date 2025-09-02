@@ -945,6 +945,115 @@ const AdminPanel = () => {
     }
   };
 
+  const fetchTiposConsulta = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/tipos-consulta`);
+      setTiposConsulta(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar tipos de consulta:", error);
+    }
+  };
+
+  const fetchHorariosDisponiveis = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/horarios-disponiveis`);
+      setHorariosDisponiveis(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar horários disponíveis:", error);
+    }
+  };
+
+  const handleAddTipoConsulta = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData(e.target);
+      const tipoData = {
+        nome: formData.get('nome'),
+        descricao: formData.get('descricao'),
+        preco: parseFloat(formData.get('preco')),
+        duracao_minutos: parseInt(formData.get('duracao_minutos')),
+        cor_tema: formData.get('cor_tema'),
+        ativo: formData.get('ativo') === 'on',
+        ordem: parseInt(formData.get('ordem')) || 0
+      };
+
+      if (editingTipoConsulta) {
+        await axios.put(`${API}/admin/tipos-consulta/${editingTipoConsulta.id}`, tipoData);
+        toast.success("Tipo de consulta atualizado com sucesso!");
+        setEditingTipoConsulta(null);
+      } else {
+        await axios.post(`${API}/admin/tipos-consulta`, tipoData);
+        toast.success("Tipo de consulta adicionado com sucesso!");
+      }
+      
+      setShowAddTipoConsulta(false);
+      fetchTiposConsulta();
+    } catch (error) {
+      console.error("Erro ao salvar tipo de consulta:", error);
+      toast.error("Erro ao salvar tipo de consulta");
+    }
+  };
+
+  const handleDeleteTipoConsulta = async (tipoId) => {
+    if (window.confirm("Tem certeza que deseja excluir este tipo de consulta?")) {
+      try {
+        await axios.delete(`${API}/admin/tipos-consulta/${tipoId}`);
+        toast.success("Tipo de consulta excluído com sucesso!");
+        fetchTiposConsulta();
+      } catch (error) {
+        console.error("Erro ao excluir tipo de consulta:", error);
+        toast.error("Erro ao excluir tipo de consulta");
+      }
+    }
+  };
+
+  const handleAddHorario = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData(e.target);
+      const horarioData = {
+        dia_semana: parseInt(formData.get('dia_semana')),
+        hora_inicio: formData.get('hora_inicio'),
+        hora_fim: formData.get('hora_fim'),
+        intervalo_minutos: parseInt(formData.get('intervalo_minutos')),
+        ativo: formData.get('ativo') === 'on'
+      };
+
+      if (editingHorario) {
+        await axios.put(`${API}/admin/horarios-disponiveis/${editingHorario.id}`, horarioData);
+        toast.success("Horário atualizado com sucesso!");
+        setEditingHorario(null);
+      } else {
+        await axios.post(`${API}/admin/horarios-disponiveis`, horarioData);
+        toast.success("Horário adicionado com sucesso!");
+      }
+      
+      setShowAddHorario(false);
+      fetchHorariosDisponiveis();
+    } catch (error) {
+      console.error("Erro ao salvar horário:", error);
+      toast.error(error.response?.data?.detail || "Erro ao salvar horário");
+    }
+  };
+
+  const handleDeleteHorario = async (horarioId) => {
+    if (window.confirm("Tem certeza que deseja excluir este horário?")) {
+      try {
+        await axios.delete(`${API}/admin/horarios-disponiveis/${horarioId}`);
+        toast.success("Horário excluído com sucesso!");
+        fetchHorariosDisponiveis();
+      } catch (error) {
+        console.error("Erro ao excluir horário:", error);
+        toast.error("Erro ao excluir horário");
+      }
+    }
+  };
+
+  const getDiaSemanaName = (dia) => {
+    const dias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+    return dias[dia] || 'Desconhecido';
+  };
+
   const fetchGateways = async () => {
     try {
       const response = await axios.get(`${API}/payment-gateways`);
