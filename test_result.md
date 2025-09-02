@@ -170,4 +170,4 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "Implementando integração com Instagram Basic Display API. IMPORTANTE: API será depreciada em dezembro 2024, precisa migrar para Instagram Graph API futuramente. Por enquanto implementando versão atual para demonstrar funcionalidade."
+    message: "Implementação da Instagram API concluída com sucesso! Backend: adicionados modelos e endpoints OAuth2 completos. Frontend: criadas seções para configurar API e gerenciar conexão/sincronização. IMPORTANTE: API será depreciada em dezembro 2024, precisa migrar para Instagram Graph API futuramente. Pronto para testes!"
