@@ -2766,6 +2766,441 @@ const AdminPanel = () => {
             )}
           </TabsContent>
 
+          <TabsContent value="promocoes" className="mt-6">
+            <div className="space-y-6">
+              {/* Estatísticas de Promoções */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 border-green-400/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-200 text-sm font-medium">Cupons Ativos</p>
+                        <p className="text-2xl font-bold text-white">{cupons.filter(c => c.ativo).length}</p>
+                      </div>
+                      <Gift className="w-8 h-8 text-green-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-blue-400/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-blue-200 text-sm font-medium">Total de Cupons</p>
+                        <p className="text-2xl font-bold text-white">{cupons.length}</p>
+                      </div>
+                      <BarChart3 className="w-8 h-8 text-blue-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border-purple-400/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-purple-200 text-sm font-medium">Avaliações</p>
+                        <p className="text-2xl font-bold text-white">{avaliacoes.length}</p>
+                      </div>
+                      <Star className="w-8 h-8 text-purple-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Cupons de Desconto */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-white flex items-center">
+                        <Gift className="w-5 h-5 mr-2" />
+                        Cupons de Desconto
+                      </CardTitle>
+                      <CardDescription className="text-purple-200">
+                        Gerencie cupons promocionais e ofertas especiais
+                      </CardDescription>
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        setEditingCupom(null);
+                        setShowAddCupom(true);
+                      }}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Novo Cupom
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {cupons.map((cupom) => (
+                      <Card key={cupom.id} className="bg-white/5 border-purple-400/20">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-lg font-mono font-bold">
+                                {cupom.codigo}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-white">{cupom.descricao}</h4>
+                                <p className="text-purple-300 text-sm">
+                                  {cupom.tipo === 'percentual' 
+                                    ? `${cupom.percentual_desconto}% de desconto`
+                                    : `R$ ${cupom.valor_desconto.toFixed(2)} de desconto`
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge className={`text-xs ${cupom.ativo ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                                {cupom.ativo ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setEditingCupom(cupom);
+                                  setShowAddCupom(true);
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleDeleteCupom(cupom.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="grid md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <p className="text-purple-200">Válido até:</p>
+                              <p className="text-white">{new Date(cupom.data_fim).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                            <div>
+                              <p className="text-purple-200">Uso atual:</p>
+                              <p className="text-white">{cupom.uso_atual} {cupom.uso_maximo ? `/ ${cupom.uso_maximo}` : '/ ∞'}</p>
+                            </div>
+                            <div>
+                              <p className="text-purple-200">Valor mínimo:</p>
+                              <p className="text-white">{cupom.valor_minimo ? `R$ ${cupom.valor_minimo.toFixed(2)}` : 'Sem mínimo'}</p>
+                            </div>
+                            <div>
+                              <p className="text-purple-200">Criado em:</p>
+                              <p className="text-white">{new Date(cupom.created_at).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+
+                    {cupons.length === 0 && (
+                      <div className="text-center py-8">
+                        <Gift className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-white mb-2">Nenhum cupom criado</h3>
+                        <p className="text-purple-200">Clique em "Novo Cupom" para começar</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Avaliações dos Clientes */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Star className="w-5 h-5 mr-2" />
+                    Avaliações dos Clientes
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Feedback e avaliações recebidas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {avaliacoes.map((avaliacao) => (
+                      <div key={avaliacao.id} className="bg-white/5 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <h4 className="font-semibold text-white">{avaliacao.cliente?.nome_completo}</h4>
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <Star 
+                                  key={i} 
+                                  className={`w-4 h-4 ${i < avaliacao.nota ? 'text-yellow-400 fill-current' : 'text-gray-400'}`} 
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          <span className="text-purple-300 text-sm">
+                            {new Date(avaliacao.created_at).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                        {avaliacao.comentario && (
+                          <p className="text-purple-200 bg-black/20 rounded p-3 mb-2">"{avaliacao.comentario}"</p>
+                        )}
+                        <div className="text-sm text-purple-300">
+                          Recomendaria: {avaliacao.recomendaria ? '✅ Sim' : '❌ Não'}
+                        </div>
+                      </div>
+                    ))}
+
+                    {avaliacoes.length === 0 && (
+                      <div className="text-center py-8">
+                        <Star className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-white mb-2">Nenhuma avaliação ainda</h3>
+                        <p className="text-purple-200">As avaliações dos clientes aparecerão aqui</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Modal para Adicionar/Editar Cupom */}
+            {showAddCupom && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <CardHeader>
+                    <CardTitle className="text-white">
+                      {editingCupom ? 'Editar Cupom' : 'Novo Cupom'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleAddCupom} className="space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="codigo" className="text-white">Código do Cupom</Label>
+                          <Input
+                            id="codigo"
+                            name="codigo"
+                            defaultValue={editingCupom?.codigo || ''}
+                            className="bg-white/5 border-purple-300/30 text-white font-mono"
+                            placeholder="PROMO20"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="tipo" className="text-white">Tipo de Desconto</Label>
+                          <Select name="tipo" defaultValue={editingCupom?.tipo || 'percentual'} required>
+                            <SelectTrigger className="bg-white/5 border-purple-300/30 text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percentual">Percentual (%)</SelectItem>
+                              <SelectItem value="valor_fixo">Valor Fixo (R$)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="descricao" className="text-white">Descrição</Label>
+                        <Input
+                          id="descricao"
+                          name="descricao"
+                          defaultValue={editingCupom?.descricao || ''}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="20% de desconto na primeira consulta"
+                          required
+                        />
+                      </div>
+
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="valor_desconto" className="text-white">Valor/Percentual</Label>
+                          <Input
+                            id="valor_desconto"
+                            name="valor_desconto"
+                            type="number"
+                            step="0.01"
+                            defaultValue={editingCupom?.valor_desconto || ''}
+                            className="bg-white/5 border-purple-300/30 text-white"
+                            placeholder="20.00"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="valor_minimo" className="text-white">Valor Mínimo (R$)</Label>
+                          <Input
+                            id="valor_minimo"
+                            name="valor_minimo"
+                            type="number"
+                            step="0.01"
+                            defaultValue={editingCupom?.valor_minimo || ''}
+                            className="bg-white/5 border-purple-300/30 text-white"
+                            placeholder="50.00"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="uso_maximo" className="text-white">Uso Máximo</Label>
+                          <Input
+                            id="uso_maximo"
+                            name="uso_maximo"
+                            type="number"
+                            defaultValue={editingCupom?.uso_maximo || ''}
+                            className="bg-white/5 border-purple-300/30 text-white"
+                            placeholder="100"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="data_inicio" className="text-white">Data Início</Label>
+                          <Input
+                            id="data_inicio"
+                            name="data_inicio"
+                            type="date"
+                            defaultValue={editingCupom?.data_inicio ? editingCupom.data_inicio.split('T')[0] : ''}
+                            className="bg-white/5 border-purple-300/30 text-white"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="data_fim" className="text-white">Data Fim</Label>
+                          <Input
+                            id="data_fim"
+                            name="data_fim"
+                            type="date"
+                            defaultValue={editingCupom?.data_fim ? editingCupom.data_fim.split('T')[0] : ''}
+                            className="bg-white/5 border-purple-300/30 text-white"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="ativo"
+                          name="ativo"
+                          defaultChecked={editingCupom?.ativo !== false}
+                        />
+                        <Label htmlFor="ativo" className="text-white">Cupom ativo</Label>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button type="submit" className="bg-green-600 hover:bg-green-700 flex-1">
+                          {editingCupom ? 'Atualizar' : 'Criar'} Cupom
+                        </Button>
+                        <Button 
+                          type="button" 
+                          onClick={() => {
+                            setShowAddCupom(false);
+                            setEditingCupom(null);
+                          }}
+                          className="bg-gray-600 hover:bg-gray-700 flex-1"
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="backups" className="mt-6">
+            <div className="space-y-6">
+              {/* Criar Backup */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <HardDrive className="w-5 h-5 mr-2" />
+                    Backup do Sistema
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Faça backup completo dos dados do sistema
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-4">
+                    <Button 
+                      onClick={handleCreateBackup}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Criar Backup Manual
+                    </Button>
+                    <div className="text-purple-200 text-sm">
+                      <p>• Backup automático: Diário às 03:00</p>
+                      <p>• Incluí: Clientes, Rituais, Consultas, Configurações</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Histórico de Backups */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Archive className="w-5 h-5 mr-2" />
+                    Histórico de Backups
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Lista de backups realizados
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {backups.map((backup) => (
+                      <div key={backup.id} className="bg-white/5 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="flex items-center gap-3 mb-2">
+                              <Badge className={`text-xs ${
+                                backup.status === 'concluido' ? 'bg-green-500/20 text-green-300' :
+                                backup.status === 'falhou' ? 'bg-red-500/20 text-red-300' :
+                                'bg-yellow-500/20 text-yellow-300'
+                              }`}>
+                                {backup.status}
+                              </Badge>
+                              <span className="text-white font-medium capitalize">{backup.tipo}</span>
+                            </div>
+                            <div className="text-sm text-purple-300">
+                              Criado: {new Date(backup.created_at).toLocaleString('pt-BR')}
+                              {backup.completed_at && (
+                                <span> • Concluído: {new Date(backup.completed_at).toLocaleString('pt-BR')}</span>
+                              )}
+                            </div>
+                            {backup.tamanho_bytes && (
+                              <div className="text-sm text-purple-200">
+                                Tamanho: {(backup.tamanho_bytes / 1024 / 1024).toFixed(2)} MB
+                              </div>
+                            )}
+                            {backup.erro_mensagem && (
+                              <div className="text-sm text-red-300 mt-1">
+                                Erro: {backup.erro_mensagem}
+                              </div>
+                            )}
+                          </div>
+                          {backup.arquivo_path && backup.status === 'concluido' && (
+                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                              <Download className="w-4 h-4 mr-2" />
+                              Download
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    {backups.length === 0 && (
+                      <div className="text-center py-8">
+                        <HardDrive className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-white mb-2">Nenhum backup realizado</h3>
+                        <p className="text-purple-200">Clique em "Criar Backup Manual" para começar</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="whatsapp" className="mt-6">
             <div className="space-y-6">
               {/* Configuração WhatsApp */}
