@@ -184,11 +184,32 @@ async def root():
 
 @api_router.get("/rituais", response_model=List[dict])
 async def get_rituais():
-    """Retorna todos os rituais disponíveis"""
+    """Retorna todos os rituais disponíveis (apenas visíveis para o público)"""
+    rituais = await db.rituais.find({"visivel": True}).to_list(1000)
+    if not rituais:
+        # Se não há rituais no banco, insere os padrão
+        for ritual_data in RITUAIS_PADRAO:
+            ritual_data["visivel"] = True
+            ritual_data["tem_desconto"] = False
+            await db.rituais.insert_one(ritual_data)
+        return RITUAIS_PADRAO
+    
+    # Remove o _id do MongoDB para evitar erro de serialização
+    for ritual in rituais:
+        if "_id" in ritual:
+            del ritual["_id"]
+    
+    return rituais
+
+@api_router.get("/admin/rituais", response_model=List[dict])
+async def get_all_rituais():
+    """Retorna todos os rituais (incluindo ocultos) para o admin"""
     rituais = await db.rituais.find().to_list(1000)
     if not rituais:
         # Se não há rituais no banco, insere os padrão
         for ritual_data in RITUAIS_PADRAO:
+            ritual_data["visivel"] = True
+            ritual_data["tem_desconto"] = False
             await db.rituais.insert_one(ritual_data)
         return RITUAIS_PADRAO
     
