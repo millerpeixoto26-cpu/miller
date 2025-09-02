@@ -1075,12 +1075,12 @@ async def get_instagram_profile():
     
     return profile
 
-@api_router.get("/admin/instagram/profile", response_model=dict)
+@api_router.get("/admin/instagram/profile")
 async def get_instagram_profile_admin(current_user: User = Depends(get_current_active_user)):
     """Retorna o perfil Instagram para admin"""
     profile = await db.instagram_profile.find_one()
     if not profile:
-        return None
+        return {"message": "Perfil não encontrado", "profile": None}
     
     if "_id" in profile:
         del profile["_id"]
