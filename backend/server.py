@@ -2722,7 +2722,23 @@ async def validar_cupom(codigo: str, valor_pedido: float = 0):
     
     # Verificar data
     now = datetime.now(timezone.utc)
-    if now < cupom["data_inicio"] or now > cupom["data_fim"]:
+    
+    # Convert string dates to datetime objects if needed
+    data_inicio = cupom["data_inicio"]
+    data_fim = cupom["data_fim"]
+    
+    if isinstance(data_inicio, str):
+        data_inicio = datetime.fromisoformat(data_inicio.replace('Z', '+00:00'))
+    if isinstance(data_fim, str):
+        data_fim = datetime.fromisoformat(data_fim.replace('Z', '+00:00'))
+    
+    # Ensure timezone awareness
+    if data_inicio.tzinfo is None:
+        data_inicio = data_inicio.replace(tzinfo=timezone.utc)
+    if data_fim.tzinfo is None:
+        data_fim = data_fim.replace(tzinfo=timezone.utc)
+    
+    if now < data_inicio or now > data_fim:
         raise HTTPException(status_code=400, detail="Cupom expirado ou ainda não válido")
     
     # Verificar uso máximo
