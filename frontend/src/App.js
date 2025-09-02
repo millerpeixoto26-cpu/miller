@@ -2658,18 +2658,6 @@ const AdminPanel = () => {
           })}
 
           <TabsContent value="config" className="mt-6">
-                    <div className="text-center py-8">
-                      <Image className="w-12 h-12 text-purple-300 mx-auto mb-4" />
-                      <p className="text-white">Nenhum post adicionado ainda</p>
-                      <p className="text-purple-200 text-sm">Clique em "Adicionar Post" para começar</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="config" className="mt-6">
             <div className="grid gap-6">
               <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
                 <CardHeader>
