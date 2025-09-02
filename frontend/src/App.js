@@ -21,11 +21,15 @@ const API = `${BACKEND_URL}/api`;
 // Componente para Home
 const Home = () => {
   const [rituais, setRituais] = useState([]);
+  const [rituaisHoje, setRituaisHoje] = useState([]);
+  const [configuracao, setConfiguracao] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchRituais();
+    fetchRituaisHoje();
+    fetchConfiguracao();
   }, []);
 
   const fetchRituais = async () => {
@@ -37,6 +41,24 @@ const Home = () => {
       toast.error("Erro ao carregar rituais");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRituaisHoje = async () => {
+    try {
+      const response = await axios.get(`${API}/rituais-semana/hoje`);
+      setRituaisHoje(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar rituais de hoje:", error);
+    }
+  };
+
+  const fetchConfiguracao = async () => {
+    try {
+      const response = await axios.get(`${API}/config`);
+      setConfiguracao(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar configurações:", error);
     }
   };
 
