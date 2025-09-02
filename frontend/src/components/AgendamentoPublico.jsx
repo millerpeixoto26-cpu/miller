@@ -139,11 +139,8 @@ const AgendamentoPublico = () => {
     setHorariosLivres([]);
     setClienteData({
       nome_completo: '',
-      email: '',
       telefone: '',
-      nome_pessoa_amada: '',
-      data_nascimento: '',
-      informacoes_adicionais: ''
+      email: ''
     });
   };
 
