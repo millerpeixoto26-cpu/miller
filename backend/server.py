@@ -136,6 +136,12 @@ async def get_rituais():
         for ritual_data in RITUAIS_PADRAO:
             await db.rituais.insert_one(ritual_data)
         return RITUAIS_PADRAO
+    
+    # Remove o _id do MongoDB para evitar erro de serialização
+    for ritual in rituais:
+        if "_id" in ritual:
+            del ritual["_id"]
+    
     return rituais
 
 @api_router.post("/rituais", response_model=dict)
