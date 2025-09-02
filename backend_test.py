@@ -60,7 +60,109 @@ class RitualsAPITester:
             print(f"❌ Failed - Error: {str(e)}")
             return False, {}
 
-    def test_root_endpoint(self):
+    def authenticate_admin(self):
+        """Authenticate as admin user"""
+        login_data = {
+            "username": "admin",
+            "password": "admin123"
+        }
+        
+        success, response = self.run_test("Admin Login", "POST", "auth/login", 200, login_data)
+        
+        if success and response and 'access_token' in response:
+            self.auth_token = response['access_token']
+            print(f"   ✅ Admin authenticated successfully")
+            print(f"   User: {response.get('user', {}).get('username', 'Unknown')}")
+            return True
+        else:
+            print(f"   ❌ Failed to authenticate admin")
+            return False
+
+    def test_instagram_api_config_get(self):
+        """Test getting Instagram API configuration"""
+        return self.run_test("Get Instagram API Config", "GET", "admin/instagram/api/config", 200, auth_required=True)
+
+    def test_instagram_api_config_post(self):
+        """Test saving Instagram API configuration"""
+        config_data = {
+            "app_id": "test_app_id_12345",
+            "app_secret": "test_app_secret_67890",
+            "redirect_uri": f"{self.base_url}/admin/instagram/callback",
+            "is_active": True
+        }
+        
+        return self.run_test("Save Instagram API Config", "POST", "admin/instagram/api/config", 200, config_data, auth_required=True)
+
+    def test_instagram_api_status(self):
+        """Test Instagram API connection status"""
+        return self.run_test("Get Instagram API Status", "GET", "admin/instagram/api/status", 200, auth_required=True)
+
+    def test_instagram_api_connect(self):
+        """Test Instagram API connect (should generate OAuth URL)"""
+        return self.run_test("Instagram API Connect", "GET", "admin/instagram/api/connect", 200, auth_required=True)
+
+    def test_instagram_api_sync_without_connection(self):
+        """Test Instagram API sync without connection (should fail)"""
+        sync_data = {"sync_type": "both"}
+        success, response = self.run_test("Instagram API Sync (No Connection)", "POST", "admin/instagram/api/sync", 400, sync_data, auth_required=True)
+        
+        # For this test, failure is expected (400 status)
+        if not success:
+            print("   ✅ Correctly rejected sync without connection")
+            return True, response
+        else:
+            print("   ❌ Should have rejected sync without connection")
+            return False, response
+
+    def test_instagram_api_disconnect(self):
+        """Test Instagram API disconnect"""
+        return self.run_test("Instagram API Disconnect", "DELETE", "admin/instagram/api/disconnect", 200, auth_required=True)
+
+    def test_instagram_api_sync_history(self):
+        """Test getting Instagram API sync history"""
+        return self.run_test("Get Instagram API Sync History", "GET", "admin/instagram/api/sync/history", 200, auth_required=True)
+
+    def test_instagram_api_config_get_after_save(self):
+        """Test getting Instagram API configuration after saving"""
+        success, response = self.run_test("Get Instagram API Config (After Save)", "GET", "admin/instagram/api/config", 200, auth_required=True)
+        
+        if success and response:
+            # Check if configuration was saved correctly
+            if response.get('app_id') == 'test_app_id_12345':
+                print("   ✅ App ID saved correctly")
+            else:
+                print(f"   ❌ App ID mismatch: expected 'test_app_id_12345', got '{response.get('app_id')}'")
+            
+            if response.get('app_secret') == '***':
+                print("   ✅ App Secret properly masked in response")
+            else:
+                print(f"   ❌ App Secret not masked: {response.get('app_secret')}")
+            
+            if self.base_url in response.get('redirect_uri', ''):
+                print("   ✅ Redirect URI saved correctly")
+            else:
+                print(f"   ❌ Redirect URI incorrect: {response.get('redirect_uri')}")
+        
+        return success, response
+
+    def test_unauthorized_access(self):
+        """Test accessing Instagram API endpoints without authentication"""
+        # Temporarily remove auth token
+        original_token = self.auth_token
+        self.auth_token = None
+        
+        success, response = self.run_test("Unauthorized Access Test", "GET", "admin/instagram/api/config", 401, auth_required=False)
+        
+        # Restore auth token
+        self.auth_token = original_token
+        
+        # For this test, failure is expected (401 status)
+        if not success:
+            print("   ✅ Correctly rejected unauthorized access")
+            return True, response
+        else:
+            print("   ❌ Should have rejected unauthorized access")
+            return False, response
         """Test root API endpoint"""
         return self.run_test("Root API", "GET", "", 200)
 
