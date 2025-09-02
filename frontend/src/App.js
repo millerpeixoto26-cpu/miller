@@ -2067,6 +2067,27 @@ const AdminPanel = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="agendamentos" className="mt-6">
+            <AgendamentosTab 
+              tiposConsulta={tiposConsulta}
+              horariosDisponiveis={horariosDisponiveis}
+              consultasVendas={consultasVendas}
+              showAddTipoConsulta={showAddTipoConsulta}
+              setShowAddTipoConsulta={setShowAddTipoConsulta}
+              showAddHorario={showAddHorario}
+              setShowAddHorario={setShowAddHorario}
+              editingTipoConsulta={editingTipoConsulta}
+              setEditingTipoConsulta={setEditingTipoConsulta}
+              editingHorario={editingHorario}
+              setEditingHorario={setEditingHorario}
+              handleAddTipoConsulta={handleAddTipoConsulta}
+              handleDeleteTipoConsulta={handleDeleteTipoConsulta}
+              handleAddHorario={handleAddHorario}
+              handleDeleteHorario={handleDeleteHorario}
+              getDiaSemanaName={getDiaSemanaName}
+            />
+          </TabsContent>
+
           <TabsContent value="semana" className="mt-6">
             <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
               <CardHeader>
