@@ -910,14 +910,31 @@ const AdminPanel = () => {
     }
   };
 
-  const updateRitualSemana = (dia, field, value) => {
-    setRituaisSemanaForm(prev => ({
-      ...prev,
-      [dia]: {
-        ...prev[dia],
-        [field]: value
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/auth/register`, novoUsuario);
+      toast.success("Usuário criado com sucesso!");
+      setShowAddUser(false);
+      setNovoUsuario({ username: "", email: "", password: "" });
+      fetchUsuarios();
+    } catch (error) {
+      console.error("Erro ao criar usuário:", error);
+      toast.error(error.response?.data?.detail || "Erro ao criar usuário");
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm("Tem certeza que deseja excluir este usuário?")) {
+      try {
+        await axios.delete(`${API}/auth/users/${userId}`);
+        toast.success("Usuário excluído com sucesso!");
+        fetchUsuarios();
+      } catch (error) {
+        console.error("Erro ao excluir usuário:", error);
+        toast.error(error.response?.data?.detail || "Erro ao excluir usuário");
       }
-    }));
+    }
   };
 
   const getIconForRitual = (nome) => {
