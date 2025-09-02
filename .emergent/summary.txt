@@ -1,135 +1,107 @@
 <analysis>
-The previous AI engineer successfully developed a full-stack application from scratch, following a user-centric, iterative approach. The initial phase focused on core e-commerce functionalities like ritual selection, Stripe payment integration, and an admin panel. Key challenges included resolving MongoDB  serialization errors and refining UI responsiveness based on direct user feedback, demonstrating an ability to adapt and persist through multiple rounds of fixes. Subsequent development introduced advanced features such as comprehensive ritual management (including visibility and discounts), a robust JWT-based authentication system for the admin panel, dynamic site customization (logo, colors, WhatsApp), configurable Rituais da Semana, and a flexible payment gateway configuration (Stripe, PagBank, Mercado Pago). The latest work is on manual Instagram integration, which is partially implemented. The development process was characterized by a phased approach and rigorous testing using screenshots and console logs.
+The previous AI engineer successfully developed a full-stack application for selling rituals and spiritual services, adopting a user-centric, iterative development approach. Initial work established core functionalities like ritual selection, Stripe payment, and an admin panel for orders. Key milestones included resolving MongoDB serialization issues and enhancing UI responsiveness. Subsequent phases introduced advanced features: comprehensive ritual management (visibility, discounts), JWT-based admin authentication, dynamic site customization (logo, colors, WhatsApp), configurable Rituais da Semana, and flexible payment gateway configurations (Stripe, PagBank, Mercado Pago). The project then progressed through Instagram integration, a detailed sales dashboard, a full appointment scheduling system (both admin and public), and WhatsApp Business API integration for notifications and reports. Most recently, several major improvements were implemented, including automatic database backups, intelligent caching, automated reminders/reports, follow-up features, remarketing, custom coupons, loyalty programs, and friend referrals, alongside a simplified public booking form. The latest challenge involves a frontend display issue with the newly added coupons and referral features, where the backend is confirmed functional but the UI doesn't render them.
 </analysis>
 
 <product_requirements>
-The user requested a simple system/website for selling rituals and spiritual services.
-**Core Features:**
-1.  **Ritual/Service Selection:** Customers choose rituals with defined prices.
-2.  **Online Payment:** Integration with Pix/credit card (Stripe chosen by user). Automatic redirection post-payment.
-3.  **Client Data Submission:** Page for customers to fill in necessary details (name, loved one's name, birthdate) after payment, with data saved and organized.
-4.  **Admin Panel:**
-    *   View paid orders and client data.
-    *   Quick WhatsApp button for each client to send ritual videos or communicate.
-    *   Interface in Portuguese.
-5.  **Important Details:**
-    *   Simple and discreet system.
-    *   Optional: Appointment scheduling and automatic WhatsApp reminders.
-    *   Easy management, no advanced technical knowledge needed.
+The core requirement was a simple system for selling rituals with online payment (Stripe), client data collection post-payment, and an admin panel to view orders and client data (with a WhatsApp button). The system needed to be discreet and easy to manage, with optional appointment scheduling and WhatsApp reminders.
 
-**Added Customization & Advanced Features (Subsequent Requests):**
-1.  **Editable Rituals:** Admin can edit/create rituals with visibility toggle, description, price, and discount options (value/percentage).
-2.  **Homepage Enhancements:** Display professional Instagram profile (photo, name, bio, follow button, latest posts).
-3.  **Payment Gateway Configuration:** Admin panel section to change payment gateways (e.g., PagBank, Stripe) with API key fields and enable/disable options.
-4.  **User Administration/Authentication:** Admin login with username/password, ability to register/deregister new administrators.
-5.  **Appointment Scheduling Panel:**
-    *   Client selects day/time, pays 100% reservation.
-    *   Automatic WhatsApp messages: confirmation, pre-consultation reminder, cancellation, delay notices.
-    *   Daily WhatsApp reports to mentor (12h, 18h, 22h) with uncompleted/delayed consultations.
-6.  **WhatsApp Integration:** All notifications via WhatsApp API.
+Subsequently, the user requested significant enhancements:
+- Editable rituals with visibility, description, price, and discount options.
+- Homepage display of professional Instagram profile and latest posts.
+- Admin panel for configuring payment gateways (Stripe, PagBank, Mercado Pago).
+- Admin authentication and user management (add/deregister admins).
+- Comprehensive appointment scheduling: client selects and pays, automated WhatsApp messages (confirmation, reminders, cancellations, delays), and daily WhatsApp reports to the mentor.
+- All notifications via WhatsApp API.
+- Sales dashboard in admin panel: finalized sales, ritual vs. consultation breakdown, daily/monthly sales quantity and value, and monthly revenue target.
+- Automatic database backup (with admin tab for manual backup).
+- Intelligent caching for faster loading.
+- Automated reminders (24h/1h before consultation) and daily reports (12h/18h/22h).
+- Post-consultation follow-up, remarketing campaigns via WhatsApp, custom discount coupons, loyalty program, and friend referral system.
+- Simplified public appointment booking: only name, WhatsApp, and time needed.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack:** FastAPI (Python) for backend, React (JavaScript) for frontend.
+-   **Full-stack:** FastAPI (Python) backend, React (JavaScript) frontend.
 -   **Database:** MongoDB.
--   **UI Framework:** Shadcn UI components, Tailwind CSS.
--   **Authentication:** JWT (JSON Web Tokens), bcrypt for password hashing.
--   **Payment Gateway:** Stripe (integrated via  library).
+-   **UI:** Shadcn UI components, Tailwind CSS.
+-   **Authentication:** JWT (JSON Web Tokens), bcrypt.
+-   **Payment Gateways:** Stripe (via ), PagBank, Mercado Pago.
 -   **Data Validation:** Pydantic (backend).
--   **Routing:** React Router DOM (frontend).
--   **API Client:** Axios (frontend).
+-   **Routing:** React Router DOM.
+-   **API Client:** Axios.
+-   **Scheduling:** APScheduler (for cron jobs).
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a standard full-stack architecture with a React frontend, FastAPI backend, and MongoDB database.
+The application uses a standard full-stack architecture: React frontend, FastAPI backend, and MongoDB database.
 
 
-
-**Key Files and Changes:**
 
 -   
-    -   **Importance:** This is the core of the backend, containing FastAPI application setup, MongoDB connection, Pydantic models for data (Ritual, Order, Config, RitualSemana, User, PaymentGateway, InstagramProfile, InstagramPost), and all API endpoints.
-    -   **Changes Made:**
-        -   Initial setup with basic ritual listing and order processing.
-        -   Added  model fields: , , , .
-        -   Added  model for dynamic site settings (logo, WhatsApp, colors, Stripe snippet).
-        -   Added  model for daily ritual configurations.
-        -   Added  model for authentication (username, email, password_hash, is_admin).
-        -   Added  model (Stripe, PagBank, Mercado Pago with API key storage).
-        -   Added  and  models for manual Instagram integration.
-        -   Implemented CRUD APIs for all new models (, , , , , , , ).
-        -   Implemented JWT authentication middleware and login/logout endpoints.
-        -   Fixed MongoDB  serialization issue for Pydantic models.
-        -   Added startup event to create a default admin user and initialize default configurations/gateways.
+    -   **Importance:** Contains FastAPI app setup, MongoDB connection, Pydantic models, and all API endpoints.
+    -   **Changes Made:** Extended with models for , , , , , , , , , , , , , , , , , , , . Implemented full CRUD APIs for all, JWT authentication, and MongoDB  serialization fix. Added  for cron jobs (reminders, reports, backups).
 
 -   
-    -   **Importance:** The main React application component, responsible for routing and global context providers.
-    -   **Changes Made:**
-        -   Integrated  provider for authentication state management.
-        -   Configured  for public routes (homepage, order flow) and protected admin routes (, ).
-        -   Added dynamic styling based on backend  for colors and logo.
-        -   Incorporated the Rituais de Hoje and Instagram sections.
+    -   **Importance:** Main React component, handles routing, global context, and dynamic content display.
+    -   **Changes Made:** Integrated . Configured  for public and protected routes. Incorporated dynamic styling. Added  tabs (Orders, Rituals, Rituals of the Week, Config, Users, Payments, Instagram, Agendamentos, WhatsApp, Promoções, Backups) and their respective content. Modified for dynamic Instagram profile/posts display, sales dashboard, and public appointment booking section. Fixed  icon import.
+
+-    (Note: admin logic was largely migrated to App.js or new tab components)
+    -   **Importance:** Initial central component for admin dashboard.
+    -   **Changes Made:** Converted to tabbed interface using Shadcn UI. Functionality migrated to  or dedicated tab components.
 
 -   
-    -   **Importance:** The central component for the administrative dashboard, featuring a tabbed interface.
-    -   **Changes Made:**
-        -   Converted to a tabbed interface using Shadcn UI  component.
-        -   Added new tabs: Rituais, Rituais da Semana, Configurações, Usuários, Pagamentos, Instagram.
-        -   Implemented forms and display logic for each tab's functionality:
-            -   **Pedidos:** Lists orders.
-            -   **Rituais:** Form for creating/editing rituals with new fields (visibility, discount).
-            -   **Rituais da Semana:** Form to assign rituals per day.
-            -   **Configurações:** Form for logo URL, WhatsApp number, primary/secondary colors, Stripe snippet ID.
-            -   **Usuários:** Form to add/manage admin users.
-            -   **Pagamentos:** Displays and allows configuration of payment gateways (Stripe, PagBank, Mercado Pago).
-            -   **Instagram:** Form for profile details (username, bio, image, followers) and a section for posts.
-        -   Implemented API calls to backend for all CRUD operations and settings updates.
-        -   Corrected responsiveness issues multiple times, finally settling on a vertical, spaced-out layout for mobile tabs and a horizontal layout for desktop tabs.
+    -   **Importance:** Manages global authentication state.
+    -   **Changes Made:** New file for JWT token, user info, login/logout logic.
 
 -   
-    -   **Importance:** Provides global authentication state and functions (login, logout) to the React application.
-    -   **Changes Made:** New file created to encapsulate JWT token storage, user info, and authentication logic.
+    -   **Importance:** UI for admin login.
+    -   **Changes Made:** New file for username/password input and calling login from .
 
 -   
-    -   **Importance:** Handles user login into the admin panel.
-    -   **Changes Made:** New file created to provide the UI for username/password input and call the login function from .
+    -   **Importance:** Global CSS.
+    -   **Changes Made:** Added responsive classes, custom CSS variables for dynamic colors.
 
 -   
-    -   **Importance:** Global CSS for the application, including Tailwind CSS imports and custom styles.
-    -   **Changes Made:**
-        -   Added responsive CSS classes and media queries for  tabs and overall layout.
-        -   Defined custom CSS variables for dynamic colors (, ).
-        -   Improved header responsiveness for mobile.
+    -   **Importance:** Shadcn UI Button.
+    -   **Changes Made:** Modified for dynamic primary/secondary color gradients.
 
 -   
-    -   **Importance:** Shadcn UI Button component.
-    -   **Changes Made:** Modified to dynamically apply primary/secondary colors from the global configuration to button gradients.
+    -   **Importance:** Shadcn UI Select.
+    -   **Changes Made:** Adjusted to handle empty initial values.
 
 -   
-    -   **Importance:** Shadcn UI Select component.
-    -   **Changes Made:** Adjusted to handle empty initial values correctly, fixing a bug in the Rituais da Semana tab.
+    -   **Importance:** Manages appointment types and available schedules within the admin panel.
+    -   **Changes Made:** New file created.
+
+-   
+    -   **Importance:** Provides the public interface for booking appointments on the homepage.
+    -   **Changes Made:** New file created; simplified form to name, WhatsApp, and time.
+
+-   
+    -   **Importance:** Manages coupons, loyalty, and referral programs in the admin panel.
+    -   **Changes Made:** New file created.
+
+-   
+    -   **Importance:** Manages manual database backups in the admin panel.
+    -   **Changes Made:** New file created.
+
+-   
+    -   **Importance:** Manages WhatsApp configuration and message templates in the admin panel.
+    -   **Changes Made:** New file created.
 </code_architecture>
 
 <pending_tasks>
--   **FASE 4:** Instagram Integration (Completion): Filling out Instagram profile/post data and verifying display on the homepage.
--   **FASE 5:** Sistema de Agendamento (Appointment Scheduling): This is marked as very complex and needs detailed planning.
--   **FASE 6:** WhatsApp Business API: For automatic notifications, reminders, and reports. Requires a WhatsApp Business account and webhook setup.
+-   **Frontend adjustment for Coupons and Referrals**: The backend endpoints for these features are confirmed working, but the UI for Sistema de cupons (Coupon system) and indicações (referrals) is not appearing correctly in the admin panel. The frontend needs to be adjusted to load and display these features.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was working on **FASE 4: Integração Instagram (Manual Version)**.
+Immediately before this summary request, the AI engineer was addressing a user report that the Sistema de cupons pronto para uso nao aparece nem de indicacoes (Coupon system ready for use, neither referrals appear) in the admin panel, despite the AI previously stating it was implemented.
 
-The current state is as follows:
--   **Backend:** New Pydantic models (, ) have been added to , along with corresponding API endpoints for managing the Instagram profile (, ) and posts (, ).
--   **Frontend:**
-    -   The  component has been significantly updated to include a new **Instagram tab** (the 7th tab in the admin panel navigation).
-    -   This tab contains a form for configuring the Instagram profile details (username, display name, bio, profile photo URL, Instagram link, number of followers, and a switch to control visibility on the homepage).
-    -   Below the profile configuration, there is a section for Posts Instagram with a button to Adicionar Post (Add Post).
-    -   The  (Home component) has been modified to fetch and dynamically display the configured Instagram profile and posts on the main public-facing page.
+The AI engineer has confirmed that the backend () for both coupon and referral functionalities is 100% operational and responding correctly. This was verified through backend testing.
 
-The last action recorded was an attempt to test the new Instagram functionality in the admin panel. Specifically, the AI tried to interact with the profile form by attempting to fill in an example profile. This action resulted in a redirection to the login page due to the JWT token expiring, which is standard security behavior. The UI for the Instagram tab, including the profile form and post section, has been successfully rendered and validated via screenshots. The actual saving and displaying of filled Instagram data on the homepage remain to be fully tested after re-authentication.
+The current focus is on debugging and fixing the frontend. The AI engineer has identified that O problema está no frontend - vou verificar se os dados estão sendo carregados corretamente e ajustar a interface. This implies inspecting the  component, the  where the tab is integrated, and the API calls to ensure the data for coupons and referrals is fetched and rendered as expected. The task is to visually display the coupon system and referral information within the admin panel's Promoções tab.
 </current_work>
 
 <optional_next_step>
-Log in to the admin panel, fill out the Instagram profile details in the new Instagram tab, save them, and then verify that the Instagram profile and any added posts appear correctly on the application's homepage.
+Adjust the frontend interface in  and  to correctly load and display the coupon and referral systems.
 </optional_next_step>
