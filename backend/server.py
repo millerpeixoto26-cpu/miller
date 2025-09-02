@@ -198,6 +198,59 @@ class PaymentGatewayUpdate(BaseModel):
     config: Optional[Dict[str, str]] = None
     supported_methods: Optional[List[str]] = None
 
+# Modelos Instagram
+class InstagramProfile(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    username: str
+    display_name: str
+    bio: str
+    profile_image_url: str
+    instagram_url: str
+    followers_count: Optional[int] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class InstagramPost(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    image_url: str
+    caption: str
+    post_url: Optional[str] = None
+    is_active: bool = True
+    order: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class InstagramProfileCreate(BaseModel):
+    username: str
+    display_name: str
+    bio: str
+    profile_image_url: str
+    instagram_url: str
+    followers_count: Optional[int] = None
+    is_active: bool = True
+
+class InstagramProfileUpdate(BaseModel):
+    username: Optional[str] = None
+    display_name: Optional[str] = None
+    bio: Optional[str] = None
+    profile_image_url: Optional[str] = None
+    instagram_url: Optional[str] = None
+    followers_count: Optional[int] = None
+    is_active: Optional[bool] = None
+
+class InstagramPostCreate(BaseModel):
+    image_url: str
+    caption: str
+    post_url: Optional[str] = None
+    is_active: bool = True
+    order: int = 0
+
+class InstagramPostUpdate(BaseModel):
+    image_url: Optional[str] = None
+    caption: Optional[str] = None
+    post_url: Optional[str] = None
+    is_active: Optional[bool] = None
+    order: Optional[int] = None
+
 class PaymentTransaction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     amount: float
