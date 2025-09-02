@@ -1624,7 +1624,7 @@ const AdminPanel = () => {
         <Tabs defaultValue="pedidos" className="w-full">
           {/* Navigation - Desktop */}
           <div className="hidden md:block">
-            <TabsList className="grid w-full grid-cols-10 bg-white/10 backdrop-blur-sm p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-11 bg-white/10 backdrop-blur-sm p-1 rounded-lg">
               <TabsTrigger 
                 value="pedidos" 
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
