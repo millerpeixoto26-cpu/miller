@@ -2399,6 +2399,266 @@ const AdminPanel = () => {
 
                   {instagramPosts.length === 0 && (
                     <div className="text-center py-8">
+                      <p className="text-purple-200">Nenhum post encontrado</p>
+                      <p className="text-purple-300 text-sm">Adicione posts manualmente ou sincronize via API</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Componentes para Instagram API */}
+          {React.createElement(() => {
+            const InstagramApiConfigSection = () => {
+              const [configForm, setConfigForm] = useState({
+                app_id: instagramApiConfig?.app_id || '',
+                app_secret: '',
+                redirect_uri: instagramApiConfig?.redirect_uri || '',
+                is_active: instagramApiConfig?.is_active || false
+              });
+
+              const handleSaveConfig = async (e) => {
+                e.preventDefault();
+                try {
+                  await axios.post(`${API}/admin/instagram/api/config`, configForm);
+                  toast.success("Configuração salva com sucesso!");
+                  fetchInstagramApiConfig();
+                } catch (error) {
+                  console.error("Erro ao salvar configuração:", error);
+                  toast.error("Erro ao salvar configuração");
+                }
+              };
+
+              return (
+                <form onSubmit={handleSaveConfig} className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="app_id" className="text-white">App ID</Label>
+                      <Input
+                        id="app_id"
+                        value={configForm.app_id}
+                        onChange={(e) => setConfigForm({...configForm, app_id: e.target.value})}
+                        className="bg-white/5 border-purple-300/30 text-white"
+                        placeholder="Seu Instagram App ID"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="app_secret" className="text-white">App Secret</Label>
+                      <Input
+                        id="app_secret"
+                        type="password"
+                        value={configForm.app_secret}
+                        onChange={(e) => setConfigForm({...configForm, app_secret: e.target.value})}
+                        className="bg-white/5 border-purple-300/30 text-white"
+                        placeholder={instagramApiConfig?.app_secret ? "***" : "Seu Instagram App Secret"}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="redirect_uri" className="text-white">Redirect URI</Label>
+                    <Input
+                      id="redirect_uri"
+                      value={configForm.redirect_uri}
+                      onChange={(e) => setConfigForm({...configForm, redirect_uri: e.target.value})}
+                      className="bg-white/5 border-purple-300/30 text-white"
+                      placeholder="https://seusite.com/admin/instagram/callback"
+                      required
+                    />
+                    <p className="text-purple-300 text-xs mt-1">
+                      Configure este URL no seu app do Instagram no Facebook Developers
+                    </p>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_active"
+                      checked={configForm.is_active}
+                      onCheckedChange={(checked) => setConfigForm({...configForm, is_active: checked})}
+                    />
+                    <Label htmlFor="is_active" className="text-white">Configuração ativa</Label>
+                  </div>
+
+                  <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                    Salvar Configuração
+                  </Button>
+                </form>
+              );
+            };
+
+            const InstagramApiStatusSection = () => {
+              const [syncing, setSyncing] = useState(false);
+
+              const handleConnect = async () => {
+                try {
+                  const response = await axios.get(`${API}/admin/instagram/api/connect`);
+                  window.open(response.data.auth_url, '_blank');
+                  toast.success("Janela de autenticação aberta! Complete o processo e atualize esta página.");
+                } catch (error) {
+                  console.error("Erro ao conectar:", error);
+                  toast.error(error.response?.data?.detail || "Erro ao conectar com Instagram");
+                }
+              };
+
+              const handleDisconnect = async () => {
+                if (window.confirm("Tem certeza que deseja desconectar sua conta Instagram?")) {
+                  try {
+                    await axios.delete(`${API}/admin/instagram/api/disconnect`);
+                    toast.success("Conta desconectada com sucesso!");
+                    fetchInstagramApiStatus();
+                  } catch (error) {
+                    console.error("Erro ao desconectar:", error);
+                    toast.error("Erro ao desconectar conta");
+                  }
+                }
+              };
+
+              const handleSync = async (syncType = "both") => {
+                setSyncing(true);
+                try {
+                  const response = await axios.post(`${API}/admin/instagram/api/sync`, null, {
+                    params: { sync_type: syncType }
+                  });
+                  toast.success(response.data.message);
+                  
+                  // Atualizar dados após sincronização
+                  fetchInstagramProfile();
+                  fetchInstagramPosts();
+                  fetchInstagramSyncHistory();
+                } catch (error) {
+                  console.error("Erro ao sincronizar:", error);
+                  toast.error(error.response?.data?.detail || "Erro ao sincronizar dados");
+                } finally {
+                  setSyncing(false);
+                }
+              };
+
+              return (
+                <div className="space-y-4">
+                  {instagramApiStatus?.connected ? (
+                    <div className="space-y-4">
+                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <span className="text-green-300 font-medium">Conta Conectada</span>
+                        </div>
+                        <p className="text-white">@{instagramApiStatus.instagram_username}</p>
+                        <p className="text-purple-200 text-sm">
+                          Conectado em: {new Date(instagramApiStatus.connected_at).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+
+                      <div className="grid md:grid-cols-3 gap-2">
+                        <Button
+                          onClick={() => handleSync("both")}
+                          disabled={syncing}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          {syncing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                          Sincronizar Tudo
+                        </Button>
+                        <Button
+                          onClick={() => handleSync("profile")}
+                          disabled={syncing}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          Sincronizar Perfil
+                        </Button>
+                        <Button
+                          onClick={() => handleSync("posts")}
+                          disabled={syncing}
+                          className="bg-pink-600 hover:bg-pink-700"
+                        >
+                          Sincronizar Posts
+                        </Button>
+                      </div>
+
+                      <Button
+                        onClick={handleDisconnect}
+                        className="bg-red-600 hover:bg-red-700 w-full"
+                      >
+                        Desconectar Conta
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <span className="text-yellow-300 font-medium">Conta Não Conectada</span>
+                        </div>
+                        <p className="text-purple-200 text-sm">
+                          Configure as credenciais da API acima e conecte sua conta Instagram para sincronização automática.
+                        </p>
+                      </div>
+
+                      <Button
+                        onClick={handleConnect}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 w-full"
+                        disabled={!instagramApiConfig?.is_active}
+                      >
+                        Conectar Conta Instagram
+                      </Button>
+                      
+                      {!instagramApiConfig?.is_active && (
+                        <p className="text-red-300 text-sm text-center">
+                          Configure e ative a API primeiro
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Histórico de Sincronizações */}
+                  {instagramSyncHistory.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="text-white font-medium mb-3">Últimas Sincronizações</h4>
+                      <div className="space-y-2">
+                        {instagramSyncHistory.slice(0, 5).map((sync, index) => (
+                          <div key={index} className="bg-white/5 rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <span className="text-white text-sm capitalize">{sync.sync_type}</span>
+                                <Badge className={`ml-2 text-xs ${
+                                  sync.status === 'completed' 
+                                    ? 'bg-green-500/20 text-green-300' 
+                                    : sync.status === 'failed'
+                                    ? 'bg-red-500/20 text-red-300'
+                                    : 'bg-yellow-500/20 text-yellow-300'
+                                }`}>
+                                  {sync.status}
+                                </Badge>
+                              </div>
+                              <span className="text-purple-300 text-xs">
+                                {new Date(sync.started_at).toLocaleString('pt-BR')}
+                              </span>
+                            </div>
+                            {sync.items_synced > 0 && (
+                              <p className="text-purple-200 text-xs mt-1">
+                                {sync.items_synced} items sincronizados
+                              </p>
+                            )}
+                            {sync.error_message && (
+                              <p className="text-red-300 text-xs mt-1">
+                                Erro: {sync.error_message}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            };
+
+            return null;
+          })}
+
+          <TabsContent value="config" className="mt-6">
+                    <div className="text-center py-8">
                       <Image className="w-12 h-12 text-purple-300 mx-auto mb-4" />
                       <p className="text-white">Nenhum post adicionado ainda</p>
                       <p className="text-purple-200 text-sm">Clique em "Adicionar Post" para começar</p>
