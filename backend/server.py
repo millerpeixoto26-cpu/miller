@@ -1063,12 +1063,12 @@ async def test_payment_gateway(
     }
 
 # APIs Instagram (Manual)
-@api_router.get("/instagram/profile", response_model=dict)
+@api_router.get("/instagram/profile")
 async def get_instagram_profile():
     """Retorna o perfil Instagram (público)"""
     profile = await db.instagram_profile.find_one({"is_active": True})
     if not profile:
-        return None
+        return {"message": "Perfil não encontrado", "profile": None}
     
     if "_id" in profile:
         del profile["_id"]
