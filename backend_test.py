@@ -460,6 +460,11 @@ def main():
     print("-" * 30)
     tester.test_admin_pedidos()
     
+    # Test Sales Dashboard
+    print("\n💰 SALES DASHBOARD TESTS")
+    print("-" * 30)
+    tester.test_sales_dashboard_comprehensive()
+    
     # Test Instagram API Integration
     print("\n📸 INSTAGRAM API INTEGRATION TESTS")
     print("-" * 40)
