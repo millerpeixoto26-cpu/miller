@@ -156,6 +156,18 @@ backend:
         agent: "backend_testing"
         comment: "Todos endpoints testados e funcionando: dashboard vendas, consultas, metas mensais, autenticação JWT validada, integração com dados existentes"
 
+  - task: "Sistema de Cupons e Indicações - Backend"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎫 SISTEMA DE CUPONS E INDICAÇÕES TESTADO COM SUCESSO TOTAL! Todos os 5 endpoints principais funcionando perfeitamente: 1) GET /api/admin/cupons: listagem de cupons funcionando ✅ 2) POST /api/admin/cupons: criação de cupons (percentual e valor fixo) funcionando, validação de código duplicado ✅ 3) POST /api/validar-cupom: validação pública de cupons funcionando, cálculo correto de descontos percentuais e fixos, validação de valor mínimo ✅ 4) POST /api/indicacao-amigo: criação de indicações funcionando, geração automática de códigos IND + envio WhatsApp ✅ 5) GET /api/admin/indicacoes: listagem de indicações funcionando ✅. TESTE ESPECÍFICO REALIZADO: Cupom PROMO20 criado com 20% desconto, validado corretamente (R$20 desconto em pedido R$100), validação de valor mínimo funcionando, indicação de amigo criada com código IND93511E11. Autenticação JWT obrigatória, estrutura de dados correta, integração com WhatsApp para notificações. Sistema 100% operacional!"
+
   - task: "Instagram Manual Integration (Existing)"
     implemented: true
     working: true
