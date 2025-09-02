@@ -260,6 +260,144 @@ class RitualsAPITester:
         """Test getting admin orders"""
         return self.run_test("Get Admin Orders", "GET", "admin/pedidos", 200)
 
+    def test_sales_dashboard_main(self):
+        """Test main sales dashboard endpoint"""
+        return self.run_test("Sales Dashboard Main", "GET", "admin/dashboard/vendas", 200, auth_required=True)
+
+    def test_sales_dashboard_consultas(self):
+        """Test sales dashboard consultas endpoint"""
+        return self.run_test("Sales Dashboard Consultas", "GET", "admin/dashboard/vendas/consultas", 200, auth_required=True)
+
+    def test_get_monthly_goal(self):
+        """Test getting monthly goal for current month"""
+        from datetime import date
+        hoje = date.today()
+        return self.run_test(f"Get Monthly Goal {hoje.month}/{hoje.year}", "GET", f"admin/metas/{hoje.month}/{hoje.year}", 200, auth_required=True)
+
+    def test_create_monthly_goal(self):
+        """Test creating/updating monthly goal"""
+        from datetime import date
+        hoje = date.today()
+        
+        goal_data = {
+            "mes": hoje.month,
+            "ano": hoje.year,
+            "valor_meta": 8000.0
+        }
+        
+        return self.run_test("Create/Update Monthly Goal", "POST", "admin/metas", 200, goal_data, auth_required=True)
+
+    def test_sales_dashboard_comprehensive(self):
+        """Comprehensive test of sales dashboard functionality"""
+        print("\n🎯 COMPREHENSIVE SALES DASHBOARD TEST")
+        print("-" * 50)
+        
+        # Test main dashboard
+        success, dashboard_data = self.test_sales_dashboard_main()
+        
+        if success and dashboard_data:
+            # Validate dashboard structure
+            required_keys = ['dia', 'mes', 'meta', 'periodo']
+            for key in required_keys:
+                if key in dashboard_data:
+                    print(f"   ✅ Dashboard has '{key}' section")
+                else:
+                    print(f"   ❌ Dashboard missing '{key}' section")
+            
+            # Check day statistics
+            if 'dia' in dashboard_data:
+                dia_data = dashboard_data['dia']
+                if 'rituais' in dia_data and 'consultas' in dia_data and 'total' in dia_data:
+                    print(f"   ✅ Day statistics complete")
+                    print(f"      Rituais hoje: {dia_data['rituais']['quantidade']} (R${dia_data['rituais']['faturamento']})")
+                    print(f"      Consultas hoje: {dia_data['consultas']['quantidade']} (R${dia_data['consultas']['faturamento']})")
+                    print(f"      Total hoje: {dia_data['total']['quantidade']} (R${dia_data['total']['faturamento']})")
+                else:
+                    print(f"   ❌ Day statistics incomplete")
+            
+            # Check month statistics
+            if 'mes' in dashboard_data:
+                mes_data = dashboard_data['mes']
+                if 'rituais' in mes_data and 'consultas' in mes_data and 'total' in mes_data:
+                    print(f"   ✅ Month statistics complete")
+                    print(f"      Rituais mês: {mes_data['rituais']['quantidade']} (R${mes_data['rituais']['faturamento']})")
+                    print(f"      Consultas mês: {mes_data['consultas']['quantidade']} (R${mes_data['consultas']['faturamento']})")
+                    print(f"      Total mês: {mes_data['total']['quantidade']} (R${mes_data['total']['faturamento']})")
+                else:
+                    print(f"   ❌ Month statistics incomplete")
+            
+            # Check goal information
+            if 'meta' in dashboard_data:
+                meta_data = dashboard_data['meta']
+                required_meta_keys = ['valor_meta', 'faturamento_atual', 'percentual_atingido', 'falta_para_meta']
+                meta_complete = all(key in meta_data for key in required_meta_keys)
+                
+                if meta_complete:
+                    print(f"   ✅ Goal information complete")
+                    print(f"      Meta: R${meta_data['valor_meta']}")
+                    print(f"      Faturamento atual: R${meta_data['faturamento_atual']}")
+                    print(f"      Percentual atingido: {meta_data['percentual_atingido']}%")
+                    print(f"      Falta para meta: R${meta_data['falta_para_meta']}")
+                    
+                    # Validate default goal of R$ 5,000
+                    if meta_data['valor_meta'] == 5000.0:
+                        print(f"   ✅ Default goal of R$ 5,000 correctly set")
+                    else:
+                        print(f"   ⚠️  Goal is R${meta_data['valor_meta']}, expected R$ 5,000 default")
+                else:
+                    print(f"   ❌ Goal information incomplete")
+            
+            # Check period information
+            if 'periodo' in dashboard_data:
+                periodo_data = dashboard_data['periodo']
+                if 'mes_nome' in periodo_data and 'ano' in periodo_data and 'dia_atual' in periodo_data:
+                    print(f"   ✅ Period information complete")
+                    print(f"      Período: {periodo_data['mes_nome']} {periodo_data['ano']}, dia {periodo_data['dia_atual']}")
+                else:
+                    print(f"   ❌ Period information incomplete")
+        
+        # Test consultas endpoint
+        print(f"\n   📋 Testing Consultas List:")
+        success_consultas, consultas_data = self.test_sales_dashboard_consultas()
+        
+        if success_consultas:
+            if isinstance(consultas_data, list):
+                print(f"   ✅ Consultas endpoint returns list with {len(consultas_data)} items")
+                if len(consultas_data) == 0:
+                    print(f"   ℹ️  No consultas found (expected for new system)")
+                else:
+                    # Check structure of first consulta if exists
+                    consulta = consultas_data[0]
+                    required_consulta_keys = ['id', 'tipo_consulta', 'titulo', 'preco', 'status_pagamento']
+                    if all(key in consulta for key in required_consulta_keys):
+                        print(f"   ✅ Consulta structure is correct")
+                    else:
+                        print(f"   ❌ Consulta structure incomplete")
+            else:
+                print(f"   ❌ Consultas endpoint should return a list")
+        
+        # Test monthly goal endpoints
+        print(f"\n   🎯 Testing Monthly Goals:")
+        success_get_goal, goal_data = self.test_get_monthly_goal()
+        
+        if success_get_goal and goal_data:
+            if 'valor_meta' in goal_data:
+                print(f"   ✅ Monthly goal retrieved: R${goal_data['valor_meta']}")
+            else:
+                print(f"   ❌ Monthly goal data incomplete")
+        
+        # Test creating/updating goal
+        success_create_goal, create_response = self.test_create_monthly_goal()
+        
+        if success_create_goal and create_response:
+            if 'message' in create_response and 'valor_meta' in create_response:
+                print(f"   ✅ Goal creation/update successful: {create_response['message']}")
+                print(f"      New goal value: R${create_response['valor_meta']}")
+            else:
+                print(f"   ❌ Goal creation response incomplete")
+        
+        return True
+
     def test_invalid_ritual_id(self):
         """Test getting non-existent ritual"""
         success, response = self.run_test("Get Invalid Ritual", "GET", "rituais/invalid-id", 404)
