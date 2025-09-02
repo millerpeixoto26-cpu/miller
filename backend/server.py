@@ -932,7 +932,7 @@ scheduler.add_job(
 
 scheduler.add_job(
     send_daily_report,
-    CronTrigger(hour=[12, 18, 22], minute=0),  # Às 12h, 18h e 22h
+    CronTrigger(hour='12,18,22', minute=0),  # Às 12h, 18h e 22h
     id='relatorio_diario',
     replace_existing=True
 )
