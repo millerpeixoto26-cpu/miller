@@ -1029,6 +1029,11 @@ def main():
     print("-" * 30)
     tester.test_scheduling_system_comprehensive()
     
+    # Test WhatsApp Business API
+    print("\n📱 WHATSAPP BUSINESS API TESTS")
+    print("-" * 40)
+    tester.test_whatsapp_system_comprehensive()
+    
     # Test Instagram API Integration
     print("\n📸 INSTAGRAM API INTEGRATION TESTS")
     print("-" * 40)
