@@ -16,6 +16,9 @@ import jwt
 from passlib.context import CryptContext
 import requests
 import secrets
+import asyncio
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import atexit
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
