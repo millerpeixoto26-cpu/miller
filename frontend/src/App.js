@@ -971,24 +971,25 @@ const AdminPanel = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 py-4 md:py-8 px-4">
       <div className="container mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-2">Painel Administrativo</h1>
-            <p className="text-purple-200">Gerencie pedidos, rituais e personalize o site</p>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 space-y-4 md:space-y-0">
+          <div className="text-center md:text-left">
+            <h1 className="text-2xl md:text-4xl font-bold text-white mb-2">Painel Administrativo</h1>
+            <p className="text-purple-200 text-sm md:text-base">Gerencie pedidos, rituais e personalize o site</p>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <p className="text-white font-medium">{user?.username}</p>
-              <p className="text-purple-200 text-sm">{user?.email}</p>
+          <div className="flex items-center space-x-3 md:space-x-4">
+            <div className="text-center md:text-right">
+              <p className="text-white font-medium text-sm md:text-base">{user?.username}</p>
+              <p className="text-purple-200 text-xs md:text-sm">{user?.email}</p>
             </div>
             <Button
               onClick={logout}
-              className="bg-red-600 hover:bg-red-700 text-white flex items-center space-x-2"
+              className="bg-red-600 hover:bg-red-700 text-white flex items-center space-x-1 md:space-x-2 px-3 py-2 text-sm"
             >
               <LogOut className="w-4 h-4" />
-              <span>Sair</span>
+              <span className="hidden sm:inline">Sair</span>
+              <span className="sm:hidden">Sair</span>
             </Button>
           </div>
         </div>
