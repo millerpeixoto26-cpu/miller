@@ -36,6 +36,10 @@ class Ritual(BaseModel):
     descricao: str
     preco: float
     imagem_url: Optional[str] = None
+    visivel: bool = True
+    tem_desconto: bool = False
+    desconto_valor: Optional[float] = None
+    desconto_percentual: Optional[float] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class RitualCreate(BaseModel):
@@ -43,6 +47,20 @@ class RitualCreate(BaseModel):
     descricao: str
     preco: float
     imagem_url: Optional[str] = None
+    visivel: bool = True
+    tem_desconto: bool = False
+    desconto_valor: Optional[float] = None
+    desconto_percentual: Optional[float] = None
+
+class RitualUpdate(BaseModel):
+    nome: Optional[str] = None
+    descricao: Optional[str] = None
+    preco: Optional[float] = None
+    imagem_url: Optional[str] = None
+    visivel: Optional[bool] = None
+    tem_desconto: Optional[bool] = None
+    desconto_valor: Optional[float] = None
+    desconto_percentual: Optional[float] = None
 
 class Cliente(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
