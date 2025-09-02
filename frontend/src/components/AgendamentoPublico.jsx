@@ -34,11 +34,8 @@ const AgendamentoPublico = () => {
   const [loading, setLoading] = useState(false);
   const [clienteData, setClienteData] = useState({
     nome_completo: '',
-    email: '',
     telefone: '',
-    nome_pessoa_amada: '',
-    data_nascimento: '',
-    informacoes_adicionais: ''
+    email: ''  // Opcional - será removido do required
   });
 
   useEffect(() => {
