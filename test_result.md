@@ -214,6 +214,7 @@ metadata:
 test_plan:
   current_focus: 
     - "Sistema de Agendamento - Frontend"
+    - "WhatsApp Business API - Frontend"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
