@@ -93,13 +93,29 @@ const Home = () => {
     );
   }
 
+  // Aplica cores personalizadas
+  const primaryColor = configuracao?.cores?.primary || "#8b5cf6";
+  const secondaryColor = configuracao?.cores?.secondary || "#ec4899";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen" style={{
+      background: `linear-gradient(to bottom right, ${primaryColor}dd, ${primaryColor}aa, ${secondaryColor}aa)`
+    }}>
       {/* Header */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative container mx-auto px-4 py-16 text-center">
           <div className="max-w-4xl mx-auto">
+            {configuracao?.logo_url && (
+              <div className="mb-8">
+                <img 
+                  src={configuracao.logo_url} 
+                  alt="Logo" 
+                  className="h-20 mx-auto object-contain"
+                  onError={(e) => e.target.style.display = 'none'}
+                />
+              </div>
+            )}
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight">
               Rituais Espirituais
             </h1>
