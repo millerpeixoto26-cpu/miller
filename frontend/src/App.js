@@ -1036,15 +1036,17 @@ const AdminPanel = () => {
             </TabsList>
           </div>
 
-          {/* Navigation - Mobile (Vertical Stack) */}
-          <div className="block md:hidden">
-            <div className="space-y-3 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
+          {/* Navigation - Mobile (Simpler Stack) */}
+          <div className="block md:hidden mb-6">
+            <TabsList className="flex flex-col w-full space-y-2 bg-white/10 backdrop-blur-sm p-3 rounded-lg h-auto">
               <TabsTrigger 
                 value="pedidos" 
-                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium min-h-[60px]"
+                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center justify-between px-4 py-4 text-sm font-medium"
               >
-                <Phone className="w-5 h-5 mr-3" />
-                <span className="flex-1 text-left">Pedidos</span>
+                <div className="flex items-center">
+                  <Phone className="w-5 h-5 mr-3" />
+                  <span>Pedidos</span>
+                </div>
                 <Badge className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
                   {pedidos.length}
                 </Badge>
@@ -1052,10 +1054,12 @@ const AdminPanel = () => {
               
               <TabsTrigger 
                 value="rituais" 
-                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium min-h-[60px]"
+                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center justify-between px-4 py-4 text-sm font-medium"
               >
-                <Sparkles className="w-5 h-5 mr-3" />
-                <span className="flex-1 text-left">Rituais</span>
+                <div className="flex items-center">
+                  <Sparkles className="w-5 h-5 mr-3" />
+                  <span>Rituais</span>
+                </div>
                 <Badge className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
                   {rituais.length}
                 </Badge>
@@ -1063,18 +1067,20 @@ const AdminPanel = () => {
               
               <TabsTrigger 
                 value="semana" 
-                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium min-h-[60px]"
+                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium"
               >
                 <Calendar className="w-5 h-5 mr-3" />
-                <span className="flex-1 text-left">Rituais da Semana</span>
+                <span>Rituais da Semana</span>
               </TabsTrigger>
               
               <TabsTrigger 
                 value="usuarios" 
-                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium min-h-[60px]"
+                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center justify-between px-4 py-4 text-sm font-medium"
               >
-                <Users className="w-5 h-5 mr-3" />
-                <span className="flex-1 text-left">Usuários</span>
+                <div className="flex items-center">
+                  <Users className="w-5 h-5 mr-3" />
+                  <span>Usuários</span>
+                </div>
                 <Badge className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
                   {usuarios.length}
                 </Badge>
@@ -1082,12 +1088,12 @@ const AdminPanel = () => {
               
               <TabsTrigger 
                 value="config" 
-                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium min-h-[60px]"
+                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium"
               >
                 <Settings className="w-5 h-5 mr-3" />
-                <span className="flex-1 text-left">Configurações</span>
+                <span>Configurações</span>
               </TabsTrigger>
-            </div>
+            </TabsList>
           </div>
 
           <TabsContent value="pedidos" className="mt-6">
