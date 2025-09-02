@@ -374,6 +374,134 @@ async def get_pedidos():
     
     return pedidos
 
+# APIs de Configuração
+@api_router.get("/config", response_model=dict)
+async def get_configuracao():
+    """Retorna as configurações do site"""
+    config = await db.configuracoes.find_one()
+    if not config:
+        # Cria configuração padrão se não existir
+        config_padrao = Configuracao()
+        await db.configuracoes.insert_one(config_padrao.dict())
+        return config_padrao.dict()
+    
+    # Remove o _id do MongoDB
+    if "_id" in config:
+        del config["_id"]
+    
+    return config
+
+@api_router.put("/config", response_model=dict)
+async def update_configuracao(config_update: ConfiguracaoUpdate):
+    """Atualiza as configurações do site"""
+    existing_config = await db.configuracoes.find_one()
+    
+    if not existing_config:
+        # Cria configuração padrão se não existir
+        config_padrao = Configuracao()
+        config_data = config_padrao.dict()
+    else:
+        config_data = existing_config
+    
+    # Atualiza apenas os campos fornecidos
+    update_data = config_update.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        config_data[key] = value
+    
+    # Atualiza no banco
+    await db.configuracoes.replace_one(
+        {"id": config_data.get("id")}, 
+        config_data, 
+        upsert=True
+    )
+    
+    # Remove o _id do MongoDB
+    if "_id" in config_data:
+        del config_data["_id"]
+    
+    return config_data
+
+# APIs de Rituais da Semana
+@api_router.get("/rituais-semana", response_model=List[dict])
+async def get_rituais_semana():
+    """Retorna os rituais configurados para cada dia da semana"""
+    rituais_semana = await db.rituais_semana.find({"ativo": True}).to_list(1000)
+    
+    # Remove o _id do MongoDB
+    for ritual in rituais_semana:
+        if "_id" in ritual:
+            del ritual["_id"]
+    
+    # Busca dados completos dos rituais
+    for rs in rituais_semana:
+        ritual = await db.rituais.find_one({"id": rs["ritual_id"]})
+        if not ritual:
+            # Verifica nos rituais padrão
+            ritual = next((r for r in RITUAIS_PADRAO if r["id"] == rs["ritual_id"]), None)
+        
+        if ritual and "_id" in ritual:
+            del ritual["_id"]
+        
+        rs["ritual"] = ritual
+    
+    return rituais_semana
+
+@api_router.post("/rituais-semana", response_model=dict)
+async def create_ritual_semana(ritual_semana: RitualSemanaCreate):
+    """Cria ou atualiza ritual da semana para um dia específico"""
+    # Remove ritual existente para o mesmo dia
+    await db.rituais_semana.delete_many({"dia_semana": ritual_semana.dia_semana})
+    
+    # Cria novo ritual da semana
+    ritual_dict = ritual_semana.dict()
+    ritual_obj = RitualSemana(**ritual_dict)
+    
+    await db.rituais_semana.insert_one(ritual_obj.dict())
+    
+    return ritual_obj.dict()
+
+@api_router.get("/rituais-semana/hoje", response_model=List[dict])
+async def get_rituais_hoje():
+    """Retorna os rituais de hoje baseado no dia da semana"""
+    from datetime import datetime
+    import locale
+    
+    # Mapeamento dos dias da semana
+    dias_semana = {
+        0: "segunda",  # Monday
+        1: "terca",    # Tuesday  
+        2: "quarta",   # Wednesday
+        3: "quinta",   # Thursday
+        4: "sexta",    # Friday
+        5: "sabado",   # Saturday
+        6: "domingo"   # Sunday
+    }
+    
+    hoje = datetime.now().weekday()
+    dia_hoje = dias_semana[hoje]
+    
+    rituais_hoje = await db.rituais_semana.find({
+        "dia_semana": dia_hoje, 
+        "ativo": True
+    }).to_list(1000)
+    
+    # Remove o _id do MongoDB e busca dados completos
+    for ritual in rituais_hoje:
+        if "_id" in ritual:
+            del ritual["_id"]
+        
+        # Busca dados completos do ritual
+        ritual_data = await db.rituais.find_one({"id": ritual["ritual_id"]})
+        if not ritual_data:
+            ritual_data = next((r for r in RITUAIS_PADRAO if r["id"] == ritual["ritual_id"]), None)
+        
+        if ritual_data and "_id" in ritual_data:
+            del ritual_data["_id"]
+        
+        ritual["ritual"] = ritual_data
+    
+    return rituais_hoje
+
 # Include the router in the main app
 app.include_router(api_router)
 
