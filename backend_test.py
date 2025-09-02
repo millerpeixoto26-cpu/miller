@@ -654,6 +654,321 @@ class RitualsAPITester:
             print("   ❌ Should have returned 404 for invalid ritual ID")
             return False, response
 
+    # ========== WHATSAPP BUSINESS API TESTS ==========
+    
+    def test_whatsapp_config_get(self):
+        """Test getting WhatsApp configuration"""
+        return self.run_test("Get WhatsApp Config", "GET", "admin/whatsapp/config", 200, auth_required=True)
+    
+    def test_whatsapp_config_post(self):
+        """Test saving WhatsApp configuration"""
+        config_data = {
+            "api_url": "https://api.whatsapp.business/v1",
+            "api_token": "test_whatsapp_token_12345",
+            "ativo": True
+        }
+        
+        return self.run_test("Save WhatsApp Config", "POST", "admin/whatsapp/config", 200, config_data, auth_required=True)
+    
+    def test_whatsapp_config_get_after_save(self):
+        """Test getting WhatsApp configuration after saving"""
+        success, response = self.run_test("Get WhatsApp Config (After Save)", "GET", "admin/whatsapp/config", 200, auth_required=True)
+        
+        if success and response:
+            # Check if configuration was saved correctly
+            if response.get('api_url') == 'https://api.whatsapp.business/v1':
+                print("   ✅ API URL saved correctly")
+            else:
+                print(f"   ❌ API URL mismatch: expected 'https://api.whatsapp.business/v1', got '{response.get('api_url')}'")
+            
+            if response.get('api_token') == '***':
+                print("   ✅ API Token properly masked in response")
+            else:
+                print(f"   ❌ API Token not masked: {response.get('api_token')}")
+            
+            if response.get('ativo') == True:
+                print("   ✅ Active status saved correctly")
+            else:
+                print(f"   ❌ Active status incorrect: {response.get('ativo')}")
+        
+        return success, response
+    
+    def test_whatsapp_templates_get(self):
+        """Test getting WhatsApp templates (should have 4 defaults)"""
+        success, response = self.run_test("Get WhatsApp Templates", "GET", "admin/whatsapp/templates", 200, auth_required=True)
+        
+        if success and response:
+            print(f"   Found {len(response)} WhatsApp templates")
+            
+            # Check for default templates
+            expected_templates = [
+                "confirmacao_ritual",
+                "confirmacao_consulta", 
+                "lembrete_consulta",
+                "relatorio_diario"
+            ]
+            
+            found_names = [t.get('nome') for t in response]
+            
+            for expected_name in expected_templates:
+                if expected_name in found_names:
+                    print(f"   ✅ Found default template: {expected_name}")
+                else:
+                    print(f"   ❌ Missing default template: {expected_name}")
+            
+            # Check template structure
+            if response:
+                template = response[0]
+                required_keys = ['id', 'nome', 'template', 'ativo', 'created_at']
+                if all(key in template for key in required_keys):
+                    print(f"   ✅ Template structure is correct")
+                else:
+                    print(f"   ❌ Template structure incomplete")
+                    
+                # Check if templates contain variables
+                template_content = template.get('template', '')
+                if '{nome}' in template_content:
+                    print(f"   ✅ Template contains variables (e.g., {{nome}})")
+                else:
+                    print(f"   ⚠️  Template may not contain expected variables")
+        
+        return success, response
+    
+    def test_whatsapp_templates_create(self):
+        """Test creating a new WhatsApp template"""
+        template_data = {
+            "nome": "template_teste",
+            "template": "🧪 Olá {nome}! Este é um template de teste criado automaticamente. Valor: {valor}",
+            "ativo": True
+        }
+        
+        return self.run_test("Create WhatsApp Template", "POST", "admin/whatsapp/templates", 200, template_data, auth_required=True)
+    
+    def test_whatsapp_templates_update(self, template_id):
+        """Test updating a WhatsApp template"""
+        update_data = {
+            "template": "🧪 Olá {nome}! Template ATUALIZADO via teste automatizado. Valor: {valor} ✨",
+            "ativo": True
+        }
+        
+        return self.run_test(f"Update WhatsApp Template {template_id}", "PUT", f"admin/whatsapp/templates/{template_id}", 200, update_data, auth_required=True)
+    
+    def test_whatsapp_templates_delete(self, template_id):
+        """Test deleting a WhatsApp template"""
+        return self.run_test(f"Delete WhatsApp Template {template_id}", "DELETE", f"admin/whatsapp/templates/{template_id}", 200, auth_required=True)
+    
+    def test_whatsapp_send_test(self):
+        """Test sending a test WhatsApp message"""
+        test_data = {
+            "phone_number": "+5511999887766",
+            "message": "🧪 Esta é uma mensagem de teste do sistema WhatsApp Business API! Enviada automaticamente pelo teste."
+        }
+        
+        # Use params for query parameters
+        return self.run_test("Send Test WhatsApp Message", "POST", "admin/whatsapp/send-test", 200, 
+                           params=test_data, auth_required=True)
+    
+    def test_whatsapp_messages_history(self):
+        """Test getting WhatsApp messages history"""
+        success, response = self.run_test("Get WhatsApp Messages History", "GET", "admin/whatsapp/messages", 200, auth_required=True)
+        
+        if success and response:
+            print(f"   Found {len(response)} WhatsApp messages in history")
+            
+            if isinstance(response, list):
+                print(f"   ✅ Messages history returns list format")
+                
+                if len(response) > 0:
+                    message = response[0]
+                    required_keys = ['id', 'to', 'message', 'status', 'created_at']
+                    if all(key in message for key in required_keys):
+                        print(f"   ✅ Message structure is correct")
+                        print(f"      Status: {message.get('status')}")
+                        print(f"      To: {message.get('to')}")
+                        print(f"      Message preview: {message.get('message', '')[:50]}...")
+                    else:
+                        print(f"   ❌ Message structure incomplete")
+                else:
+                    print(f"   ℹ️  No messages in history (expected for new system)")
+            else:
+                print(f"   ❌ Messages history should return a list")
+        
+        return success, response
+    
+    def test_whatsapp_templates_invalid_operations(self):
+        """Test invalid operations on WhatsApp templates"""
+        # Test updating non-existent template
+        update_data = {"template": "Test update"}
+        success_update, _ = self.run_test("Update Invalid Template", "PUT", "admin/whatsapp/templates/invalid-id", 404, 
+                                        update_data, auth_required=True)
+        
+        # Test deleting non-existent template  
+        success_delete, _ = self.run_test("Delete Invalid Template", "DELETE", "admin/whatsapp/templates/invalid-id", 404, 
+                                        auth_required=True)
+        
+        # Both should fail with 404
+        if not success_update and not success_delete:
+            print("   ✅ Correctly rejected operations on non-existent templates")
+            return True
+        else:
+            print("   ❌ Should have rejected operations on non-existent templates")
+            return False
+    
+    def test_whatsapp_unauthorized_access(self):
+        """Test accessing WhatsApp endpoints without authentication"""
+        # Temporarily remove auth token
+        original_token = self.auth_token
+        self.auth_token = None
+        
+        success, response = self.run_test("Unauthorized WhatsApp Access", "GET", "admin/whatsapp/config", 401, auth_required=False)
+        
+        # Restore auth token
+        self.auth_token = original_token
+        
+        # For this test, failure is expected (401 status)
+        if not success:
+            print("   ✅ Correctly rejected unauthorized access to WhatsApp endpoints")
+            return True, response
+        else:
+            print("   ❌ Should have rejected unauthorized access to WhatsApp endpoints")
+            return False, response
+    
+    def test_whatsapp_system_comprehensive(self):
+        """Comprehensive test of WhatsApp Business API system"""
+        print("\n📱 COMPREHENSIVE WHATSAPP BUSINESS API TEST")
+        print("-" * 50)
+        
+        # Test 1: Get initial config (should be empty initially)
+        print("\n   ⚙️  Configuration Tests:")
+        success_get_initial, initial_config = self.test_whatsapp_config_get()
+        
+        if success_get_initial:
+            if initial_config is None:
+                print("   ✅ Initial config is empty (as expected)")
+            else:
+                print(f"   ℹ️  Found existing config: {initial_config}")
+        
+        # Test 2: Save configuration
+        success_save_config, save_response = self.test_whatsapp_config_post()
+        
+        if success_save_config and save_response:
+            print("   ✅ WhatsApp configuration saved successfully")
+            
+            # Verify masked token
+            if save_response.get('api_token') == '***':
+                print("   ✅ API token properly masked in save response")
+            else:
+                print("   ❌ API token not masked in save response")
+        
+        # Test 3: Get config after saving
+        success_get_after, config_after = self.test_whatsapp_config_get_after_save()
+        
+        # Test 4: Get templates (should have 4 defaults)
+        print("\n   📝 Template Tests:")
+        success_templates, templates_data = self.test_whatsapp_templates_get()
+        
+        if success_templates and templates_data:
+            if len(templates_data) >= 4:
+                print(f"   ✅ Found {len(templates_data)} templates (expected 4+ defaults)")
+                
+                # Verify default templates content
+                for template in templates_data:
+                    template_name = template.get('nome', '')
+                    template_content = template.get('template', '')
+                    
+                    if template_name == 'confirmacao_ritual':
+                        if '🙏' in template_content and '{nome}' in template_content and '{ritual}' in template_content:
+                            print(f"   ✅ confirmacao_ritual template has correct structure")
+                        else:
+                            print(f"   ❌ confirmacao_ritual template structure incorrect")
+                    
+                    elif template_name == 'confirmacao_consulta':
+                        if '📅' in template_content and '{nome}' in template_content and '{consulta}' in template_content:
+                            print(f"   ✅ confirmacao_consulta template has correct structure")
+                        else:
+                            print(f"   ❌ confirmacao_consulta template structure incorrect")
+                    
+                    elif template_name == 'lembrete_consulta':
+                        if '⏰' in template_content and '{nome}' in template_content and '{consulta}' in template_content:
+                            print(f"   ✅ lembrete_consulta template has correct structure")
+                        else:
+                            print(f"   ❌ lembrete_consulta template structure incorrect")
+                    
+                    elif template_name == 'relatorio_diario':
+                        if '📊' in template_content and '{data}' in template_content and '{faturamento}' in template_content:
+                            print(f"   ✅ relatorio_diario template has correct structure")
+                        else:
+                            print(f"   ❌ relatorio_diario template structure incorrect")
+            else:
+                print(f"   ❌ Expected at least 4 default templates, found {len(templates_data)}")
+        
+        # Test 5: Create new template
+        print("\n   ➕ Template CRUD Tests:")
+        success_create, create_response = self.test_whatsapp_templates_create()
+        created_template_id = None
+        
+        if success_create and create_response:
+            created_template_id = create_response.get('id')
+            print(f"   ✅ Created test template with ID: {created_template_id}")
+            
+            # Test update
+            if created_template_id:
+                success_update, update_response = self.test_whatsapp_templates_update(created_template_id)
+                if success_update and update_response:
+                    print(f"   ✅ Updated template successfully")
+                    
+                    # Verify update
+                    updated_content = update_response.get('template', '')
+                    if 'ATUALIZADO' in updated_content:
+                        print(f"   ✅ Template content updated correctly")
+                    else:
+                        print(f"   ❌ Template content not updated")
+        
+        # Test 6: Send test message
+        print("\n   📤 Message Sending Tests:")
+        success_send, send_response = self.test_whatsapp_send_test()
+        
+        if success_send and send_response:
+            print("   ✅ Test message sent successfully")
+            
+            if 'message' in send_response:
+                print(f"      Response: {send_response['message']}")
+        
+        # Test 7: Get messages history
+        print("\n   📋 Message History Tests:")
+        success_history, history_data = self.test_whatsapp_messages_history()
+        
+        if success_history and history_data:
+            if len(history_data) > 0:
+                print(f"   ✅ Message history contains {len(history_data)} messages")
+                
+                # Check if our test message is there
+                test_message_found = any('teste do sistema WhatsApp' in msg.get('message', '') 
+                                       for msg in history_data)
+                if test_message_found:
+                    print(f"   ✅ Test message found in history")
+                else:
+                    print(f"   ⚠️  Test message not found in history (may be expected)")
+            else:
+                print(f"   ℹ️  No messages in history")
+        
+        # Test 8: Invalid operations
+        print("\n   ❌ Error Handling Tests:")
+        self.test_whatsapp_templates_invalid_operations()
+        
+        # Test 9: Unauthorized access
+        print("\n   🔒 Security Tests:")
+        self.test_whatsapp_unauthorized_access()
+        
+        # Clean up created test data
+        print("\n   🧹 Cleaning up test data:")
+        if created_template_id:
+            success_delete, _ = self.test_whatsapp_templates_delete(created_template_id)
+            if success_delete:
+                print(f"   ✅ Deleted test template")
+        
+        return True
+
 def main():
     print("🚀 Starting Rituais API Testing...")
     print("=" * 60)
