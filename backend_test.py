@@ -163,6 +163,8 @@ class RitualsAPITester:
         else:
             print("   ❌ Should have rejected unauthorized access")
             return False, response
+
+    def test_root_endpoint(self):
         """Test root API endpoint"""
         return self.run_test("Root API", "GET", "", 200)
 
