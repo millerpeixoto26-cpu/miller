@@ -283,6 +283,15 @@ def main():
     print("-" * 30)
     tester.test_root_endpoint()
     
+    # Test authentication
+    print("\n🔐 AUTHENTICATION TESTS")
+    print("-" * 30)
+    auth_success = tester.authenticate_admin()
+    
+    if not auth_success:
+        print("❌ Authentication failed - skipping admin tests")
+        return 1
+    
     # Test rituais endpoints
     print("\n🔮 RITUAIS ENDPOINTS")
     print("-" * 30)
@@ -312,6 +321,41 @@ def main():
     print("\n👨‍💼 ADMIN TESTS")
     print("-" * 30)
     tester.test_admin_pedidos()
+    
+    # Test Instagram API Integration
+    print("\n📸 INSTAGRAM API INTEGRATION TESTS")
+    print("-" * 40)
+    
+    # Test unauthorized access first
+    tester.test_unauthorized_access()
+    
+    # Test getting initial config (should be empty)
+    print("\n   📋 Configuration Tests:")
+    tester.test_instagram_api_config_get()
+    
+    # Test saving configuration
+    tester.test_instagram_api_config_post()
+    
+    # Test getting config after saving
+    tester.test_instagram_api_config_get_after_save()
+    
+    # Test connection status (should be not connected initially)
+    print("\n   🔗 Connection Tests:")
+    tester.test_instagram_api_status()
+    
+    # Test connect endpoint (should generate OAuth URL after config)
+    tester.test_instagram_api_connect()
+    
+    # Test sync without connection (should fail)
+    print("\n   🔄 Sync Tests:")
+    tester.test_instagram_api_sync_without_connection()
+    
+    # Test sync history
+    tester.test_instagram_api_sync_history()
+    
+    # Test disconnect
+    print("\n   ❌ Disconnect Tests:")
+    tester.test_instagram_api_disconnect()
     
     # Print final results
     print("\n" + "=" * 60)
