@@ -2644,6 +2644,422 @@ async def get_whatsapp_messages(
     
     return messages
 
+# APIs para Sistema de Cupons
+@api_router.get("/admin/cupons")
+async def get_cupons(current_user: User = Depends(get_current_active_user)):
+    """Retorna todos os cupons"""
+    cupons = await db.cupons.find().sort("created_at", -1).to_list(1000)
+    
+    for cupom in cupons:
+        if "_id" in cupom:
+            del cupom["_id"]
+    
+    return cupons
+
+@api_router.post("/admin/cupons")
+async def create_cupom(
+    cupom_data: CupomCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Cria um novo cupom"""
+    # Verificar se código já existe
+    existing = await db.cupons.find_one({"codigo": cupom_data.codigo})
+    if existing:
+        raise HTTPException(status_code=400, detail="Código do cupom já existe")
+    
+    cupom_dict = cupom_data.dict()
+    cupom_obj = Cupom(**cupom_dict)
+    
+    await db.cupons.insert_one(cupom_obj.dict())
+    
+    return {"message": "Cupom criado com sucesso", "id": cupom_obj.id}
+
+@api_router.put("/admin/cupons/{cupom_id}")
+async def update_cupom(
+    cupom_id: str,
+    cupom_update: dict,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Atualiza um cupom"""
+    result = await db.cupons.update_one(
+        {"id": cupom_id},
+        {"$set": cupom_update}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Cupom não encontrado")
+    
+    return {"message": "Cupom atualizado com sucesso"}
+
+@api_router.delete("/admin/cupons/{cupom_id}")
+async def delete_cupom(
+    cupom_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Remove um cupom"""
+    result = await db.cupons.delete_one({"id": cupom_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Cupom não encontrado")
+    
+    return {"message": "Cupom removido com sucesso"}
+
+@api_router.post("/validar-cupom")
+async def validar_cupom(codigo: str, valor_pedido: float = 0):
+    """Valida cupom (público) - simplificado sem auth"""
+    cupom = await db.cupons.find_one({
+        "codigo": codigo,
+        "ativo": True
+    })
+    
+    if not cupom:
+        raise HTTPException(status_code=404, detail="Cupom não encontrado ou inativo")
+    
+    # Verificar data
+    now = datetime.now(timezone.utc)
+    if now < cupom["data_inicio"] or now > cupom["data_fim"]:
+        raise HTTPException(status_code=400, detail="Cupom expirado ou ainda não válido")
+    
+    # Verificar uso máximo
+    if cupom.get("uso_maximo") and cupom["uso_atual"] >= cupom["uso_maximo"]:
+        raise HTTPException(status_code=400, detail="Cupom esgotado")
+    
+    # Verificar valor mínimo
+    if cupom.get("valor_minimo") and valor_pedido < cupom["valor_minimo"]:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Valor mínimo para este cupom: R$ {cupom['valor_minimo']:.2f}"
+        )
+    
+    # Calcular desconto
+    if cupom["tipo"] == "percentual":
+        desconto = valor_pedido * (cupom["percentual_desconto"] / 100)
+    else:
+        desconto = cupom["valor_desconto"]
+    
+    return {
+        "valido": True,
+        "desconto": desconto,
+        "tipo": cupom["tipo"],
+        "descricao": cupom["descricao"]
+    }
+
+# APIs para Programa de Fidelidade
+@api_router.get("/admin/fidelidade/{cliente_id}")
+async def get_fidelidade_cliente(
+    cliente_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Retorna dados de fidelidade de um cliente"""
+    fidelidade = await db.programa_fidelidade.find_one({"cliente_id": cliente_id})
+    if not fidelidade:
+        # Criar programa para cliente se não existir
+        fidelidade_obj = ProgramaFidelidade(cliente_id=cliente_id)
+        await db.programa_fidelidade.insert_one(fidelidade_obj.dict())
+        fidelidade = fidelidade_obj.dict()
+    
+    if "_id" in fidelidade:
+        del fidelidade["_id"]
+    
+    return fidelidade
+
+@api_router.post("/admin/fidelidade/{cliente_id}/add-consulta")
+async def add_consulta_fidelidade(
+    cliente_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Adiciona consulta ao programa de fidelidade"""
+    fidelidade = await db.programa_fidelidade.find_one({"cliente_id": cliente_id})
+    
+    if not fidelidade:
+        fidelidade_obj = ProgramaFidelidade(cliente_id=cliente_id)
+        await db.programa_fidelidade.insert_one(fidelidade_obj.dict())
+        fidelidade = fidelidade_obj.dict()
+    
+    # Incrementar consultas realizadas
+    new_consultas = fidelidade["consultas_realizadas"] + 1
+    consultas_gratis = fidelidade["consultas_gratis_disponiveis"]
+    
+    # A cada 10 consultas, ganha uma grátis
+    if new_consultas % 10 == 0:
+        consultas_gratis += 1
+    
+    await db.programa_fidelidade.update_one(
+        {"cliente_id": cliente_id},
+        {
+            "$set": {
+                "consultas_realizadas": new_consultas,
+                "consultas_gratis_disponiveis": consultas_gratis,
+                "updated_at": datetime.now(timezone.utc)
+            }
+        }
+    )
+    
+    return {
+        "message": "Consulta adicionada ao programa de fidelidade",
+        "consultas_realizadas": new_consultas,
+        "consultas_gratis_disponiveis": consultas_gratis,
+        "proxima_gratis": 10 - (new_consultas % 10)
+    }
+
+# APIs para Indicação de Amigos
+@api_router.post("/indicacao-amigo")
+async def create_indicacao(indicacao_data: IndicacaoCreate, cliente_id: str):
+    """Cria indicação de amigo (público)"""
+    # Gerar código único
+    codigo_indicacao = f"IND{secrets.token_hex(4).upper()}"
+    
+    indicacao_obj = IndicacaoAmigo(
+        cliente_indicador_id=cliente_id,
+        nome_indicado=indicacao_data.nome_indicado,
+        telefone_indicado=indicacao_data.telefone_indicado,
+        codigo_indicacao=codigo_indicacao
+    )
+    
+    await db.indicacoes_amigo.insert_one(indicacao_obj.dict())
+    
+    # Enviar WhatsApp para amigo indicado
+    message = f"""🎁 Você foi indicado por um amigo!
+
+Use o código *{codigo_indicacao}* e ganhe 20% de desconto na sua primeira consulta espiritual!
+
+Link para agendar: [SEU_SITE]
+
+Válido por 30 dias. ✨"""
+    
+    await send_whatsapp_message(indicacao_data.telefone_indicado, message)
+    
+    return {
+        "message": "Indicação criada com sucesso",
+        "codigo": codigo_indicacao
+    }
+
+@api_router.get("/admin/indicacoes")
+async def get_indicacoes(current_user: User = Depends(get_current_active_user)):
+    """Retorna todas as indicações"""
+    indicacoes = await db.indicacoes_amigo.find().sort("created_at", -1).to_list(1000)
+    
+    for indicacao in indicacoes:
+        if "_id" in indicacao:
+            del indicacao["_id"]
+    
+    return indicacoes
+
+# APIs para Backup do Sistema
+@api_router.get("/admin/backups")
+async def get_backups(current_user: User = Depends(get_current_active_user)):
+    """Lista todos os backups"""
+    backups = await db.backups_sistema.find().sort("created_at", -1).to_list(100)
+    
+    for backup in backups:
+        if "_id" in backup:
+            del backup["_id"]
+    
+    return backups
+
+@api_router.post("/admin/backups/create")
+async def create_backup_manual(current_user: User = Depends(get_current_active_user)):
+    """Cria backup manual do sistema"""
+    backup_obj = BackupSistema(
+        tipo="manual",
+        status="em_progresso"
+    )
+    
+    result = await db.backups_sistema.insert_one(backup_obj.dict())
+    backup_id = backup_obj.id
+    
+    try:
+        # Simular criação de backup (implementar lógica real aqui)
+        import json
+        from pathlib import Path
+        
+        # Criar diretório de backups
+        backup_dir = Path("/app/backups")
+        backup_dir.mkdir(exist_ok=True)
+        
+        # Nome do arquivo
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_filename = f"backup_manual_{timestamp}.json"
+        backup_path = backup_dir / backup_filename
+        
+        # Coletar dados (simplificado)
+        backup_data = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "tipo": "manual",
+            "collections": {}
+        }
+        
+        # Exportar coleções principais
+        collections_to_backup = [
+            "clientes", "rituais", "pedidos", "consultas", "tipos_consulta",
+            "configuracao", "usuarios", "cupons", "programa_fidelidade"
+        ]
+        
+        for collection_name in collections_to_backup:
+            try:
+                collection = getattr(db, collection_name)
+                documents = await collection.find({}).to_list(10000)
+                # Converter ObjectId para string se necessário
+                for doc in documents:
+                    if "_id" in doc:
+                        del doc["_id"]
+                backup_data["collections"][collection_name] = documents
+            except Exception as e:
+                logger.warning(f"Erro ao fazer backup da coleção {collection_name}: {e}")
+        
+        # Salvar arquivo
+        with open(backup_path, 'w', encoding='utf-8') as f:
+            json.dump(backup_data, f, ensure_ascii=False, indent=2, default=str)
+        
+        # Obter tamanho do arquivo
+        file_size = backup_path.stat().st_size
+        
+        # Atualizar status do backup
+        await db.backups_sistema.update_one(
+            {"id": backup_id},
+            {
+                "$set": {
+                    "status": "concluido",
+                    "arquivo_path": str(backup_path),
+                    "tamanho_bytes": file_size,
+                    "completed_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        return {
+            "message": "Backup criado com sucesso",
+            "backup_id": backup_id,
+            "arquivo": backup_filename,
+            "tamanho_mb": round(file_size / 1024 / 1024, 2)
+        }
+        
+    except Exception as e:
+        # Atualizar com erro
+        await db.backups_sistema.update_one(
+            {"id": backup_id},
+            {
+                "$set": {
+                    "status": "falhou",
+                    "erro_mensagem": str(e),
+                    "completed_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        raise HTTPException(status_code=500, detail=f"Erro ao criar backup: {str(e)}")
+
+# APIs para Avaliações
+@api_router.post("/avaliacoes")
+async def create_avaliacao(avaliacao_data: AvaliacaoCreate):
+    """Cria avaliação (público)"""
+    # Verificar se consulta existe
+    consulta = await db.consultas.find_one({"id": avaliacao_data.consulta_id})
+    if not consulta:
+        raise HTTPException(status_code=404, detail="Consulta não encontrada")
+    
+    # Verificar se já existe avaliação
+    existing = await db.avaliacoes.find_one({"consulta_id": avaliacao_data.consulta_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Consulta já avaliada")
+    
+    avaliacao_obj = Avaliacao(
+        consulta_id=avaliacao_data.consulta_id,
+        cliente_id=consulta["cliente_id"],
+        nota=avaliacao_data.nota,
+        comentario=avaliacao_data.comentario,
+        recomendaria=avaliacao_data.recomendaria
+    )
+    
+    await db.avaliacoes.insert_one(avaliacao_obj.dict())
+    
+    return {"message": "Avaliação criada com sucesso"}
+
+@api_router.get("/admin/avaliacoes")
+async def get_avaliacoes(current_user: User = Depends(get_current_active_user)):
+    """Retorna todas as avaliações"""
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "clientes",
+                "localField": "cliente_id", 
+                "foreignField": "id",
+                "as": "cliente"
+            }
+        },
+        {
+            "$lookup": {
+                "from": "consultas",
+                "localField": "consulta_id",
+                "foreignField": "id", 
+                "as": "consulta"
+            }
+        },
+        {
+            "$unwind": "$cliente"
+        },
+        {
+            "$unwind": "$consulta"
+        },
+        {
+            "$sort": {"created_at": -1}
+        }
+    ]
+    
+    avaliacoes = await db.avaliacoes.aggregate(pipeline).to_list(1000)
+    
+    for avaliacao in avaliacoes:
+        if "_id" in avaliacao:
+            del avaliacao["_id"]
+        if "_id" in avaliacao.get("cliente", {}):
+            del avaliacao["cliente"]["_id"]
+        if "_id" in avaliacao.get("consulta", {}):
+            del avaliacao["consulta"]["_id"]
+    
+    return avaliacoes
+
+@api_router.get("/avaliacoes/publicas")
+async def get_avaliacoes_publicas(limit: int = 6):
+    """Retorna avaliações para exibir na homepage"""
+    pipeline = [
+        {
+            "$match": {
+                "nota": {"$gte": 4},  # Apenas 4-5 estrelas
+                "comentario": {"$ne": None},  # Com comentário
+                "comentario": {"$ne": ""}
+            }
+        },
+        {
+            "$lookup": {
+                "from": "clientes",
+                "localField": "cliente_id",
+                "foreignField": "id", 
+                "as": "cliente"
+            }
+        },
+        {
+            "$unwind": "$cliente"
+        },
+        {
+            "$sort": {"created_at": -1}
+        },
+        {
+            "$limit": limit
+        }
+    ]
+    
+    avaliacoes = await db.avaliacoes.aggregate(pipeline).to_list(limit)
+    
+    # Processar para homepage (manter apenas dados necessários)
+    avaliacoes_publicas = []
+    for avaliacao in avaliacoes:
+        avaliacoes_publicas.append({
+            "nota": avaliacao["nota"],
+            "comentario": avaliacao["comentario"],
+            "cliente_nome": avaliacao["cliente"]["nome_completo"].split()[0],  # Apenas primeiro nome
+            "data": avaliacao["created_at"]
+        })
+    
+    return avaliacoes_publicas
+
 # Configuração CORS
 app.add_middleware(
     CORSMiddleware,
