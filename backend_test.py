@@ -1514,14 +1514,18 @@ class RitualsAPITester:
     def test_update_site_content(self, content_id):
         """Test updating site content"""
         update_data = {
+            "secao": "teste",  # Required field
             "titulo": "Conteúdo de Teste ATUALIZADO",
             "subtitulo": "Subtítulo atualizado via teste automatizado",
             "conteudo_html": "<p>Este conteúdo foi <strong>ATUALIZADO</strong> pelo teste automatizado.</p>",
+            "imagem_url": "/uploads/test-image-updated.jpg",
             "configuracoes": {
                 "mostrar_botao": True,
                 "texto_botao": "Clique Aqui",
                 "cor_botao": "#EC4899"
-            }
+            },
+            "ativo": True,
+            "ordem": 1
         }
         
         return self.run_test(f"Update Site Content {content_id}", "PUT", f"admin/site-content/{content_id}", 200, update_data, auth_required=True)
