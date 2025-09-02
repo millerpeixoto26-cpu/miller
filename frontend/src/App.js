@@ -790,6 +790,9 @@ const AdminPanel = () => {
   const [gateways, setGateways] = useState([]);
   const [instagramProfile, setInstagramProfile] = useState(null);
   const [instagramPosts, setInstagramPosts] = useState([]);
+  const [instagramApiConfig, setInstagramApiConfig] = useState(null);
+  const [instagramApiStatus, setInstagramApiStatus] = useState(null);
+  const [instagramSyncHistory, setInstagramSyncHistory] = useState([]);
   const [configuracao, setConfiguracao] = useState(null);
   const [rituaisSemana, setRituaisSemana] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -842,6 +845,9 @@ const AdminPanel = () => {
     fetchGateways();
     fetchInstagramProfile();
     fetchInstagramPosts();
+    fetchInstagramApiConfig();
+    fetchInstagramApiStatus();
+    fetchInstagramSyncHistory();
     fetchConfiguracao();
     fetchRituaisSemana();
   }, []);
