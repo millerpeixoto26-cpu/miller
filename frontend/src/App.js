@@ -996,7 +996,7 @@ const AdminPanel = () => {
 
             <div className="grid md:grid-cols-2 gap-6">
               {rituais.map((ritual) => (
-                <Card key={ritual.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <Card key={ritual.id} className={`bg-white/10 border-purple-300/30 backdrop-blur-sm ${!ritual.visivel ? 'opacity-60' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
@@ -1004,11 +1004,39 @@ const AdminPanel = () => {
                           {getIconForRitual(ritual.nome)}
                         </div>
                         <div>
-                          <CardTitle className="text-white text-lg">{ritual.nome}</CardTitle>
-                          <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
-                            R$ {ritual.preco.toFixed(2)}
-                          </Badge>
+                          <div className="flex items-center space-x-2">
+                            <CardTitle className="text-white text-lg">{ritual.nome}</CardTitle>
+                            {!ritual.visivel && <EyeOff className="w-4 h-4 text-gray-400" />}
+                            {ritual.visivel && <Eye className="w-4 h-4 text-green-400" />}
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
+                              R$ {ritual.preco.toFixed(2)}
+                            </Badge>
+                            {ritual.tem_desconto && (
+                              <Badge className="bg-red-500/20 text-red-300 border-red-400/30">
+                                {ritual.desconto_percentual ? `${ritual.desconto_percentual}% OFF` : 
+                                 ritual.desconto_valor ? `R$ ${ritual.desconto_valor.toFixed(2)} OFF` : 'DESCONTO'}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleEditRitual(ritual)}
+                          className="bg-blue-600 hover:bg-blue-700 p-2"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleDeleteRitual(ritual.id)}
+                          className="bg-red-600 hover:bg-red-700 p-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </CardHeader>
