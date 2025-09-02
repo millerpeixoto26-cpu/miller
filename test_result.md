@@ -106,7 +106,7 @@ user_problem_statement: Sistema de venda de rituais espirituais com painel admin
 
 backend:
   - task: "Instagram API Integration - Models and Endpoints"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "/app/backend/server.py"
     stuck_count: 0
@@ -115,7 +115,7 @@ backend:
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Iniciando implementação da integração com Instagram API. Adicionando novos modelos Pydantic e endpoints para conectar conta Instagram via OAuth2."
+        comment: "Implementação concluída. Adicionados novos modelos Pydantic (InstagramApiConfig, InstagramApiToken, InstagramApiSync) e endpoints OAuth2 completos: /api/admin/instagram/api/config, /api/admin/instagram/api/connect, /api/admin/instagram/api/callback, /api/admin/instagram/api/status, /api/admin/instagram/api/sync, /api/admin/instagram/api/disconnect, /api/admin/instagram/api/sync/history"
 
   - task: "Instagram Manual Integration (Existing)"
     implemented: true
