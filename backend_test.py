@@ -398,6 +398,245 @@ class RitualsAPITester:
         
         return True
 
+    # ========== SCHEDULING SYSTEM TESTS ==========
+    
+    def test_get_admin_tipos_consulta(self):
+        """Test getting all consultation types (admin)"""
+        return self.run_test("Get Admin Tipos Consulta", "GET", "admin/tipos-consulta", 200, auth_required=True)
+    
+    def test_get_public_tipos_consulta(self):
+        """Test getting active consultation types (public)"""
+        return self.run_test("Get Public Tipos Consulta", "GET", "tipos-consulta", 200)
+    
+    def test_create_tipo_consulta(self):
+        """Test creating a new consultation type"""
+        tipo_data = {
+            "nome": "Consulta de Teste",
+            "descricao": "Consulta criada para teste automatizado",
+            "preco": 150.0,
+            "duracao_minutos": 90,
+            "cor_tema": "#ff6b6b",
+            "ativo": True,
+            "ordem": 10
+        }
+        return self.run_test("Create Tipo Consulta", "POST", "admin/tipos-consulta", 200, tipo_data, auth_required=True)
+    
+    def test_update_tipo_consulta(self, tipo_id):
+        """Test updating a consultation type"""
+        update_data = {
+            "preco": 175.0,
+            "descricao": "Consulta atualizada via teste automatizado"
+        }
+        return self.run_test(f"Update Tipo Consulta {tipo_id}", "PUT", f"admin/tipos-consulta/{tipo_id}", 200, update_data, auth_required=True)
+    
+    def test_delete_tipo_consulta(self, tipo_id):
+        """Test deleting a consultation type"""
+        return self.run_test(f"Delete Tipo Consulta {tipo_id}", "DELETE", f"admin/tipos-consulta/{tipo_id}", 200, auth_required=True)
+    
+    def test_get_admin_horarios_disponiveis(self):
+        """Test getting all available schedules (admin)"""
+        return self.run_test("Get Admin Horarios Disponiveis", "GET", "admin/horarios-disponiveis", 200, auth_required=True)
+    
+    def test_create_horario_disponivel(self):
+        """Test creating a new available schedule"""
+        horario_data = {
+            "dia_semana": 5,  # Saturday
+            "hora_inicio": "10:00",
+            "hora_fim": "16:00",
+            "intervalo_minutos": 60,
+            "ativo": True
+        }
+        return self.run_test("Create Horario Disponivel", "POST", "admin/horarios-disponiveis", 200, horario_data, auth_required=True)
+    
+    def test_update_horario_disponivel(self, horario_id):
+        """Test updating an available schedule"""
+        update_data = {
+            "hora_fim": "17:00",
+            "intervalo_minutos": 90
+        }
+        return self.run_test(f"Update Horario Disponivel {horario_id}", "PUT", f"admin/horarios-disponiveis/{horario_id}", 200, update_data, auth_required=True)
+    
+    def test_delete_horario_disponivel(self, horario_id):
+        """Test deleting an available schedule"""
+        return self.run_test(f"Delete Horario Disponivel {horario_id}", "DELETE", f"admin/horarios-disponiveis/{horario_id}", 200, auth_required=True)
+    
+    def test_get_horarios_disponiveis_data(self, data):
+        """Test getting available times for a specific date"""
+        return self.run_test(f"Get Horarios for {data}", "GET", f"horarios-disponiveis/{data}", 200)
+    
+    def test_create_agendamento_publico(self):
+        """Test creating a public appointment"""
+        from datetime import datetime, timedelta
+        
+        # Use a future date
+        future_date = datetime.now() + timedelta(days=7)
+        future_date_str = future_date.strftime("%Y-%m-%dT10:00:00")
+        
+        agendamento_data = {
+            "consulta": {
+                "tipo_consulta_id": "test_tipo_id",  # Will be replaced with actual ID
+                "data_agendada": future_date_str,
+                "observacoes": "Agendamento de teste automatizado"
+            },
+            "cliente": {
+                "nome_completo": "Maria Silva Santos",
+                "email": "maria.santos@email.com",
+                "telefone": "(11) 98765-4321",
+                "nome_pessoa_amada": "João Carlos",
+                "data_nascimento": "1985-03-15",
+                "informacoes_adicionais": "Cliente de teste para agendamento"
+            }
+        }
+        return self.run_test("Create Agendamento Publico", "POST", "agendamento", 200, agendamento_data)
+    
+    def test_confirmar_consulta(self, session_id):
+        """Test confirming a consultation after payment"""
+        confirm_data = {
+            "session_id": session_id
+        }
+        return self.run_test("Confirmar Consulta", "POST", "consultas/confirmar", 200, confirm_data)
+    
+    def test_update_consulta_status(self, consulta_id):
+        """Test updating consultation status"""
+        status_data = {
+            "status": "confirmada",
+            "link_reuniao": "https://meet.google.com/test-meeting"
+        }
+        return self.run_test(f"Update Consulta Status {consulta_id}", "PUT", f"admin/consultas/{consulta_id}/status", 200, status_data, auth_required=True)
+    
+    def test_get_agenda_dia(self, data):
+        """Test getting day's agenda"""
+        return self.run_test(f"Get Agenda {data}", "GET", f"admin/consultas/agenda/{data}", 200, auth_required=True)
+    
+    def test_scheduling_system_comprehensive(self):
+        """Comprehensive test of the scheduling system"""
+        print("\n📅 COMPREHENSIVE SCHEDULING SYSTEM TEST")
+        print("-" * 50)
+        
+        # Test 1: Get admin consultation types (should have 3 defaults)
+        print("\n   📋 Testing Admin Consultation Types:")
+        success, tipos_admin = self.test_get_admin_tipos_consulta()
+        
+        if success and tipos_admin:
+            print(f"   ✅ Found {len(tipos_admin)} consultation types")
+            
+            # Check for default types
+            expected_types = [
+                {"nome": "Tarot", "preco": 80.0},
+                {"nome": "Mapa Astral", "preco": 120.0},
+                {"nome": "Consulta Espiritual", "preco": 100.0}
+            ]
+            
+            for expected in expected_types:
+                found = any(t.get('nome') == expected['nome'] and t.get('preco') == expected['preco'] 
+                          for t in tipos_admin)
+                if found:
+                    print(f"   ✅ Found default type: {expected['nome']} (R${expected['preco']})")
+                else:
+                    print(f"   ❌ Missing default type: {expected['nome']} (R${expected['preco']})")
+        
+        # Test 2: Get public consultation types
+        print("\n   🌐 Testing Public Consultation Types:")
+        success_public, tipos_public = self.test_get_public_tipos_consulta()
+        
+        if success_public and tipos_public:
+            active_count = len([t for t in tipos_public if t.get('ativo', True)])
+            print(f"   ✅ Found {active_count} active consultation types for public")
+        
+        # Test 3: Create new consultation type
+        print("\n   ➕ Testing CRUD Operations for Consultation Types:")
+        success_create, create_response = self.test_create_tipo_consulta()
+        created_tipo_id = None
+        
+        if success_create and create_response:
+            created_tipo_id = create_response.get('id')
+            print(f"   ✅ Created consultation type with ID: {created_tipo_id}")
+            
+            # Test update
+            if created_tipo_id:
+                success_update, update_response = self.test_update_tipo_consulta(created_tipo_id)
+                if success_update:
+                    print(f"   ✅ Updated consultation type successfully")
+        
+        # Test 4: Get admin available schedules (should have Mon-Fri 9h-18h defaults)
+        print("\n   ⏰ Testing Admin Available Schedules:")
+        success_horarios, horarios_admin = self.test_get_admin_horarios_disponiveis()
+        
+        if success_horarios and horarios_admin:
+            print(f"   ✅ Found {len(horarios_admin)} schedule configurations")
+            
+            # Check for weekday schedules (0-4 = Mon-Fri)
+            weekdays_found = [h for h in horarios_admin if h.get('dia_semana') in [0, 1, 2, 3, 4]]
+            if len(weekdays_found) >= 5:
+                print(f"   ✅ Found weekday schedules (Mon-Fri)")
+            else:
+                print(f"   ⚠️  Expected 5 weekday schedules, found {len(weekdays_found)}")
+            
+            # Check for 9h-18h schedule
+            business_hours = [h for h in horarios_admin 
+                            if h.get('hora_inicio') == '09:00' and h.get('hora_fim') == '18:00']
+            if business_hours:
+                print(f"   ✅ Found business hours schedule (9h-18h)")
+            else:
+                print(f"   ⚠️  No 9h-18h schedule found")
+        
+        # Test 5: Create new schedule
+        print("\n   ➕ Testing CRUD Operations for Schedules:")
+        success_create_horario, create_horario_response = self.test_create_horario_disponivel()
+        created_horario_id = None
+        
+        if success_create_horario and create_horario_response:
+            created_horario_id = create_horario_response.get('id')
+            print(f"   ✅ Created schedule with ID: {created_horario_id}")
+            
+            # Test update
+            if created_horario_id:
+                success_update_horario, update_horario_response = self.test_update_horario_disponivel(created_horario_id)
+                if success_update_horario:
+                    print(f"   ✅ Updated schedule successfully")
+        
+        # Test 6: Get available times for a specific date
+        print("\n   📅 Testing Available Times for Specific Date:")
+        from datetime import datetime, timedelta
+        
+        # Test with a future weekday
+        future_date = datetime.now() + timedelta(days=7)
+        while future_date.weekday() >= 5:  # Skip weekends
+            future_date += timedelta(days=1)
+        
+        date_str = future_date.strftime("%Y-%m-%d")
+        success_times, available_times = self.test_get_horarios_disponiveis_data(date_str)
+        
+        if success_times and available_times:
+            print(f"   ✅ Found {len(available_times)} available time slots for {date_str}")
+            if available_times:
+                first_slot = available_times[0]
+                print(f"      First slot: {first_slot}")
+        
+        # Test 7: Get day's agenda
+        print("\n   📋 Testing Day's Agenda:")
+        success_agenda, agenda_data = self.test_get_agenda_dia(date_str)
+        
+        if success_agenda:
+            if isinstance(agenda_data, list):
+                print(f"   ✅ Day's agenda retrieved: {len(agenda_data)} appointments")
+            else:
+                print(f"   ✅ Day's agenda retrieved (empty)")
+        
+        # Clean up created test data
+        print("\n   🧹 Cleaning up test data:")
+        if created_tipo_id:
+            success_delete_tipo, _ = self.test_delete_tipo_consulta(created_tipo_id)
+            if success_delete_tipo:
+                print(f"   ✅ Deleted test consultation type")
+        
+        if created_horario_id:
+            success_delete_horario, _ = self.test_delete_horario_disponivel(created_horario_id)
+            if success_delete_horario:
+                print(f"   ✅ Deleted test schedule")
+        
+        return True
+
     def test_invalid_ritual_id(self):
         """Test getting non-existent ritual"""
         success, response = self.run_test("Get Invalid Ritual", "GET", "rituais/invalid-id", 404)
