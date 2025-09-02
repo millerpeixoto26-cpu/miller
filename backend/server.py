@@ -250,6 +250,48 @@ class InstagramApiSync(BaseModel):
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
 
+# Modelos para Consultas/Agendamentos
+class Consulta(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    cliente_id: str
+    tipo_consulta: str  # "tarot", "mapa_astral", "consulta_espiritual", etc
+    titulo: str
+    descricao: str
+    preco: float
+    data_agendada: datetime
+    duracao_minutos: int = 60
+    status: str = "agendada"  # "agendada", "confirmada", "realizada", "cancelada"
+    status_pagamento: str = "paid"  # "pending", "paid", "failed"
+    observacoes: Optional[str] = None
+    link_reuniao: Optional[str] = None
+    session_id: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ConsultaCreate(BaseModel):
+    tipo_consulta: str
+    titulo: str
+    descricao: str
+    preco: float
+    data_agendada: datetime
+    duracao_minutos: int = 60
+    observacoes: Optional[str] = None
+
+# Modelos para Dashboard de Vendas
+class MetaMensal(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    mes: int  # 1-12
+    ano: int
+    valor_meta: float
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class MetaMensalCreate(BaseModel):
+    mes: int
+    ano: int
+    valor_meta: float
+
+class MetaMensalUpdate(BaseModel):
+    valor_meta: float
+
 class InstagramProfileCreate(BaseModel):
     username: str
     display_name: str
