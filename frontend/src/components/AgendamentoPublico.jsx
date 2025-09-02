@@ -360,7 +360,7 @@ const AgendamentoPublico = () => {
                 <div>
                   <Label htmlFor="email" className="text-white flex items-center">
                     <Mail className="w-4 h-4 mr-2" />
-                    E-mail
+                    E-mail (Opcional)
                   </Label>
                   <Input
                     id="email"
@@ -368,52 +368,11 @@ const AgendamentoPublico = () => {
                     value={clienteData.email}
                     onChange={(e) => handleClienteDataChange('email', e.target.value)}
                     className="bg-white/5 border-purple-300/30 text-white"
-                    placeholder="seu@email.com"
-                    required
+                    placeholder="seu@email.com (opcional)"
                   />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="nome_pessoa_amada" className="text-white flex items-center">
-                      <Heart className="w-4 h-4 mr-2" />
-                      Nome da Pessoa Amada
-                    </Label>
-                    <Input
-                      id="nome_pessoa_amada"
-                      value={clienteData.nome_pessoa_amada}
-                      onChange={(e) => handleClienteDataChange('nome_pessoa_amada', e.target.value)}
-                      className="bg-white/5 border-purple-300/30 text-white"
-                      placeholder="Nome da pessoa"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="data_nascimento" className="text-white flex items-center">
-                      <CalendarDays className="w-4 h-4 mr-2" />
-                      Data de Nascimento
-                    </Label>
-                    <Input
-                      id="data_nascimento"
-                      type="date"
-                      value={clienteData.data_nascimento}
-                      onChange={(e) => handleClienteDataChange('data_nascimento', e.target.value)}
-                      className="bg-white/5 border-purple-300/30 text-white"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="informacoes_adicionais" className="text-white">
-                    Informações Adicionais (Opcional)
-                  </Label>
-                  <Textarea
-                    id="informacoes_adicionais"
-                    value={clienteData.informacoes_adicionais}
-                    onChange={(e) => handleClienteDataChange('informacoes_adicionais', e.target.value)}
-                    className="bg-white/5 border-purple-300/30 text-white"
-                    placeholder="Alguma informação que gostaria de compartilhar..."
-                    rows={3}
-                  />
+                  <p className="text-purple-300 text-xs mt-1">
+                    Opcional - usado apenas para confirmações por email
+                  </p>
                 </div>
 
                 <div className="flex gap-4">
