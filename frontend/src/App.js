@@ -1411,72 +1411,323 @@ const AdminPanel = () => {
           </div>
 
           <TabsContent value="pedidos" className="mt-6">
-            <div className="grid gap-6">
-              {pedidos.length === 0 ? (
-                <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm p-8">
-                  <div className="text-center">
-                    <h3 className="text-xl font-semibold text-white mb-2">Nenhum pedido encontrado</h3>
-                    <p className="text-purple-200">Aguardando novos pedidos...</p>
-                  </div>
-                </Card>
-              ) : (
-                pedidos.map((pedido) => (
-                  <Card key={pedido.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
+            <div className="space-y-6">
+              {/* Dashboard de Vendas */}
+              {dashboardVendas && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  {/* Vendas do Dia */}
+                  <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-blue-400/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <CardTitle className="text-white text-xl">{pedido.cliente.nome_completo}</CardTitle>
-                          <CardDescription className="text-purple-200">
-                            Ritual: {pedido.ritual.nome} • R$ {pedido.valor_total.toFixed(2)}
-                          </CardDescription>
+                          <p className="text-blue-200 text-sm font-medium">Vendas Hoje</p>
+                          <p className="text-2xl font-bold text-white">{dashboardVendas.dia.total.quantidade}</p>
+                          <p className="text-blue-300 text-sm">R$ {dashboardVendas.dia.total.faturamento.toFixed(2)}</p>
                         </div>
-                        <Badge className="bg-green-500/20 text-green-300 border-green-400/30">
-                          Pago
-                        </Badge>
+                        <Calendar className="w-8 h-8 text-blue-400" />
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <p className="text-purple-200 text-sm">Email:</p>
-                          <p className="text-white">{pedido.cliente.email}</p>
-                        </div>
-                        <div>
-                          <p className="text-purple-200 text-sm">WhatsApp:</p>
-                          <p className="text-white">{pedido.cliente.telefone}</p>
-                        </div>
-                        <div>
-                          <p className="text-purple-200 text-sm">Pessoa Amada:</p>
-                          <p className="text-white">{pedido.cliente.nome_pessoa_amada}</p>
-                        </div>
-                        <div>
-                          <p className="text-purple-200 text-sm">Data de Nascimento:</p>
-                          <p className="text-white">{pedido.cliente.data_nascimento}</p>
-                        </div>
+                      <div className="mt-2 text-xs text-blue-200">
+                        Rituais: {dashboardVendas.dia.rituais.quantidade} | Consultas: {dashboardVendas.dia.consultas.quantidade}
                       </div>
-                      
-                      {pedido.cliente.informacoes_adicionais && (
-                        <div className="mb-4">
-                          <p className="text-purple-200 text-sm">Informações Adicionais:</p>
-                          <p className="text-white bg-black/20 p-3 rounded-lg">{pedido.cliente.informacoes_adicionais}</p>
-                        </div>
-                      )}
+                    </CardContent>
+                  </Card>
 
-                      <Button
-                        onClick={() => abrirWhatsApp(
-                          pedido.cliente.telefone,
-                          pedido.cliente.nome_completo,
-                          pedido.ritual.nome
-                        )}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+                  {/* Vendas do Mês */}
+                  <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border-purple-400/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-purple-200 text-sm font-medium">Vendas {dashboardVendas.periodo.mes_nome}</p>
+                          <p className="text-2xl font-bold text-white">{dashboardVendas.mes.total.quantidade}</p>
+                          <p className="text-purple-300 text-sm">R$ {dashboardVendas.mes.total.faturamento.toFixed(2)}</p>
+                        </div>
+                        <CreditCard className="w-8 h-8 text-purple-400" />
+                      </div>
+                      <div className="mt-2 text-xs text-purple-200">
+                        Rituais: {dashboardVendas.mes.rituais.quantidade} | Consultas: {dashboardVendas.mes.consultas.quantidade}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Meta do Mês */}
+                  <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 border-green-400/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-green-200 text-sm font-medium">Meta {dashboardVendas.periodo.mes_nome}</p>
+                          <p className="text-2xl font-bold text-white">{dashboardVendas.meta.percentual_atingido}%</p>
+                          <p className="text-green-300 text-sm">R$ {dashboardVendas.meta.valor_meta.toFixed(2)}</p>
+                        </div>
+                        <div className="w-8 h-8 text-green-400">
+                          <Star className="w-8 h-8" />
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <div className="w-full bg-green-900/30 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${Math.min(dashboardVendas.meta.percentual_atingido, 100)}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-green-200 mt-1">
+                          Falta: R$ {dashboardVendas.meta.falta_para_meta.toFixed(2)}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Configurar Meta */}
+                  <Card className="bg-gradient-to-br from-orange-500/10 to-orange-600/10 border-orange-400/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-orange-200 text-sm font-medium">Configurar</p>
+                          <p className="text-lg font-bold text-white">Meta</p>
+                          <p className="text-orange-300 text-sm">{dashboardVendas.periodo.mes_nome}/{dashboardVendas.periodo.ano}</p>
+                        </div>
+                        <Settings className="w-8 h-8 text-orange-400" />
+                      </div>
+                      <Button 
+                        onClick={() => setShowMetaForm(true)}
+                        className="w-full mt-2 bg-orange-600 hover:bg-orange-700 text-xs py-1"
                       >
-                        <Phone className="w-4 h-4" />
-                        Contatar via WhatsApp
+                        Alterar Meta
                       </Button>
                     </CardContent>
                   </Card>
-                ))
+                </div>
               )}
+
+              {/* Modal para alterar meta */}
+              {showMetaForm && dashboardVendas && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm w-full max-w-md">
+                    <CardHeader>
+                      <CardTitle className="text-white">Configurar Meta Mensal</CardTitle>
+                      <CardDescription className="text-purple-200">
+                        {dashboardVendas.periodo.mes_nome} de {dashboardVendas.periodo.ano}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.target);
+                        const valorMeta = formData.get('valor_meta');
+                        handleUpdateMeta(
+                          dashboardVendas.periodo.mes_nome === 'January' ? 1 : 
+                          dashboardVendas.periodo.mes_nome === 'February' ? 2 :
+                          dashboardVendas.periodo.mes_nome === 'March' ? 3 :
+                          dashboardVendas.periodo.mes_nome === 'April' ? 4 :
+                          dashboardVendas.periodo.mes_nome === 'May' ? 5 :
+                          dashboardVendas.periodo.mes_nome === 'June' ? 6 :
+                          dashboardVendas.periodo.mes_nome === 'July' ? 7 :
+                          dashboardVendas.periodo.mes_nome === 'August' ? 8 :
+                          dashboardVendas.periodo.mes_nome === 'September' ? 9 :
+                          dashboardVendas.periodo.mes_nome === 'October' ? 10 :
+                          dashboardVendas.periodo.mes_nome === 'November' ? 11 : 12,
+                          dashboardVendas.periodo.ano,
+                          valorMeta
+                        );
+                      }} className="space-y-4">
+                        <div>
+                          <Label htmlFor="valor_meta" className="text-white">Valor da Meta (R$)</Label>
+                          <Input
+                            id="valor_meta"
+                            name="valor_meta"
+                            type="number"
+                            step="0.01"
+                            defaultValue={dashboardVendas.meta.valor_meta}
+                            className="bg-white/5 border-purple-300/30 text-white"
+                            required
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button type="submit" className="bg-green-600 hover:bg-green-700 flex-1">
+                            Salvar Meta
+                          </Button>
+                          <Button 
+                            type="button" 
+                            onClick={() => setShowMetaForm(false)}
+                            className="bg-gray-600 hover:bg-gray-700 flex-1"
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      </form>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Abas para Rituais e Consultas */}
+              <Tabs defaultValue="rituais" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-white/10 backdrop-blur-sm p-1 rounded-lg">
+                  <TabsTrigger 
+                    value="rituais" 
+                    className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Rituais Vendidos ({pedidos.length})
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="consultas" 
+                    className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Consultas Agendadas ({consultasVendas.length})
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="rituais" className="mt-6">
+                  <div className="grid gap-6">
+                    {pedidos.length === 0 ? (
+                      <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm p-8">
+                        <div className="text-center">
+                          <h3 className="text-xl font-semibold text-white mb-2">Nenhum ritual vendido</h3>
+                          <p className="text-purple-200">Aguardando novos pedidos...</p>
+                        </div>
+                      </Card>
+                    ) : (
+                      pedidos.map((pedido) => (
+                        <Card key={pedido.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                          <CardHeader>
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <CardTitle className="text-white text-xl">{pedido.cliente.nome_completo}</CardTitle>
+                                <CardDescription className="text-purple-200">
+                                  Ritual: {pedido.ritual.nome} • R$ {pedido.valor_total.toFixed(2)}
+                                </CardDescription>
+                              </div>
+                              <Badge className="bg-green-500/20 text-green-300 border-green-400/30">
+                                Pago
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <p className="text-purple-200 text-sm">Email:</p>
+                                <p className="text-white">{pedido.cliente.email}</p>
+                              </div>
+                              <div>
+                                <p className="text-purple-200 text-sm">WhatsApp:</p>
+                                <p className="text-white">{pedido.cliente.telefone}</p>
+                              </div>
+                              <div>
+                                <p className="text-purple-200 text-sm">Pessoa Amada:</p>
+                                <p className="text-white">{pedido.cliente.nome_pessoa_amada}</p>
+                              </div>
+                              <div>
+                                <p className="text-purple-200 text-sm">Data de Nascimento:</p>
+                                <p className="text-white">{pedido.cliente.data_nascimento}</p>
+                              </div>
+                            </div>
+                            
+                            {pedido.cliente.informacoes_adicionais && (
+                              <div className="mb-4">
+                                <p className="text-purple-200 text-sm">Informações Adicionais:</p>
+                                <p className="text-white bg-black/20 p-3 rounded-lg">{pedido.cliente.informacoes_adicionais}</p>
+                              </div>
+                            )}
+
+                            <Button
+                              onClick={() => abrirWhatsApp(
+                                pedido.cliente.telefone,
+                                pedido.cliente.nome_completo,
+                                pedido.ritual.nome
+                              )}
+                              className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+                            >
+                              <Phone className="w-4 h-4" />
+                              Contatar via WhatsApp
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="consultas" className="mt-6">
+                  <div className="grid gap-6">
+                    {consultasVendas.length === 0 ? (
+                      <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm p-8">
+                        <div className="text-center">
+                          <h3 className="text-xl font-semibold text-white mb-2">Nenhuma consulta agendada</h3>
+                          <p className="text-purple-200">Quando houver consultas pagas, aparecerão aqui...</p>
+                        </div>
+                      </Card>
+                    ) : (
+                      consultasVendas.map((consulta) => (
+                        <Card key={consulta.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                          <CardHeader>
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <CardTitle className="text-white text-xl">{consulta.cliente.nome_completo}</CardTitle>
+                                <CardDescription className="text-purple-200">
+                                  {consulta.titulo} • R$ {consulta.preco.toFixed(2)}
+                                </CardDescription>
+                              </div>
+                              <div className="flex gap-2">
+                                <Badge className={`text-xs ${
+                                  consulta.status === 'realizada' ? 'bg-green-500/20 text-green-300 border-green-400/30' :
+                                  consulta.status === 'confirmada' ? 'bg-blue-500/20 text-blue-300 border-blue-400/30' :
+                                  consulta.status === 'agendada' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30' :
+                                  'bg-red-500/20 text-red-300 border-red-400/30'
+                                }`}>
+                                  {consulta.status}
+                                </Badge>
+                                <Badge className="bg-green-500/20 text-green-300 border-green-400/30">
+                                  Pago
+                                </Badge>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <p className="text-purple-200 text-sm">Tipo:</p>
+                                <p className="text-white capitalize">{consulta.tipo_consulta.replace('_', ' ')}</p>
+                              </div>
+                              <div>
+                                <p className="text-purple-200 text-sm">Data Agendada:</p>
+                                <p className="text-white">{new Date(consulta.data_agendada).toLocaleString('pt-BR')}</p>
+                              </div>
+                              <div>
+                                <p className="text-purple-200 text-sm">Duração:</p>
+                                <p className="text-white">{consulta.duracao_minutos} minutos</p>
+                              </div>
+                              <div>
+                                <p className="text-purple-200 text-sm">WhatsApp:</p>
+                                <p className="text-white">{consulta.cliente.telefone}</p>
+                              </div>
+                            </div>
+                            
+                            {consulta.observacoes && (
+                              <div className="mb-4">
+                                <p className="text-purple-200 text-sm">Observações:</p>
+                                <p className="text-white bg-black/20 p-3 rounded-lg">{consulta.observacoes}</p>
+                              </div>
+                            )}
+
+                            <Button
+                              onClick={() => abrirWhatsApp(
+                                consulta.cliente.telefone,
+                                consulta.cliente.nome_completo,
+                                `consulta de ${consulta.tipo_consulta.replace('_', ' ')}`
+                              )}
+                              className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+                            >
+                              <Phone className="w-4 h-4" />
+                              Contatar para Consulta
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           </TabsContent>
 
