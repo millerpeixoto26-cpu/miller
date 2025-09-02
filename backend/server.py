@@ -229,6 +229,37 @@ async def create_ritual(ritual: RitualCreate):
     await db.rituais.insert_one(ritual_dict)
     return ritual_dict
 
+@api_router.put("/rituais/{ritual_id}", response_model=dict)
+async def update_ritual(ritual_id: str, ritual_update: RitualUpdate):
+    """Atualiza um ritual existente"""
+    existing_ritual = await db.rituais.find_one({"id": ritual_id})
+    if not existing_ritual:
+        raise HTTPException(status_code=404, detail="Ritual não encontrado")
+    
+    # Atualiza apenas os campos fornecidos
+    update_data = ritual_update.dict(exclude_unset=True)
+    
+    # Atualiza no banco
+    await db.rituais.update_one(
+        {"id": ritual_id},
+        {"$set": update_data}
+    )
+    
+    # Busca e retorna o ritual atualizado
+    updated_ritual = await db.rituais.find_one({"id": ritual_id})
+    if "_id" in updated_ritual:
+        del updated_ritual["_id"]
+    
+    return updated_ritual
+
+@api_router.delete("/rituais/{ritual_id}")
+async def delete_ritual(ritual_id: str):
+    """Remove um ritual"""
+    result = await db.rituais.delete_one({"id": ritual_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Ritual não encontrado")
+    return {"message": "Ritual removido com sucesso"}
+
 @api_router.get("/rituais/{ritual_id}", response_model=dict)
 async def get_ritual(ritual_id: str):
     """Retorna um ritual específico"""
