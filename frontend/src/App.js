@@ -475,6 +475,13 @@ const AdminPanel = () => {
     }
   };
 
+  const getIconForRitual = (nome) => {
+    if (nome.toLowerCase().includes("amarração")) return <Heart className="w-6 h-6" />;
+    if (nome.toLowerCase().includes("proteção")) return <Shield className="w-6 h-6" />;
+    if (nome.toLowerCase().includes("desamarre")) return <Sparkles className="w-6 h-6" />;
+    return <Star className="w-6 h-6" />;
+  };
+
   const abrirWhatsApp = (telefone, nomeCliente, nomeRitual) => {
     const numero = telefone.replace(/\D/g, "");
     const mensagem = encodeURIComponent(
