@@ -817,6 +817,11 @@ const AdminPanel = () => {
   const [showAddHorario, setShowAddHorario] = useState(false);
   const [editingTipoConsulta, setEditingTipoConsulta] = useState(null);
   const [editingHorario, setEditingHorario] = useState(null);
+  const [whatsappConfig, setWhatsappConfig] = useState(null);
+  const [whatsappTemplates, setWhatsappTemplates] = useState([]);
+  const [whatsappMessages, setWhatsappMessages] = useState([]);
+  const [showAddTemplate, setShowAddTemplate] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
   const [configuracao, setConfiguracao] = useState(null);
   const [rituaisSemana, setRituaisSemana] = useState([]);
   const [loading, setLoading] = useState(true);
