@@ -1841,11 +1841,31 @@ async def create_default_instagram_config():
         await db.instagram_api_config.insert_one(default_config.dict())
         print("✅ Configuração padrão do Instagram API criada")
 
+# Função para criar meta padrão do mês atual
+async def create_default_meta_mensal():
+    from datetime import date
+    hoje = date.today()
+    
+    meta_exists = await db.metas_mensais.find_one({
+        "mes": hoje.month,
+        "ano": hoje.year
+    })
+    
+    if not meta_exists:
+        meta_padrao = MetaMensal(
+            mes=hoje.month,
+            ano=hoje.year,
+            valor_meta=5000.0  # Meta padrão de R$ 5.000
+        )
+        await db.metas_mensais.insert_one(meta_padrao.dict())
+        print(f"✅ Meta padrão criada para {hoje.month}/{hoje.year}: R$ 5.000")
+
 @app.on_event("startup")
 async def startup_event():
     await create_default_admin()
     await create_default_gateways()
     await create_default_instagram_config()
+    await create_default_meta_mensal()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
