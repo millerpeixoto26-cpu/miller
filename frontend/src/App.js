@@ -13,6 +13,7 @@ import { Switch } from "./components/ui/switch";
 import { Loader2, Heart, Shield, Sparkles, Star, Phone, Settings, Palette, Layout, Calendar, Edit, Trash2, Eye, EyeOff, LogOut, Users, CreditCard, TestTube, Instagram, Image, Plus } from "lucide-react";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
+import AgendamentosTab from "./components/AgendamentosTab";
 import "./App.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
