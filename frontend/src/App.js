@@ -1743,6 +1743,13 @@ const AdminPanel = () => {
                 WhatsApp
               </TabsTrigger>
               <TabsTrigger 
+                value="editor" 
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
+              >
+                <Paintbrush className="w-4 h-4 mr-1" />
+                Editor de Site
+              </TabsTrigger>
+              <TabsTrigger 
                 value="instagram" 
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
               >
