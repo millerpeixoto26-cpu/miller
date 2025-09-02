@@ -420,10 +420,20 @@ const FormularioCliente = ({ sessionId }) => {
 // Componente para Admin Panel
 const AdminPanel = () => {
   const [pedidos, setPedidos] = useState([]);
+  const [rituais, setRituais] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("pedidos");
+  const [showAddRitual, setShowAddRitual] = useState(false);
+  const [novoRitual, setNovoRitual] = useState({
+    nome: "",
+    descricao: "",
+    preco: "",
+    imagem_url: ""
+  });
 
   useEffect(() => {
     fetchPedidos();
+    fetchRituais();
   }, []);
 
   const fetchPedidos = async () => {
@@ -435,6 +445,33 @@ const AdminPanel = () => {
       toast.error("Erro ao carregar pedidos");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRituais = async () => {
+    try {
+      const response = await axios.get(`${API}/rituais`);
+      setRituais(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar rituais:", error);
+      toast.error("Erro ao carregar rituais");
+    }
+  };
+
+  const handleAddRitual = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/rituais`, {
+        ...novoRitual,
+        preco: parseFloat(novoRitual.preco)
+      });
+      toast.success("Ritual adicionado com sucesso!");
+      setShowAddRitual(false);
+      setNovoRitual({ nome: "", descricao: "", preco: "", imagem_url: "" });
+      fetchRituais();
+    } catch (error) {
+      console.error("Erro ao adicionar ritual:", error);
+      toast.error("Erro ao adicionar ritual");
     }
   };
 
