@@ -411,6 +411,90 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Seção Instagram */}
+      {instagramProfile && instagramProfile.is_active && (
+        <div className="container mx-auto px-4 py-16 bg-black/10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-white mb-4">Siga-nos no Instagram</h2>
+              <p className="text-purple-200 text-lg">Acompanhe nosso trabalho e transformações</p>
+            </div>
+            
+            {/* Perfil */}
+            <div className="flex flex-col md:flex-row items-center justify-center mb-12 space-y-6 md:space-y-0 md:space-x-8">
+              <div className="flex-shrink-0">
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-300/30 bg-gray-700">
+                  <img 
+                    src={instagramProfile.profile_image_url} 
+                    alt={instagramProfile.display_name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><circle cx="64" cy="64" r="64" fill="%23374151"/><text x="64" y="64" text-anchor="middle" dominant-baseline="central" fill="white" font-family="Arial" font-size="16">Foto</text></svg>';
+                    }}
+                  />
+                </div>
+              </div>
+              
+              <div className="text-center md:text-left max-w-md">
+                <h3 className="text-2xl font-bold text-white mb-2">@{instagramProfile.username}</h3>
+                <h4 className="text-xl text-purple-200 mb-3">{instagramProfile.display_name}</h4>
+                <p className="text-purple-100 mb-4 leading-relaxed">{instagramProfile.bio}</p>
+                {instagramProfile.followers_count && (
+                  <p className="text-purple-300 text-sm mb-4">
+                    {instagramProfile.followers_count.toLocaleString()} seguidores
+                  </p>
+                )}
+                <a
+                  href={instagramProfile.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105"
+                >
+                  <Instagram className="w-5 h-5 mr-2" />
+                  Seguir no Instagram
+                </a>
+              </div>
+            </div>
+
+            {/* Posts */}
+            {instagramPosts.length > 0 && (
+              <div>
+                <h3 className="text-2xl font-bold text-white text-center mb-8">Últimos Posts</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {instagramPosts.slice(0, 6).map((post) => (
+                    <div key={post.id} className="group">
+                      <div className="aspect-square rounded-xl overflow-hidden bg-gray-700 relative">
+                        <img 
+                          src={post.image_url} 
+                          alt={post.caption}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          onError={(e) => {
+                            e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><rect width="300" height="300" fill="%23374151"/><text x="150" y="150" text-anchor="middle" dominant-baseline="central" fill="white" font-family="Arial" font-size="16">Imagem não encontrada</text></svg>';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                          <p className="text-white text-sm text-center px-4 line-clamp-3">
+                            {post.caption}
+                          </p>
+                        </div>
+                        {post.post_url && (
+                          <a
+                            href={post.post_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="absolute inset-0 z-10"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <div className="border-t border-purple-700/30 py-8">
         <div className="container mx-auto px-4 text-center">
