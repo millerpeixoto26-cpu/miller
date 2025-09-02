@@ -1245,7 +1245,7 @@ async def get_instagram_api_config(current_user: User = Depends(get_current_acti
     
     return config
 
-@api_router.post("/admin/instagram/api/config", response_model=dict)
+@api_router.post("/admin/instagram/api/config")
 async def create_or_update_instagram_api_config(
     config_data: InstagramApiConfigCreate,
     current_user: User = Depends(get_current_active_user)
