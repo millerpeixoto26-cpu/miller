@@ -2656,6 +2656,67 @@ async def create_default_horarios():
         
         print("✅ Horários padrão criados (Segunda a Sexta: 9h-18h)")
 
+# Função para criar templates padrão do WhatsApp
+async def create_default_whatsapp_templates():
+    templates_existentes = await db.whatsapp_templates.count_documents({})
+    if templates_existentes == 0:
+        templates_padrao = [
+            WhatsAppTemplate(
+                nome="confirmacao_ritual",
+                template="""🙏 Olá {nome}!
+
+Seu ritual *{ritual}* foi confirmado com sucesso!
+Valor: {valor}
+
+Em breve entraremos em contato para dar andamento.
+
+Gratidão! ✨""",
+                ativo=True
+            ),
+            WhatsAppTemplate(
+                nome="confirmacao_consulta", 
+                template="""📅 Olá {nome}!
+
+Sua *{consulta}* foi agendada com sucesso!
+
+📅 Data: {data}
+💰 Valor: {valor}
+
+Por favor, esteja disponível no horário marcado.
+
+Namastê! 🙏""",
+                ativo=True
+            ),
+            WhatsAppTemplate(
+                nome="lembrete_consulta",
+                template="""⏰ Lembrete: {nome}
+
+Sua {consulta} está agendada para hoje às {horario}.
+
+Estarei aguardando você!
+
+🙏 Namastê!""",
+                ativo=True
+            ),
+            WhatsAppTemplate(
+                nome="relatorio_diario",
+                template="""📊 Relatório do Dia - {data}
+
+💰 Vendas: R$ {faturamento}
+📅 Consultas: {consultas_total}
+✅ Realizadas: {consultas_realizadas}
+⏳ Pendentes: {consultas_pendentes}
+
+{detalhes}""",
+                ativo=True
+            )
+        ]
+        
+        for template in templates_padrao:
+            await db.whatsapp_templates.insert_one(template.dict())
+        
+        print("✅ Templates padrão do WhatsApp criados")
+
 @app.on_event("startup")
 async def startup_event():
     await create_default_admin()
@@ -2664,6 +2725,7 @@ async def startup_event():
     await create_default_meta_mensal()
     await create_default_tipos_consulta()
     await create_default_horarios()
+    await create_default_whatsapp_templates()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
