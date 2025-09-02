@@ -1184,6 +1184,91 @@ const AdminPanel = () => {
     }
   };
 
+  const fetchCupons = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/cupons`);
+      setCupons(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar cupons:", error);
+    }
+  };
+
+  const fetchBackups = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/backups`);
+      setBackups(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar backups:", error);
+    }
+  };
+
+  const fetchAvaliacoes = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/avaliacoes`);
+      setAvaliacoes(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar avaliações:", error);
+    }
+  };
+
+  const handleAddCupom = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData(e.target);
+      const cupomData = {
+        codigo: formData.get('codigo'),
+        descricao: formData.get('descricao'),
+        tipo: formData.get('tipo'),
+        valor_desconto: parseFloat(formData.get('valor_desconto')),
+        percentual_desconto: formData.get('tipo') === 'percentual' ? parseFloat(formData.get('percentual_desconto')) : null,
+        valor_minimo: parseFloat(formData.get('valor_minimo')) || null,
+        data_inicio: new Date(formData.get('data_inicio')).toISOString(),
+        data_fim: new Date(formData.get('data_fim')).toISOString(),
+        uso_maximo: parseInt(formData.get('uso_maximo')) || null,
+        ativo: formData.get('ativo') === 'on'
+      };
+
+      if (editingCupom) {
+        await axios.put(`${API}/admin/cupons/${editingCupom.id}`, cupomData);
+        toast.success("Cupom atualizado com sucesso!");
+        setEditingCupom(null);
+      } else {
+        await axios.post(`${API}/admin/cupons`, cupomData);
+        toast.success("Cupom criado com sucesso!");
+      }
+      
+      setShowAddCupom(false);
+      fetchCupons();
+    } catch (error) {
+      console.error("Erro ao salvar cupom:", error);
+      toast.error(error.response?.data?.detail || "Erro ao salvar cupom");
+    }
+  };
+
+  const handleDeleteCupom = async (cupomId) => {
+    if (window.confirm("Tem certeza que deseja excluir este cupom?")) {
+      try {
+        await axios.delete(`${API}/admin/cupons/${cupomId}`);
+        toast.success("Cupom excluído com sucesso!");
+        fetchCupons();
+      } catch (error) {
+        console.error("Erro ao excluir cupom:", error);
+        toast.error("Erro ao excluir cupom");
+      }
+    }
+  };
+
+  const handleCreateBackup = async () => {
+    try {
+      const response = await axios.post(`${API}/admin/backups/create`);
+      toast.success(`Backup criado: ${response.data.arquivo} (${response.data.tamanho_mb} MB)`);
+      fetchBackups();
+    } catch (error) {
+      console.error("Erro ao criar backup:", error);
+      toast.error("Erro ao criar backup");
+    }
+  };
+
   const fetchGateways = async () => {
     try {
       const response = await axios.get(`${API}/payment-gateways`);
