@@ -553,104 +553,100 @@ const AdminPanel = () => {
       <div className="container mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Painel Administrativo</h1>
-          <p className="text-purple-200">Gerencie pedidos e rituais</p>
+          <p className="text-purple-200">Gerencie pedidos, rituais e personalize o site</p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-1">
-            <Button
-              onClick={() => setActiveTab("pedidos")}
-              className={`mr-2 ${activeTab === "pedidos" 
-                ? "bg-purple-600 text-white" 
-                : "bg-transparent text-purple-200 hover:bg-white/10"}`}
-            >
+        <Tabs defaultValue="pedidos" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-white/10 backdrop-blur-sm">
+            <TabsTrigger value="pedidos" className="data-[state=active]:bg-purple-600">
+              <Phone className="w-4 h-4 mr-2" />
               Pedidos ({pedidos.length})
-            </Button>
-            <Button
-              onClick={() => setActiveTab("rituais")}
-              className={`${activeTab === "rituais" 
-                ? "bg-purple-600 text-white" 
-                : "bg-transparent text-purple-200 hover:bg-white/10"}`}
-            >
-              Gerenciar Rituais ({rituais.length})
-            </Button>
-          </div>
-        </div>
+            </TabsTrigger>
+            <TabsTrigger value="rituais" className="data-[state=active]:bg-purple-600">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Rituais ({rituais.length})
+            </TabsTrigger>
+            <TabsTrigger value="semana" className="data-[state=active]:bg-purple-600">
+              <Calendar className="w-4 h-4 mr-2" />
+              Rituais da Semana
+            </TabsTrigger>
+            <TabsTrigger value="config" className="data-[state=active]:bg-purple-600">
+              <Settings className="w-4 h-4 mr-2" />
+              Configurações
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Conteúdo das Tabs */}
-        {activeTab === "pedidos" && (
-          <div className="grid gap-6">
-            {pedidos.length === 0 ? (
-              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm p-8">
-                <div className="text-center">
-                  <h3 className="text-xl font-semibold text-white mb-2">Nenhum pedido encontrado</h3>
-                  <p className="text-purple-200">Aguardando novos pedidos...</p>
-                </div>
-              </Card>
-            ) : (
-              pedidos.map((pedido) => (
-                <Card key={pedido.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-white text-xl">{pedido.cliente.nome_completo}</CardTitle>
-                        <CardDescription className="text-purple-200">
-                          Ritual: {pedido.ritual.nome} • R$ {pedido.valor_total.toFixed(2)}
-                        </CardDescription>
-                      </div>
-                      <Badge className="bg-green-500/20 text-green-300 border-green-400/30">
-                        Pago
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <p className="text-purple-200 text-sm">Email:</p>
-                        <p className="text-white">{pedido.cliente.email}</p>
-                      </div>
-                      <div>
-                        <p className="text-purple-200 text-sm">WhatsApp:</p>
-                        <p className="text-white">{pedido.cliente.telefone}</p>
-                      </div>
-                      <div>
-                        <p className="text-purple-200 text-sm">Pessoa Amada:</p>
-                        <p className="text-white">{pedido.cliente.nome_pessoa_amada}</p>
-                      </div>
-                      <div>
-                        <p className="text-purple-200 text-sm">Data de Nascimento:</p>
-                        <p className="text-white">{pedido.cliente.data_nascimento}</p>
-                      </div>
-                    </div>
-                    
-                    {pedido.cliente.informacoes_adicionais && (
-                      <div className="mb-4">
-                        <p className="text-purple-200 text-sm">Informações Adicionais:</p>
-                        <p className="text-white bg-black/20 p-3 rounded-lg">{pedido.cliente.informacoes_adicionais}</p>
-                      </div>
-                    )}
-
-                    <Button
-                      onClick={() => abrirWhatsApp(
-                        pedido.cliente.telefone,
-                        pedido.cliente.nome_completo,
-                        pedido.ritual.nome
-                      )}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
-                    >
-                      <Phone className="w-4 h-4" />
-                      Contatar via WhatsApp
-                    </Button>
-                  </CardContent>
+          <TabsContent value="pedidos" className="mt-6">
+            <div className="grid gap-6">
+              {pedidos.length === 0 ? (
+                <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm p-8">
+                  <div className="text-center">
+                    <h3 className="text-xl font-semibold text-white mb-2">Nenhum pedido encontrado</h3>
+                    <p className="text-purple-200">Aguardando novos pedidos...</p>
+                  </div>
                 </Card>
-              ))
-            )}
-          </div>
-        )}
+              ) : (
+                pedidos.map((pedido) => (
+                  <Card key={pedido.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-white text-xl">{pedido.cliente.nome_completo}</CardTitle>
+                          <CardDescription className="text-purple-200">
+                            Ritual: {pedido.ritual.nome} • R$ {pedido.valor_total.toFixed(2)}
+                          </CardDescription>
+                        </div>
+                        <Badge className="bg-green-500/20 text-green-300 border-green-400/30">
+                          Pago
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <p className="text-purple-200 text-sm">Email:</p>
+                          <p className="text-white">{pedido.cliente.email}</p>
+                        </div>
+                        <div>
+                          <p className="text-purple-200 text-sm">WhatsApp:</p>
+                          <p className="text-white">{pedido.cliente.telefone}</p>
+                        </div>
+                        <div>
+                          <p className="text-purple-200 text-sm">Pessoa Amada:</p>
+                          <p className="text-white">{pedido.cliente.nome_pessoa_amada}</p>
+                        </div>
+                        <div>
+                          <p className="text-purple-200 text-sm">Data de Nascimento:</p>
+                          <p className="text-white">{pedido.cliente.data_nascimento}</p>
+                        </div>
+                      </div>
+                      
+                      {pedido.cliente.informacoes_adicionais && (
+                        <div className="mb-4">
+                          <p className="text-purple-200 text-sm">Informações Adicionais:</p>
+                          <p className="text-white bg-black/20 p-3 rounded-lg">{pedido.cliente.informacoes_adicionais}</p>
+                        </div>
+                      )}
 
-        {activeTab === "rituais" && (
-          <div>
+                      <Button
+                        onClick={() => abrirWhatsApp(
+                          pedido.cliente.telefone,
+                          pedido.cliente.nome_completo,
+                          pedido.ritual.nome
+                        )}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+                      >
+                        <Phone className="w-4 h-4" />
+                        Contatar via WhatsApp
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="rituais" className="mt-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-white">Rituais Cadastrados</h2>
               <Button
@@ -662,7 +658,6 @@ const AdminPanel = () => {
               </Button>
             </div>
 
-            {/* Formulário para adicionar ritual */}
             {showAddRitual && (
               <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm mb-6">
                 <CardHeader>
@@ -731,7 +726,6 @@ const AdminPanel = () => {
               </Card>
             )}
 
-            {/* Lista de rituais */}
             <div className="grid md:grid-cols-2 gap-6">
               {rituais.map((ritual) => (
                 <Card key={ritual.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
@@ -756,8 +750,120 @@ const AdminPanel = () => {
                 </Card>
               ))}
             </div>
-          </div>
-        )}
+          </TabsContent>
+
+          <TabsContent value="semana" className="mt-6">
+            <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <Calendar className="w-5 h-5 mr-2" />
+                  Rituais da Semana
+                </CardTitle>
+                <CardDescription className="text-purple-200">
+                  Configure quais rituais aparecerão em destaque em cada dia da semana
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-white">Funcionalidade em desenvolvimento...</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="config" className="mt-6">
+            <div className="grid gap-6">
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Settings className="w-5 h-5 mr-2" />
+                    Configurações Gerais
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Personalize a aparência e comportamento do seu site
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleUpdateConfig} className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="logo_url" className="text-white">URL do Logo</Label>
+                        <Input
+                          id="logo_url"
+                          value={configForm.logo_url || ""}
+                          onChange={(e) => setConfigForm({...configForm, logo_url: e.target.value})}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="https://exemplo.com/logo.png"
+                        />
+                        <p className="text-purple-300 text-sm mt-1">Logo que aparecerá no topo do site</p>
+                      </div>
+                      <div>
+                        <Label htmlFor="whatsapp_numero" className="text-white">WhatsApp de Contato</Label>
+                        <Input
+                          id="whatsapp_numero"
+                          value={configForm.whatsapp_numero || ""}
+                          onChange={(e) => setConfigForm({...configForm, whatsapp_numero: e.target.value})}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="(11) 99999-9999"
+                        />
+                        <p className="text-purple-300 text-sm mt-1">Número que receberá as mensagens dos clientes</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="stripe_snippet_id" className="text-white">ID do Snippet Stripe</Label>
+                      <Input
+                        id="stripe_snippet_id"
+                        value={configForm.stripe_snippet_id || ""}
+                        onChange={(e) => setConfigForm({...configForm, stripe_snippet_id: e.target.value})}
+                        className="bg-white/5 border-purple-300/30 text-white"
+                        placeholder="sk_test_..."
+                      />
+                      <p className="text-purple-300 text-sm mt-1">ID do snippet de código do Stripe para pagamentos</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="text-white font-semibold flex items-center">
+                        <Palette className="w-4 h-4 mr-2" />
+                        Cores do Site
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="primary_color" className="text-white">Cor Primária</Label>
+                          <Input
+                            id="primary_color"
+                            type="color"
+                            value={configForm.cores?.primary || "#8b5cf6"}
+                            onChange={(e) => setConfigForm({
+                              ...configForm, 
+                              cores: {...configForm.cores, primary: e.target.value}
+                            })}
+                            className="bg-white/5 border-purple-300/30 h-12"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="secondary_color" className="text-white">Cor Secundária</Label>
+                          <Input
+                            id="secondary_color"
+                            type="color"
+                            value={configForm.cores?.secondary || "#ec4899"}
+                            onChange={(e) => setConfigForm({
+                              ...configForm, 
+                              cores: {...configForm.cores, secondary: e.target.value}
+                            })}
+                            className="bg-white/5 border-purple-300/30 h-12"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                      Salvar Configurações
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
