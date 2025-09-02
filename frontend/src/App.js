@@ -2614,7 +2614,7 @@ const AdminPanel = () => {
             return null;
           })}
 
-          <TabsContent value="config" className="mt-6">,
+          <TabsContent value="config" className="mt-6">
             <div className="grid gap-6">
               <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
                 <CardHeader>
