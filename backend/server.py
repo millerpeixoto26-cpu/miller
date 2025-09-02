@@ -26,6 +26,17 @@ db = client[os.environ['DB_NAME']]
 # Stripe setup
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 
+# JWT setup
+SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Security
+security = HTTPBearer()
+
 # Create the main app without a prefix
 app = FastAPI()
 
