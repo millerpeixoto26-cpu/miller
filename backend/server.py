@@ -1062,7 +1062,7 @@ async def test_payment_gateway(
         "message": f"Configurações do {gateway['display_name']} validadas com sucesso"
     }
 
-# APIs Instagram
+# APIs Instagram (Manual)
 @api_router.get("/instagram/profile", response_model=dict)
 async def get_instagram_profile():
     """Retorna o perfil Instagram (público)"""
