@@ -3486,6 +3486,181 @@ async def create_default_horarios():
         
         print("✅ Horários padrão criados (Segunda a Sexta: 9h-18h)")
 
+# Função para backup automático diário
+async def backup_automatico_diario():
+    """Cria backup automático às 3h da manhã"""
+    try:
+        logger.info("Iniciando backup automático diário")
+        
+        backup_obj = BackupSistema(
+            tipo="automatico",
+            status="em_progresso"
+        )
+        
+        await db.backups_sistema.insert_one(backup_obj.dict())
+        
+        # Simular criação de backup (implementação simplificada)
+        import json
+        from pathlib import Path
+        
+        backup_dir = Path("/app/backups")
+        backup_dir.mkdir(exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_filename = f"backup_auto_{timestamp}.json"
+        backup_path = backup_dir / backup_filename
+        
+        # Coletar dados
+        backup_data = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "tipo": "automatico",
+            "collections": {}
+        }
+        
+        collections_to_backup = [
+            "clientes", "rituais", "pedidos", "consultas", "tipos_consulta",
+            "configuracao", "usuarios", "cupons", "programa_fidelidade",
+            "whatsapp_templates", "avaliacoes"
+        ]
+        
+        for collection_name in collections_to_backup:
+            try:
+                collection = getattr(db, collection_name)
+                documents = await collection.find({}).to_list(10000)
+                for doc in documents:
+                    if "_id" in doc:
+                        del doc["_id"]
+                backup_data["collections"][collection_name] = documents
+            except Exception as e:
+                logger.warning(f"Erro ao fazer backup da coleção {collection_name}: {e}")
+        
+        # Salvar arquivo
+        with open(backup_path, 'w', encoding='utf-8') as f:
+            json.dump(backup_data, f, ensure_ascii=False, indent=2, default=str)
+        
+        file_size = backup_path.stat().st_size
+        
+        # Atualizar status
+        await db.backups_sistema.update_one(
+            {"id": backup_obj.id},
+            {
+                "$set": {
+                    "status": "concluido",
+                    "arquivo_path": str(backup_path),
+                    "tamanho_bytes": file_size,
+                    "completed_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        logger.info(f"Backup automático concluído: {backup_filename} ({file_size} bytes)")
+        
+    except Exception as e:
+        logger.error(f"Erro no backup automático: {e}")
+
+# Função para agendar relatórios diários
+async def schedule_daily_reports():
+    """Agenda relatórios diários automáticos"""
+    try:
+        # Relatório 12h
+        await schedule_whatsapp_automation("relatorio_diario", delay_hours=0)
+        
+        # Relatório 18h  
+        await schedule_whatsapp_automation("relatorio_diario", delay_hours=6)
+        
+        # Relatório 22h
+        await schedule_whatsapp_automation("relatorio_diario", delay_hours=10)
+        
+        logger.info("Relatórios diários agendados")
+        
+    except Exception as e:
+        logger.error(f"Erro ao agendar relatórios: {e}")
+
+# Função para processar campanhas de remarketing
+async def process_remarketing_campaigns():
+    """Identifica clientes inativos e envia campanhas"""
+    try:
+        # Buscar clientes que não fazem consultas há mais de 30 dias
+        thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+        
+        # Buscar últimas consultas por cliente
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$cliente_id",
+                    "ultima_consulta": {"$max": "$created_at"}
+                }
+            },
+            {
+                "$match": {
+                    "ultima_consulta": {"$lt": thirty_days_ago}
+                }
+            }
+        ]
+        
+        clientes_inativos = await db.consultas.aggregate(pipeline).to_list(1000)
+        
+        for cliente_inativo in clientes_inativos:
+            # Verificar se já não enviou remarketing nos últimos 7 dias
+            recent_remarketing = await db.automacoes_whatsapp.find_one({
+                "tipo": "remarketing",
+                "cliente_id": cliente_inativo["_id"],
+                "created_at": {"$gte": datetime.now(timezone.utc) - timedelta(days=7)}
+            })
+            
+            if not recent_remarketing:
+                await schedule_whatsapp_automation(
+                    "remarketing", 
+                    cliente_id=cliente_inativo["_id"]
+                )
+        
+        logger.info(f"Campanhas de remarketing agendadas para {len(clientes_inativos)} clientes")
+        
+    except Exception as e:
+        logger.error(f"Erro no remarketing: {e}")
+
+# Configurar tarefas agendadas
+def setup_scheduled_tasks():
+    """Configura tarefas agendadas"""
+    
+    # Backup diário às 3h
+    scheduler.add_job(
+        backup_automatico_diario,
+        'cron',
+        hour=3,
+        minute=0,
+        id='backup_diario'
+    )
+    
+    # Processar automações WhatsApp a cada 15 minutos
+    scheduler.add_job(
+        process_whatsapp_automations,
+        'interval',
+        minutes=15,
+        id='process_automations'
+    )
+    
+    # Agendar relatórios diários às 8h
+    scheduler.add_job(
+        schedule_daily_reports,
+        'cron', 
+        hour=8,
+        minute=0,
+        id='schedule_reports'
+    )
+    
+    # Campanhas de remarketing semanalmente (domingos às 10h)
+    scheduler.add_job(
+        process_remarketing_campaigns,
+        'cron',
+        day_of_week=6,  # Domingo
+        hour=10,
+        minute=0,
+        id='remarketing_campaigns'
+    )
+    
+    logger.info("Tarefas agendadas configuradas")
+
 # Função para criar templates padrão do WhatsApp
 async def create_default_whatsapp_templates():
     templates_existentes = await db.whatsapp_templates.count_documents({})
