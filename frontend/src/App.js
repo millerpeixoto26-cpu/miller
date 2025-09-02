@@ -200,6 +200,8 @@ const Home = () => {
   const [rituais, setRituais] = useState([]);
   const [rituaisHoje, setRituaisHoje] = useState([]);
   const [configuracao, setConfiguracao] = useState(null);
+  const [instagramProfile, setInstagramProfile] = useState(null);
+  const [instagramPosts, setInstagramPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -207,7 +209,21 @@ const Home = () => {
     fetchRituais();
     fetchRituaisHoje();
     fetchConfiguracao();
+    fetchInstagramData();
   }, []);
+
+  const fetchInstagramData = async () => {
+    try {
+      const [profileResponse, postsResponse] = await Promise.all([
+        axios.get(`${API}/instagram/profile`),
+        axios.get(`${API}/instagram/posts`)
+      ]);
+      setInstagramProfile(profileResponse.data);
+      setInstagramPosts(postsResponse.data);
+    } catch (error) {
+      console.error("Erro ao buscar dados do Instagram:", error);
+    }
+  };
 
   const fetchRituais = async () => {
     try {
