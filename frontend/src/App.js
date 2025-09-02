@@ -994,26 +994,49 @@ const AdminPanel = () => {
         </div>
 
         <Tabs defaultValue="pedidos" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-white/10 backdrop-blur-sm">
-            <TabsTrigger value="pedidos" className="data-[state=active]:bg-purple-600">
-              <Phone className="w-4 h-4 mr-2" />
-              Pedidos ({pedidos.length})
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 bg-white/10 backdrop-blur-sm p-2 rounded-lg">
+            <TabsTrigger 
+              value="pedidos" 
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-2 text-sm font-medium"
+            >
+              <Phone className="w-4 h-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Pedidos</span>
+              <span className="sm:hidden">Pedidos</span>
+              <span className="ml-1 bg-white/20 rounded-full px-2 py-0.5 text-xs">({pedidos.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="rituais" className="data-[state=active]:bg-purple-600">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Rituais ({rituais.length})
+            <TabsTrigger 
+              value="rituais" 
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-2 text-sm font-medium"
+            >
+              <Sparkles className="w-4 h-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Rituais</span>
+              <span className="sm:hidden">Rituais</span>
+              <span className="ml-1 bg-white/20 rounded-full px-2 py-0.5 text-xs">({rituais.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="semana" className="data-[state=active]:bg-purple-600">
-              <Calendar className="w-4 h-4 mr-2" />
-              Rituais da Semana
+            <TabsTrigger 
+              value="semana" 
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-2 text-sm font-medium"
+            >
+              <Calendar className="w-4 h-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Rituais da Semana</span>
+              <span className="sm:hidden">Semana</span>
             </TabsTrigger>
-            <TabsTrigger value="usuarios" className="data-[state=active]:bg-purple-600">
-              <Users className="w-4 h-4 mr-2" />
-              Usuários ({usuarios.length})
+            <TabsTrigger 
+              value="usuarios" 
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-2 text-sm font-medium"
+            >
+              <Users className="w-4 h-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Usuários</span>
+              <span className="sm:hidden">Users</span>
+              <span className="ml-1 bg-white/20 rounded-full px-2 py-0.5 text-xs">({usuarios.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="config" className="data-[state=active]:bg-purple-600">
-              <Settings className="w-4 h-4 mr-2" />
-              Configurações
+            <TabsTrigger 
+              value="config" 
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-2 text-sm font-medium"
+            >
+              <Settings className="w-4 h-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Configurações</span>
+              <span className="sm:hidden">Config</span>
             </TabsTrigger>
           </TabsList>
 
