@@ -688,13 +688,17 @@ const AdminPanel = () => {
   const [rituais, setRituais] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [gateways, setGateways] = useState([]);
+  const [instagramProfile, setInstagramProfile] = useState(null);
+  const [instagramPosts, setInstagramPosts] = useState([]);
   const [configuracao, setConfiguracao] = useState(null);
   const [rituaisSemana, setRituaisSemana] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddRitual, setShowAddRitual] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
+  const [showAddPost, setShowAddPost] = useState(false);
   const [editingRitual, setEditingRitual] = useState(null);
   const [editingGateway, setEditingGateway] = useState(null);
+  const [editingPost, setEditingPost] = useState(null);
   const [novoRitual, setNovoRitual] = useState({
     nome: "",
     descricao: "",
