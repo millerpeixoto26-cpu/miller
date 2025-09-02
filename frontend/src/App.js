@@ -735,9 +735,20 @@ const AdminPanel = () => {
     fetchPedidos();
     fetchRituais();
     fetchUsuarios();
+    fetchGateways();
     fetchConfiguracao();
     fetchRituaisSemana();
   }, []);
+
+  const fetchGateways = async () => {
+    try {
+      const response = await axios.get(`${API}/payment-gateways`);
+      setGateways(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar gateways:", error);
+      toast.error("Erro ao carregar gateways de pagamento");
+    }
+  };
 
   const fetchUsuarios = async () => {
     try {
