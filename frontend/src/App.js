@@ -740,9 +740,29 @@ const AdminPanel = () => {
     fetchRituais();
     fetchUsuarios();
     fetchGateways();
+    fetchInstagramProfile();
+    fetchInstagramPosts();
     fetchConfiguracao();
     fetchRituaisSemana();
   }, []);
+
+  const fetchInstagramProfile = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/instagram/profile`);
+      setInstagramProfile(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar perfil Instagram:", error);
+    }
+  };
+
+  const fetchInstagramPosts = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/instagram/posts`);
+      setInstagramPosts(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar posts Instagram:", error);
+    }
+  };
 
   const fetchGateways = async () => {
     try {
