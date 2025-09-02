@@ -424,8 +424,9 @@ const FormularioCliente = ({ sessionId }) => {
 const AdminPanel = () => {
   const [pedidos, setPedidos] = useState([]);
   const [rituais, setRituais] = useState([]);
+  const [configuracao, setConfiguracao] = useState(null);
+  const [rituaisSemana, setRituaisSemana] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("pedidos");
   const [showAddRitual, setShowAddRitual] = useState(false);
   const [novoRitual, setNovoRitual] = useState({
     nome: "",
@@ -433,10 +434,23 @@ const AdminPanel = () => {
     preco: "",
     imagem_url: ""
   });
+  const [configForm, setConfigForm] = useState({
+    logo_url: "",
+    whatsapp_numero: "",
+    cores: {
+      primary: "#8b5cf6",
+      secondary: "#ec4899",
+      background: "#1a1a2e",
+      text: "#ffffff"
+    },
+    stripe_snippet_id: ""
+  });
 
   useEffect(() => {
     fetchPedidos();
     fetchRituais();
+    fetchConfiguracao();
+    fetchRituaisSemana();
   }, []);
 
   const fetchPedidos = async () => {
@@ -458,6 +472,27 @@ const AdminPanel = () => {
     } catch (error) {
       console.error("Erro ao buscar rituais:", error);
       toast.error("Erro ao carregar rituais");
+    }
+  };
+
+  const fetchConfiguracao = async () => {
+    try {
+      const response = await axios.get(`${API}/config`);
+      setConfiguracao(response.data);
+      setConfigForm(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar configurações:", error);
+      toast.error("Erro ao carregar configurações");
+    }
+  };
+
+  const fetchRituaisSemana = async () => {
+    try {
+      const response = await axios.get(`${API}/rituais-semana`);
+      setRituaisSemana(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar rituais da semana:", error);
+      toast.error("Erro ao carregar rituais da semana");
     }
   };
 
