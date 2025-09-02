@@ -910,6 +910,16 @@ const AdminPanel = () => {
     }
   };
 
+  const updateRitualSemana = (dia, field, value) => {
+    setRituaisSemanaForm(prev => ({
+      ...prev,
+      [dia]: {
+        ...prev[dia],
+        [field]: value
+      }
+    }));
+  };
+
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
