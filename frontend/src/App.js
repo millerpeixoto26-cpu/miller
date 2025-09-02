@@ -1076,6 +1076,106 @@ const AdminPanel = () => {
     return dias[dia] || 'Desconhecido';
   };
 
+  const fetchWhatsappConfig = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/whatsapp/config`);
+      setWhatsappConfig(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar configuração WhatsApp:", error);
+    }
+  };
+
+  const fetchWhatsappTemplates = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/whatsapp/templates`);
+      setWhatsappTemplates(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar templates WhatsApp:", error);
+    }
+  };
+
+  const fetchWhatsappMessages = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/whatsapp/messages`);
+      setWhatsappMessages(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar mensagens WhatsApp:", error);
+    }
+  };
+
+  const handleUpdateWhatsappConfig = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData(e.target);
+      const configData = {
+        api_url: formData.get('api_url'),
+        api_token: formData.get('api_token'),
+        ativo: formData.get('ativo') === 'on'
+      };
+
+      await axios.post(`${API}/admin/whatsapp/config`, configData);
+      toast.success("Configuração WhatsApp salva com sucesso!");
+      fetchWhatsappConfig();
+    } catch (error) {
+      console.error("Erro ao salvar configuração WhatsApp:", error);
+      toast.error("Erro ao salvar configuração WhatsApp");
+    }
+  };
+
+  const handleAddTemplate = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData(e.target);
+      const templateData = {
+        nome: formData.get('nome'),
+        template: formData.get('template'),
+        ativo: formData.get('ativo') === 'on'
+      };
+
+      if (editingTemplate) {
+        await axios.put(`${API}/admin/whatsapp/templates/${editingTemplate.id}`, templateData);
+        toast.success("Template atualizado com sucesso!");
+        setEditingTemplate(null);
+      } else {
+        await axios.post(`${API}/admin/whatsapp/templates`, templateData);
+        toast.success("Template criado com sucesso!");
+      }
+      
+      setShowAddTemplate(false);
+      fetchWhatsappTemplates();
+    } catch (error) {
+      console.error("Erro ao salvar template:", error);
+      toast.error("Erro ao salvar template");
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId) => {
+    if (window.confirm("Tem certeza que deseja excluir este template?")) {
+      try {
+        await axios.delete(`${API}/admin/whatsapp/templates/${templateId}`);
+        toast.success("Template excluído com sucesso!");
+        fetchWhatsappTemplates();
+      } catch (error) {
+        console.error("Erro ao excluir template:", error);
+        toast.error("Erro ao excluir template");
+      }
+    }
+  };
+
+  const handleSendTestMessage = async (phone, message) => {
+    try {
+      await axios.post(`${API}/admin/whatsapp/send-test`, {
+        phone_number: phone,
+        message: message
+      });
+      toast.success("Mensagem de teste enviada!");
+      fetchWhatsappMessages();
+    } catch (error) {
+      console.error("Erro ao enviar mensagem:", error);
+      toast.error("Erro ao enviar mensagem");
+    }
+  };
+
   const fetchGateways = async () => {
     try {
       const response = await axios.get(`${API}/payment-gateways`);
