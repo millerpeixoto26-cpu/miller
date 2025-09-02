@@ -704,6 +704,11 @@ def main():
     print("-" * 30)
     tester.test_sales_dashboard_comprehensive()
     
+    # Test Scheduling System
+    print("\n📅 SCHEDULING SYSTEM TESTS")
+    print("-" * 30)
+    tester.test_scheduling_system_comprehensive()
+    
     # Test Instagram API Integration
     print("\n📸 INSTAGRAM API INTEGRATION TESTS")
     print("-" * 40)
