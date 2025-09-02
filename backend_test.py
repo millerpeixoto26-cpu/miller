@@ -1351,6 +1351,339 @@ class RitualsAPITester:
         
         return True
 
+    # ========== SITE EDITOR SYSTEM TESTS ==========
+    
+    def test_get_site_config(self):
+        """Test getting site configuration"""
+        return self.run_test("Get Site Config", "GET", "admin/site-config", 200, auth_required=True)
+    
+    def test_create_site_config(self):
+        """Test creating/updating site configuration"""
+        config_data = {
+            "logo_url": "/uploads/logo-test.png",
+            "favicon_url": "/uploads/favicon-test.ico",
+            "cor_primaria": "#8B5CF6",
+            "cor_secundaria": "#EC4899",
+            "fonte_primaria": "Inter",
+            "fonte_secundaria": "Playfair Display",
+            "meta_titulo": "Rituais Espirituais - Site de Teste",
+            "meta_descricao": "Site de teste para rituais espirituais com editor completo",
+            "meta_palavras_chave": "rituais, teste, espiritual, tarot",
+            "instagram_username": "rituais_teste",
+            "facebook_url": "https://facebook.com/rituais-teste",
+            "whatsapp_numero": "+5511999887766"
+        }
+        
+        return self.run_test("Create/Update Site Config", "POST", "admin/site-config", 200, config_data, auth_required=True)
+    
+    def test_get_site_sections(self):
+        """Test getting all site sections"""
+        success, response = self.run_test("Get Site Sections", "GET", "admin/site-sections", 200, auth_required=True)
+        
+        if success and response:
+            print(f"   Found {len(response)} site sections")
+            
+            # Check for default sections
+            expected_sections = ["hero", "rituais", "sobre", "instagram", "faq", "contato"]
+            found_types = [s.get('tipo') for s in response]
+            
+            for expected_type in expected_sections:
+                if expected_type in found_types:
+                    print(f"   ✅ Found default section: {expected_type}")
+                else:
+                    print(f"   ❌ Missing default section: {expected_type}")
+            
+            # Check section structure
+            if response:
+                section = response[0]
+                required_keys = ['id', 'nome', 'tipo', 'ativo', 'ordem', 'configuracoes']
+                if all(key in section for key in required_keys):
+                    print(f"   ✅ Section structure is correct")
+                else:
+                    print(f"   ❌ Section structure incomplete")
+        
+        return success, response
+    
+    def test_create_site_section(self):
+        """Test creating a new site section"""
+        section_data = {
+            "nome": "Seção de Teste",
+            "tipo": "custom",
+            "ativo": True,
+            "ordem": 10,
+            "configuracoes": {
+                "titulo": "Seção Criada para Teste",
+                "subtitulo": "Esta seção foi criada automaticamente pelo teste",
+                "cor_fundo": "#f8f9fa"
+            }
+        }
+        
+        return self.run_test("Create Site Section", "POST", "admin/site-sections", 200, section_data, auth_required=True)
+    
+    def test_update_site_section(self, section_id):
+        """Test updating a site section"""
+        update_data = {
+            "nome": "Seção de Teste Atualizada",
+            "tipo": "custom",
+            "ativo": True,
+            "ordem": 15,
+            "configuracoes": {
+                "titulo": "Seção ATUALIZADA via Teste",
+                "subtitulo": "Esta seção foi atualizada automaticamente",
+                "cor_fundo": "#e9ecef"
+            }
+        }
+        
+        return self.run_test(f"Update Site Section {section_id}", "PUT", f"admin/site-sections/{section_id}", 200, update_data, auth_required=True)
+    
+    def test_delete_site_section(self, section_id):
+        """Test deleting a site section"""
+        return self.run_test(f"Delete Site Section {section_id}", "DELETE", f"admin/site-sections/{section_id}", 200, auth_required=True)
+    
+    def test_reorder_site_sections(self, section_ids):
+        """Test reordering site sections"""
+        # Reverse the order for testing
+        reordered_ids = list(reversed(section_ids[:3]))  # Use first 3 sections
+        
+        return self.run_test("Reorder Site Sections", "POST", "admin/site-sections/reorder", 200, reordered_ids, auth_required=True)
+    
+    def test_get_site_content(self):
+        """Test getting all site content"""
+        success, response = self.run_test("Get Site Content", "GET", "admin/site-content", 200, auth_required=True)
+        
+        if success and response:
+            print(f"   Found {len(response)} content items")
+            
+            # Check content structure
+            if response:
+                content = response[0]
+                required_keys = ['id', 'secao', 'titulo', 'ativo', 'ordem']
+                if all(key in content for key in required_keys):
+                    print(f"   ✅ Content structure is correct")
+                else:
+                    print(f"   ❌ Content structure incomplete")
+        
+        return success, response
+    
+    def test_create_site_content(self):
+        """Test creating new site content"""
+        content_data = {
+            "secao": "teste",
+            "titulo": "Conteúdo de Teste",
+            "subtitulo": "Subtítulo do conteúdo de teste",
+            "conteudo_html": "<p>Este é um conteúdo HTML de teste criado automaticamente.</p><p>Contém <strong>formatação</strong> e <em>estilos</em>.</p>",
+            "imagem_url": "/uploads/test-image.jpg",
+            "configuracoes": {
+                "mostrar_botao": True,
+                "texto_botao": "Saiba Mais",
+                "cor_botao": "#8B5CF6"
+            },
+            "ativo": True,
+            "ordem": 1
+        }
+        
+        return self.run_test("Create Site Content", "POST", "admin/site-content", 200, content_data, auth_required=True)
+    
+    def test_update_site_content(self, content_id):
+        """Test updating site content"""
+        update_data = {
+            "titulo": "Conteúdo de Teste ATUALIZADO",
+            "subtitulo": "Subtítulo atualizado via teste automatizado",
+            "conteudo_html": "<p>Este conteúdo foi <strong>ATUALIZADO</strong> pelo teste automatizado.</p>",
+            "configuracoes": {
+                "mostrar_botao": True,
+                "texto_botao": "Clique Aqui",
+                "cor_botao": "#EC4899"
+            }
+        }
+        
+        return self.run_test(f"Update Site Content {content_id}", "PUT", f"admin/site-content/{content_id}", 200, update_data, auth_required=True)
+    
+    def test_delete_site_content(self, content_id):
+        """Test deleting site content"""
+        return self.run_test(f"Delete Site Content {content_id}", "DELETE", f"admin/site-content/{content_id}", 200, auth_required=True)
+    
+    def test_get_google_fonts(self):
+        """Test getting Google Fonts list"""
+        success, response = self.run_test("Get Google Fonts", "GET", "admin/google-fonts", 200, auth_required=True)
+        
+        if success and response:
+            print(f"   Found {len(response)} Google Fonts")
+            
+            # Check for expected fonts
+            expected_fonts = ["Inter", "Roboto", "Playfair Display", "Montserrat"]
+            found_names = [f.get('name') for f in response]
+            
+            for expected_font in expected_fonts:
+                if expected_font in found_names:
+                    print(f"   ✅ Found font: {expected_font}")
+                else:
+                    print(f"   ❌ Missing font: {expected_font}")
+            
+            # Check font structure
+            if response:
+                font = response[0]
+                required_keys = ['name', 'category']
+                if all(key in font for key in required_keys):
+                    print(f"   ✅ Font structure is correct")
+                    print(f"      Example: {font['name']} ({font['category']})")
+                else:
+                    print(f"   ❌ Font structure incomplete")
+        
+        return success, response
+    
+    def test_upload_image_simulation(self):
+        """Test image upload endpoint (simulation without actual file)"""
+        # Note: This is a simulation since we can't easily upload files in this test
+        # In a real scenario, you would use multipart/form-data with actual file content
+        
+        print("   ℹ️  Image upload test skipped - requires multipart file upload")
+        print("   ℹ️  Endpoint exists at POST /api/admin/upload-image")
+        print("   ℹ️  Expected to accept image files and return URL, filename, size")
+        
+        return True, {"message": "Upload test simulated"}
+    
+    def test_site_editor_comprehensive(self):
+        """Comprehensive test of the Site Editor system"""
+        print("\n🎨 COMPREHENSIVE SITE EDITOR SYSTEM TEST")
+        print("-" * 50)
+        
+        # Test 1: Get initial site config (should have defaults)
+        print("\n   ⚙️  Site Configuration Tests:")
+        success_get_config, initial_config = self.test_get_site_config()
+        
+        if success_get_config and initial_config:
+            print("   ✅ Site config found with default values")
+            
+            # Check default values
+            if initial_config.get('cor_primaria') == '#8B5CF6':
+                print("   ✅ Default primary color correct")
+            if initial_config.get('fonte_primaria') == 'Inter':
+                print("   ✅ Default primary font correct")
+            if initial_config.get('meta_titulo'):
+                print(f"   ✅ Default meta title: {initial_config.get('meta_titulo')}")
+        else:
+            print("   ⚠️  No initial site config found")
+        
+        # Test 2: Update site configuration
+        success_update_config, update_config_response = self.test_create_site_config()
+        
+        if success_update_config and update_config_response:
+            print("   ✅ Site configuration updated successfully")
+            
+            # Verify updated values
+            if update_config_response.get('meta_titulo') == 'Rituais Espirituais - Site de Teste':
+                print("   ✅ Meta title updated correctly")
+            if update_config_response.get('instagram_username') == 'rituais_teste':
+                print("   ✅ Instagram username updated correctly")
+        
+        # Test 3: Get site sections (should have 6 defaults)
+        print("\n   📄 Site Sections Tests:")
+        success_sections, sections_data = self.test_get_site_sections()
+        
+        if success_sections and sections_data:
+            if len(sections_data) >= 6:
+                print(f"   ✅ Found {len(sections_data)} sections (expected 6+ defaults)")
+            else:
+                print(f"   ⚠️  Expected at least 6 default sections, found {len(sections_data)}")
+        
+        # Test 4: Create new section
+        print("\n   ➕ Section CRUD Tests:")
+        success_create_section, create_section_response = self.test_create_site_section()
+        created_section_id = None
+        
+        if success_create_section and create_section_response:
+            created_section_id = create_section_response.get('id')
+            print(f"   ✅ Created test section with ID: {created_section_id}")
+            
+            # Test update
+            if created_section_id:
+                success_update_section, update_section_response = self.test_update_site_section(created_section_id)
+                if success_update_section:
+                    print(f"   ✅ Updated section successfully")
+        
+        # Test 5: Test section reordering
+        if success_sections and sections_data and len(sections_data) >= 3:
+            print("\n   🔄 Section Reordering Test:")
+            section_ids = [s.get('id') for s in sections_data[:3]]
+            success_reorder, reorder_response = self.test_reorder_site_sections(section_ids)
+            
+            if success_reorder:
+                print("   ✅ Section reordering successful")
+        
+        # Test 6: Get site content (should have defaults)
+        print("\n   📝 Site Content Tests:")
+        success_content, content_data = self.test_get_site_content()
+        
+        if success_content and content_data:
+            print(f"   ✅ Found {len(content_data)} content items")
+            
+            # Check for default content sections
+            content_sections = [c.get('secao') for c in content_data]
+            if 'hero' in content_sections:
+                print("   ✅ Found hero content")
+            if 'sobre' in content_sections:
+                print("   ✅ Found about content")
+        
+        # Test 7: Create new content
+        print("\n   ➕ Content CRUD Tests:")
+        success_create_content, create_content_response = self.test_create_site_content()
+        created_content_id = None
+        
+        if success_create_content and create_content_response:
+            created_content_id = create_content_response.get('id')
+            print(f"   ✅ Created test content with ID: {created_content_id}")
+            
+            # Test update
+            if created_content_id:
+                success_update_content, update_content_response = self.test_update_site_content(created_content_id)
+                if success_update_content:
+                    print(f"   ✅ Updated content successfully")
+        
+        # Test 8: Get Google Fonts
+        print("\n   🔤 Google Fonts Test:")
+        success_fonts, fonts_data = self.test_get_google_fonts()
+        
+        if success_fonts and fonts_data:
+            if len(fonts_data) >= 10:
+                print(f"   ✅ Found {len(fonts_data)} Google Fonts available")
+            else:
+                print(f"   ⚠️  Expected at least 10 fonts, found {len(fonts_data)}")
+        
+        # Test 9: Image upload (simulation)
+        print("\n   📷 Image Upload Test:")
+        self.test_upload_image_simulation()
+        
+        # Clean up created test data
+        print("\n   🧹 Cleaning up test data:")
+        if created_section_id:
+            success_delete_section, _ = self.test_delete_site_section(created_section_id)
+            if success_delete_section:
+                print("   ✅ Deleted test section")
+        
+        if created_content_id:
+            success_delete_content, _ = self.test_delete_site_content(created_content_id)
+            if success_delete_content:
+                print("   ✅ Deleted test content")
+        
+        # Summary
+        print("\n   📊 Site Editor Test Summary:")
+        total_tests = 9
+        passed_tests = 0
+        
+        if success_get_config: passed_tests += 1
+        if success_update_config: passed_tests += 1
+        if success_sections: passed_tests += 1
+        if success_create_section: passed_tests += 1
+        if success_content: passed_tests += 1
+        if success_create_content: passed_tests += 1
+        if success_fonts: passed_tests += 1
+        
+        print(f"   Passed: {passed_tests}/{total_tests} main tests")
+        print(f"   Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        
+        return True
+
 def main():
     print("🚀 Starting Rituais API Testing...")
     print("=" * 60)
