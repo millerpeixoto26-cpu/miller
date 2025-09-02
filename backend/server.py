@@ -286,6 +286,108 @@ async def create_default_admin():
 async def root():
     return {"message": "Sistema de Rituais API"}
 
+# Rotas de Autenticação
+@api_router.post("/auth/login", response_model=Token)
+async def login(user_credentials: UserLogin):
+    """Login de usuário"""
+    user = await db.users.find_one({"username": user_credentials.username})
+    if not user or not verify_password(user_credentials.password, user["hashed_password"]):
+        raise HTTPException(
+            status_code=401,
+            detail="Username ou senha incorretos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+    )
+    
+    # Remove _id e hashed_password
+    if "_id" in user:
+        del user["_id"]
+    if "hashed_password" in user:
+        del user["hashed_password"]
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": UserResponse(**user)
+    }
+
+@api_router.post("/auth/register", response_model=UserResponse)
+async def register(user_data: UserCreate, current_user: User = Depends(get_current_active_user)):
+    """Registra um novo usuário (apenas admins podem fazer isso)"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Apenas administradores podem criar usuários")
+    
+    # Verifica se o usuário já existe
+    existing_user = await db.users.find_one({
+        "$or": [
+            {"username": user_data.username},
+            {"email": user_data.email}
+        ]
+    })
+    
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username ou email já existe")
+    
+    # Cria novo usuário
+    hashed_password = get_password_hash(user_data.password)
+    new_user = User(
+        username=user_data.username,
+        email=user_data.email,
+        hashed_password=hashed_password,
+        is_active=True,
+        is_admin=True
+    )
+    
+    await db.users.insert_one(new_user.dict())
+    
+    # Retorna usuário sem senha
+    user_dict = new_user.dict()
+    del user_dict["hashed_password"]
+    return UserResponse(**user_dict)
+
+@api_router.get("/auth/me", response_model=UserResponse)
+async def read_users_me(current_user: User = Depends(get_current_active_user)):
+    """Retorna informações do usuário atual"""
+    user_dict = current_user.dict()
+    del user_dict["hashed_password"]
+    return UserResponse(**user_dict)
+
+@api_router.get("/auth/users", response_model=List[UserResponse])
+async def get_users(current_user: User = Depends(get_current_active_user)):
+    """Lista todos os usuários (apenas para admins)"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Apenas administradores podem listar usuários")
+    
+    users = await db.users.find().to_list(1000)
+    users_response = []
+    for user in users:
+        if "_id" in user:
+            del user["_id"]
+        if "hashed_password" in user:
+            del user["hashed_password"]
+        users_response.append(UserResponse(**user))
+    
+    return users_response
+
+@api_router.delete("/auth/users/{user_id}")
+async def delete_user(user_id: str, current_user: User = Depends(get_current_active_user)):
+    """Remove um usuário (apenas para admins, não pode remover a si mesmo)"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Apenas administradores podem remover usuários")
+    
+    if user_id == current_user.id:
+        raise HTTPException(status_code=400, detail="Você não pode remover sua própria conta")
+    
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    return {"message": "Usuário removido com sucesso"}
+
 @api_router.get("/rituais", response_model=List[dict])
 async def get_rituais():
     """Retorna todos os rituais disponíveis (apenas visíveis para o público)"""
