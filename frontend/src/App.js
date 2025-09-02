@@ -1194,6 +1194,15 @@ const AdminPanel = () => {
     }
   };
 
+  const fetchIndicacoes = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/indicacoes`);
+      setIndicacoes(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar indicações:", error);
+    }
+  };
+
   const fetchBackups = async () => {
     try {
       const response = await axios.get(`${API}/admin/backups`);
