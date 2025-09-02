@@ -969,6 +969,388 @@ class RitualsAPITester:
         
         return True
 
+    # ========== CUPONS AND INDICACOES SYSTEM TESTS ==========
+    
+    def test_get_admin_cupons(self):
+        """Test getting all coupons (admin)"""
+        return self.run_test("Get Admin Cupons", "GET", "admin/cupons", 200, auth_required=True)
+    
+    def test_create_cupom(self):
+        """Test creating a new coupon"""
+        from datetime import datetime, timedelta
+        
+        # Create coupon valid for next 30 days
+        start_date = datetime.now()
+        end_date = start_date + timedelta(days=30)
+        
+        cupom_data = {
+            "codigo": "PROMO20",
+            "descricao": "Cupom de teste com 20% de desconto",
+            "tipo": "percentual",
+            "valor_desconto": 0,  # Not used for percentual type
+            "percentual_desconto": 20.0,
+            "valor_minimo": 50.0,
+            "data_inicio": start_date.isoformat(),
+            "data_fim": end_date.isoformat(),
+            "uso_maximo": 100,
+            "ativo": True
+        }
+        
+        return self.run_test("Create Cupom PROMO20", "POST", "admin/cupons", 200, cupom_data, auth_required=True)
+    
+    def test_create_cupom_valor_fixo(self):
+        """Test creating a fixed value coupon"""
+        from datetime import datetime, timedelta
+        
+        start_date = datetime.now()
+        end_date = start_date + timedelta(days=15)
+        
+        cupom_data = {
+            "codigo": "DESCONTO50",
+            "descricao": "Cupom de R$ 50 de desconto",
+            "tipo": "valor_fixo",
+            "valor_desconto": 50.0,
+            "percentual_desconto": None,
+            "valor_minimo": 100.0,
+            "data_inicio": start_date.isoformat(),
+            "data_fim": end_date.isoformat(),
+            "uso_maximo": 50,
+            "ativo": True
+        }
+        
+        return self.run_test("Create Cupom DESCONTO50", "POST", "admin/cupons", 200, cupom_data, auth_required=True)
+    
+    def test_create_duplicate_cupom(self):
+        """Test creating coupon with duplicate code (should fail)"""
+        from datetime import datetime, timedelta
+        
+        start_date = datetime.now()
+        end_date = start_date + timedelta(days=30)
+        
+        cupom_data = {
+            "codigo": "PROMO20",  # Same code as previous test
+            "descricao": "Cupom duplicado",
+            "tipo": "percentual",
+            "valor_desconto": 0,
+            "percentual_desconto": 15.0,
+            "valor_minimo": None,
+            "data_inicio": start_date.isoformat(),
+            "data_fim": end_date.isoformat(),
+            "uso_maximo": None,
+            "ativo": True
+        }
+        
+        success, response = self.run_test("Create Duplicate Cupom", "POST", "admin/cupons", 400, cupom_data, auth_required=True)
+        
+        # For this test, failure is expected (400 status)
+        if not success:
+            print("   ✅ Correctly rejected duplicate coupon code")
+            return True, response
+        else:
+            print("   ❌ Should have rejected duplicate coupon code")
+            return False, response
+    
+    def test_validar_cupom_percentual(self):
+        """Test validating percentage coupon (public endpoint)"""
+        # Test with PROMO20 coupon (20% discount)
+        params = {
+            "codigo": "PROMO20",
+            "valor_pedido": 100.0
+        }
+        
+        success, response = self.run_test("Validate PROMO20 Coupon", "POST", "validar-cupom", 200, params=params)
+        
+        if success and response:
+            # Verify discount calculation
+            expected_discount = 100.0 * 0.20  # 20% of 100 = 20
+            actual_discount = response.get('desconto', 0)
+            
+            if abs(actual_discount - expected_discount) < 0.01:  # Allow small floating point differences
+                print(f"   ✅ Discount calculated correctly: R${actual_discount}")
+            else:
+                print(f"   ❌ Discount calculation error: expected R${expected_discount}, got R${actual_discount}")
+            
+            if response.get('valido') == True:
+                print("   ✅ Coupon marked as valid")
+            else:
+                print("   ❌ Coupon should be valid")
+            
+            if response.get('tipo') == 'percentual':
+                print("   ✅ Coupon type correct")
+            else:
+                print(f"   ❌ Coupon type incorrect: {response.get('tipo')}")
+        
+        return success, response
+    
+    def test_validar_cupom_valor_fixo(self):
+        """Test validating fixed value coupon"""
+        params = {
+            "codigo": "DESCONTO50",
+            "valor_pedido": 150.0
+        }
+        
+        success, response = self.run_test("Validate DESCONTO50 Coupon", "POST", "validar-cupom", 200, params=params)
+        
+        if success and response:
+            # Verify fixed discount
+            expected_discount = 50.0
+            actual_discount = response.get('desconto', 0)
+            
+            if actual_discount == expected_discount:
+                print(f"   ✅ Fixed discount correct: R${actual_discount}")
+            else:
+                print(f"   ❌ Fixed discount error: expected R${expected_discount}, got R${actual_discount}")
+        
+        return success, response
+    
+    def test_validar_cupom_valor_minimo(self):
+        """Test coupon validation with minimum value requirement"""
+        # Test PROMO20 with value below minimum (should fail)
+        params = {
+            "codigo": "PROMO20",
+            "valor_pedido": 30.0  # Below minimum of 50.0
+        }
+        
+        success, response = self.run_test("Validate Coupon Below Minimum", "POST", "validar-cupom", 400, params=params)
+        
+        # For this test, failure is expected (400 status)
+        if not success:
+            print("   ✅ Correctly rejected coupon below minimum value")
+            return True, response
+        else:
+            print("   ❌ Should have rejected coupon below minimum value")
+            return False, response
+    
+    def test_validar_cupom_inexistente(self):
+        """Test validating non-existent coupon"""
+        params = {
+            "codigo": "INEXISTENTE",
+            "valor_pedido": 100.0
+        }
+        
+        success, response = self.run_test("Validate Non-existent Coupon", "POST", "validar-cupom", 404, params=params)
+        
+        # For this test, failure is expected (404 status)
+        if not success:
+            print("   ✅ Correctly returned 404 for non-existent coupon")
+            return True, response
+        else:
+            print("   ❌ Should have returned 404 for non-existent coupon")
+            return False, response
+    
+    def test_create_indicacao_amigo(self):
+        """Test creating friend referral (public endpoint)"""
+        # First create a test client to use as referrer
+        from datetime import datetime
+        import uuid
+        
+        # Generate a test client ID
+        test_cliente_id = str(uuid.uuid4())
+        
+        indicacao_data = {
+            "nome_indicado": "Ana Maria Silva",
+            "telefone_indicado": "+5511987654321"
+        }
+        
+        params = {
+            "cliente_id": test_cliente_id
+        }
+        
+        success, response = self.run_test("Create Friend Referral", "POST", "indicacao-amigo", 200, 
+                                        indicacao_data, params=params)
+        
+        if success and response:
+            # Check if referral code was generated
+            if 'codigo' in response:
+                referral_code = response['codigo']
+                print(f"   ✅ Referral code generated: {referral_code}")
+                
+                # Store for later use
+                self.test_referral_code = referral_code
+                
+                if referral_code.startswith('IND'):
+                    print("   ✅ Referral code has correct format (IND prefix)")
+                else:
+                    print(f"   ❌ Referral code format incorrect: {referral_code}")
+            else:
+                print("   ❌ No referral code in response")
+            
+            if 'message' in response:
+                print(f"   ✅ Success message: {response['message']}")
+        
+        return success, response
+    
+    def test_get_admin_indicacoes(self):
+        """Test getting all referrals (admin)"""
+        success, response = self.run_test("Get Admin Indicacoes", "GET", "admin/indicacoes", 200, auth_required=True)
+        
+        if success and response:
+            print(f"   Found {len(response)} referrals")
+            
+            if isinstance(response, list):
+                print("   ✅ Referrals endpoint returns list format")
+                
+                if len(response) > 0:
+                    referral = response[0]
+                    required_keys = ['id', 'cliente_indicador_id', 'nome_indicado', 'telefone_indicado', 'codigo_indicacao', 'created_at']
+                    
+                    if all(key in referral for key in required_keys):
+                        print("   ✅ Referral structure is correct")
+                        print(f"      Code: {referral.get('codigo_indicacao')}")
+                        print(f"      Referred: {referral.get('nome_indicado')}")
+                        print(f"      Phone: {referral.get('telefone_indicado')}")
+                        
+                        # Check if our test referral is there
+                        if hasattr(self, 'test_referral_code'):
+                            test_found = any(r.get('codigo_indicacao') == self.test_referral_code for r in response)
+                            if test_found:
+                                print(f"   ✅ Test referral found in list")
+                            else:
+                                print(f"   ⚠️  Test referral not found in list")
+                    else:
+                        print("   ❌ Referral structure incomplete")
+                        missing_keys = [key for key in required_keys if key not in referral]
+                        print(f"      Missing keys: {missing_keys}")
+                else:
+                    print("   ℹ️  No referrals found")
+            else:
+                print("   ❌ Referrals endpoint should return a list")
+        
+        return success, response
+    
+    def test_update_cupom(self, cupom_id):
+        """Test updating a coupon"""
+        update_data = {
+            "descricao": "Cupom PROMO20 atualizado via teste automatizado",
+            "percentual_desconto": 25.0,  # Change from 20% to 25%
+            "valor_minimo": 60.0  # Change minimum from 50 to 60
+        }
+        
+        return self.run_test(f"Update Cupom {cupom_id}", "PUT", f"admin/cupons/{cupom_id}", 200, update_data, auth_required=True)
+    
+    def test_delete_cupom(self, cupom_id):
+        """Test deleting a coupon"""
+        return self.run_test(f"Delete Cupom {cupom_id}", "DELETE", f"admin/cupons/{cupom_id}", 200, auth_required=True)
+    
+    def test_cupons_indicacoes_comprehensive(self):
+        """Comprehensive test of Cupons and Indicacoes system"""
+        print("\n🎫 COMPREHENSIVE CUPONS AND INDICACOES TEST")
+        print("-" * 50)
+        
+        # Test 1: Get initial cupons (should be empty initially)
+        print("\n   🎫 Coupon System Tests:")
+        success_get_initial, initial_cupons = self.test_get_admin_cupons()
+        
+        if success_get_initial:
+            print(f"   ✅ Found {len(initial_cupons)} existing coupons")
+        
+        # Test 2: Create percentage coupon (PROMO20)
+        print("\n   ➕ Creating Percentage Coupon:")
+        success_create_promo, create_promo_response = self.test_create_cupom()
+        created_promo_id = None
+        
+        if success_create_promo and create_promo_response:
+            created_promo_id = create_promo_response.get('id')
+            print(f"   ✅ Created PROMO20 coupon with ID: {created_promo_id}")
+        
+        # Test 3: Create fixed value coupon (DESCONTO50)
+        print("\n   ➕ Creating Fixed Value Coupon:")
+        success_create_fixed, create_fixed_response = self.test_create_cupom_valor_fixo()
+        created_fixed_id = None
+        
+        if success_create_fixed and create_fixed_response:
+            created_fixed_id = create_fixed_response.get('id')
+            print(f"   ✅ Created DESCONTO50 coupon with ID: {created_fixed_id}")
+        
+        # Test 4: Try to create duplicate coupon (should fail)
+        print("\n   ❌ Testing Duplicate Prevention:")
+        self.test_create_duplicate_cupom()
+        
+        # Test 5: Validate percentage coupon
+        print("\n   ✅ Testing Coupon Validation:")
+        success_validate_promo, validate_promo_response = self.test_validar_cupom_percentual()
+        
+        # Test 6: Validate fixed value coupon
+        success_validate_fixed, validate_fixed_response = self.test_validar_cupom_valor_fixo()
+        
+        # Test 7: Test minimum value validation
+        print("\n   🚫 Testing Minimum Value Validation:")
+        self.test_validar_cupom_valor_minimo()
+        
+        # Test 8: Test non-existent coupon
+        print("\n   🚫 Testing Non-existent Coupon:")
+        self.test_validar_cupom_inexistente()
+        
+        # Test 9: Update coupon
+        if created_promo_id:
+            print("\n   ✏️  Testing Coupon Update:")
+            success_update, update_response = self.test_update_cupom(created_promo_id)
+            if success_update:
+                print("   ✅ Coupon updated successfully")
+        
+        # Test 10: Get updated cupons list
+        print("\n   📋 Testing Updated Coupons List:")
+        success_get_after, cupons_after = self.test_get_admin_cupons()
+        
+        if success_get_after and cupons_after:
+            print(f"   ✅ Found {len(cupons_after)} coupons after creation")
+            
+            # Check if our test coupons are there
+            promo_found = any(c.get('codigo') == 'PROMO20' for c in cupons_after)
+            desconto_found = any(c.get('codigo') == 'DESCONTO50' for c in cupons_after)
+            
+            if promo_found:
+                print("   ✅ PROMO20 coupon found in list")
+            else:
+                print("   ❌ PROMO20 coupon not found in list")
+            
+            if desconto_found:
+                print("   ✅ DESCONTO50 coupon found in list")
+            else:
+                print("   ❌ DESCONTO50 coupon not found in list")
+        
+        # Test 11: Friend Referral System
+        print("\n   👥 Friend Referral System Tests:")
+        success_create_referral, referral_response = self.test_create_indicacao_amigo()
+        
+        if success_create_referral and referral_response:
+            print("   ✅ Friend referral created successfully")
+        
+        # Test 12: Get referrals list
+        print("\n   📋 Testing Referrals List:")
+        success_get_referrals, referrals_data = self.test_get_admin_indicacoes()
+        
+        # Clean up created test data
+        print("\n   🧹 Cleaning up test data:")
+        if created_promo_id:
+            success_delete_promo, _ = self.test_delete_cupom(created_promo_id)
+            if success_delete_promo:
+                print("   ✅ Deleted PROMO20 test coupon")
+        
+        if created_fixed_id:
+            success_delete_fixed, _ = self.test_delete_cupom(created_fixed_id)
+            if success_delete_fixed:
+                print("   ✅ Deleted DESCONTO50 test coupon")
+        
+        # Summary
+        print("\n   📊 Test Summary:")
+        total_tests = 12
+        passed_tests = 0
+        
+        if success_get_initial: passed_tests += 1
+        if success_create_promo: passed_tests += 1
+        if success_create_fixed: passed_tests += 1
+        if success_validate_promo: passed_tests += 1
+        if success_validate_fixed: passed_tests += 1
+        if success_get_after: passed_tests += 1
+        if success_create_referral: passed_tests += 1
+        if success_get_referrals: passed_tests += 1
+        
+        print(f"   Passed: {passed_tests}/{total_tests} tests")
+        print(f"   Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        
+        return True
+
 def main():
     print("🚀 Starting Rituais API Testing...")
     print("=" * 60)
