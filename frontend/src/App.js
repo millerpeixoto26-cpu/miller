@@ -1675,6 +1675,13 @@ const AdminPanel = () => {
                 Backups
               </TabsTrigger>
               <TabsTrigger 
+                value="indicacoes" 
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
+              >
+                <Users className="w-4 h-4 mr-1" />
+                Indicações
+              </TabsTrigger>
+              <TabsTrigger 
                 value="pagamentos" 
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-2 py-3 text-sm font-medium"
               >
