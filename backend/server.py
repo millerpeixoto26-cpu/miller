@@ -295,7 +295,48 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-# Função para criar usuário admin padrão
+# Gateways de pagamento padrão
+GATEWAYS_PADRAO = [
+    {
+        "id": "stripe",
+        "name": "stripe",
+        "display_name": "Stripe",
+        "is_active": True,
+        "is_default": True,
+        "config": {
+            "api_key": "",
+            "webhook_secret": "",
+            "currency": "brl"
+        },
+        "supported_methods": ["credit_card", "pix"]
+    },
+    {
+        "id": "pagbank",
+        "name": "pagbank",
+        "display_name": "PagBank (PagSeguro)",
+        "is_active": False,
+        "is_default": False,
+        "config": {
+            "client_id": "",
+            "client_secret": "",
+            "sandbox": "true"
+        },
+        "supported_methods": ["credit_card", "pix", "boleto"]
+    },
+    {
+        "id": "mercadopago",
+        "name": "mercadopago", 
+        "display_name": "Mercado Pago",
+        "is_active": False,
+        "is_default": False,
+        "config": {
+            "access_token": "",
+            "public_key": "",
+            "sandbox": "true"
+        },
+        "supported_methods": ["credit_card", "pix", "boleto"]
+    }
+]
 async def create_default_admin():
     admin_exists = await db.users.find_one({"username": "admin"})
     if not admin_exists:
