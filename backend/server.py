@@ -427,7 +427,7 @@ async def get_all_rituais(current_user: User = Depends(get_current_active_user))
     return rituais
 
 @api_router.post("/rituais", response_model=dict)
-async def create_ritual(ritual: RitualCreate):
+async def create_ritual(ritual: RitualCreate, current_user: User = Depends(get_current_active_user)):
     """Cria um novo ritual"""
     ritual_dict = ritual.dict()
     ritual_dict["id"] = str(uuid.uuid4())
@@ -436,7 +436,7 @@ async def create_ritual(ritual: RitualCreate):
     return ritual_dict
 
 @api_router.put("/rituais/{ritual_id}", response_model=dict)
-async def update_ritual(ritual_id: str, ritual_update: RitualUpdate):
+async def update_ritual(ritual_id: str, ritual_update: RitualUpdate, current_user: User = Depends(get_current_active_user)):
     """Atualiza um ritual existente"""
     existing_ritual = await db.rituais.find_one({"id": ritual_id})
     if not existing_ritual:
@@ -459,7 +459,7 @@ async def update_ritual(ritual_id: str, ritual_update: RitualUpdate):
     return updated_ritual
 
 @api_router.delete("/rituais/{ritual_id}")
-async def delete_ritual(ritual_id: str):
+async def delete_ritual(ritual_id: str, current_user: User = Depends(get_current_active_user)):
     """Remove um ritual"""
     result = await db.rituais.delete_one({"id": ritual_id})
     if result.deleted_count == 0:
