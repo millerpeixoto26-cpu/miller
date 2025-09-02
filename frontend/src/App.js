@@ -640,6 +640,37 @@ const AdminPanel = () => {
     }
   };
 
+  const handleSaveRituaisSemana = async (e) => {
+    e.preventDefault();
+    try {
+      // Salva cada dia da semana
+      for (const [dia, dados] of Object.entries(rituaisSemanaForm)) {
+        if (dados.ritual_id && dados.ativo) {
+          await axios.post(`${API}/rituais-semana`, {
+            dia_semana: dia,
+            ritual_id: dados.ritual_id,
+            ativo: dados.ativo
+          });
+        }
+      }
+      toast.success("Rituais da semana salvos com sucesso!");
+      fetchRituaisSemana();
+    } catch (error) {
+      console.error("Erro ao salvar rituais da semana:", error);
+      toast.error("Erro ao salvar rituais da semana");
+    }
+  };
+
+  const updateRitualSemana = (dia, field, value) => {
+    setRituaisSemanaForm(prev => ({
+      ...prev,
+      [dia]: {
+        ...prev[dia],
+        [field]: value
+      }
+    }));
+  };
+
   const getIconForRitual = (nome) => {
     if (nome.toLowerCase().includes("amarração")) return <Heart className="w-6 h-6" />;
     if (nome.toLowerCase().includes("proteção")) return <Shield className="w-6 h-6" />;
