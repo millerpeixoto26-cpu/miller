@@ -1010,6 +1010,54 @@ const AdminPanel = () => {
     }
   };
 
+  const handleUpdateInstagramProfile = async (profileData) => {
+    try {
+      await axios.post(`${API}/admin/instagram/profile`, profileData);
+      toast.success("Perfil Instagram atualizado com sucesso!");
+      fetchInstagramProfile();
+    } catch (error) {
+      console.error("Erro ao atualizar perfil Instagram:", error);
+      toast.error("Erro ao atualizar perfil Instagram");
+    }
+  };
+
+  const handleAddInstagramPost = async (postData) => {
+    try {
+      await axios.post(`${API}/admin/instagram/posts`, postData);
+      toast.success("Post adicionado com sucesso!");
+      setShowAddPost(false);
+      fetchInstagramPosts();
+    } catch (error) {
+      console.error("Erro ao adicionar post:", error);
+      toast.error("Erro ao adicionar post");
+    }
+  };
+
+  const handleUpdateInstagramPost = async (postId, postData) => {
+    try {
+      await axios.put(`${API}/admin/instagram/posts/${postId}`, postData);
+      toast.success("Post atualizado com sucesso!");
+      setEditingPost(null);
+      fetchInstagramPosts();
+    } catch (error) {
+      console.error("Erro ao atualizar post:", error);
+      toast.error("Erro ao atualizar post");
+    }
+  };
+
+  const handleDeleteInstagramPost = async (postId) => {
+    if (window.confirm("Tem certeza que deseja excluir este post?")) {
+      try {
+        await axios.delete(`${API}/admin/instagram/posts/${postId}`);
+        toast.success("Post excluído com sucesso!");
+        fetchInstagramPosts();
+      } catch (error) {
+        console.error("Erro ao excluir post:", error);
+        toast.error("Erro ao excluir post");
+      }
+    }
+  };
+
   const getIconForRitual = (nome) => {
     if (nome.toLowerCase().includes("amarração")) return <Heart className="w-6 h-6" />;
     if (nome.toLowerCase().includes("proteção")) return <Shield className="w-6 h-6" />;
