@@ -529,6 +529,15 @@ const AdminPanel = () => {
     },
     stripe_snippet_id: ""
   });
+  const [rituaisSemanaForm, setRituaisSemanaForm] = useState({
+    segunda: { ritual_id: "", ativo: false },
+    terca: { ritual_id: "", ativo: false },
+    quarta: { ritual_id: "", ativo: false },
+    quinta: { ritual_id: "", ativo: false },
+    sexta: { ritual_id: "", ativo: false },
+    sabado: { ritual_id: "", ativo: false },
+    domingo: { ritual_id: "", ativo: false }
+  });
 
   useEffect(() => {
     fetchPedidos();
