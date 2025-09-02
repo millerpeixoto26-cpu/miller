@@ -687,12 +687,14 @@ const AdminPanel = () => {
   const [pedidos, setPedidos] = useState([]);
   const [rituais, setRituais] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
+  const [gateways, setGateways] = useState([]);
   const [configuracao, setConfiguracao] = useState(null);
   const [rituaisSemana, setRituaisSemana] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddRitual, setShowAddRitual] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [editingRitual, setEditingRitual] = useState(null);
+  const [editingGateway, setEditingGateway] = useState(null);
   const [novoRitual, setNovoRitual] = useState({
     nome: "",
     descricao: "",
