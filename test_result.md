@@ -183,6 +183,6 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "Implementação da Instagram API concluída com sucesso! Backend: adicionados modelos e endpoints OAuth2 completos. Frontend: criadas seções para configurar API e gerenciar conexão/sincronização. IMPORTANTE: API será depreciada em dezembro 2024, precisa migrar para Instagram Graph API futuramente. Pronto para testes!"
+    message: "Dashboard de Vendas implementado com sucesso! Criado painel completo na aba pedidos com: métricas visuais (vendas dia/mês, progresso da meta), separação Rituais vs Consultas, configuração de meta mensal, estatísticas de faturamento. Backend: novos modelos e endpoints para dashboard. Frontend: interface visual com cards e gráficos. Pronto para testes!"
   - agent: "testing"
     message: "🎉 TESTES DA INSTAGRAM API CONCLUÍDOS COM SUCESSO! Todos os 7 endpoints testados e funcionando: 1) GET /api/admin/instagram/api/config ✅ 2) POST /api/admin/instagram/api/config ✅ 3) GET /api/admin/instagram/api/status ✅ 4) GET /api/admin/instagram/api/connect ✅ 5) POST /api/admin/instagram/api/sync ✅ 6) DELETE /api/admin/instagram/api/disconnect ✅ 7) GET /api/admin/instagram/api/sync/history ✅. Autenticação JWT funcionando, validações corretas, OAuth2 implementado. Sistema pronto para produção! Taxa de sucesso: 90.5% (19/21 testes passaram)."
