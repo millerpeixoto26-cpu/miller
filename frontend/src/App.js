@@ -973,13 +973,28 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 py-8 px-4">
       <div className="container mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Painel Administrativo</h1>
-          <p className="text-purple-200">Gerencie pedidos, rituais e personalize o site</p>
+        <div className="flex justify-between items-center mb-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-white mb-2">Painel Administrativo</h1>
+            <p className="text-purple-200">Gerencie pedidos, rituais e personalize o site</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-white font-medium">{user?.username}</p>
+              <p className="text-purple-200 text-sm">{user?.email}</p>
+            </div>
+            <Button
+              onClick={logout}
+              className="bg-red-600 hover:bg-red-700 text-white flex items-center space-x-2"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sair</span>
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="pedidos" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-white/10 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-5 bg-white/10 backdrop-blur-sm">
             <TabsTrigger value="pedidos" className="data-[state=active]:bg-purple-600">
               <Phone className="w-4 h-4 mr-2" />
               Pedidos ({pedidos.length})
@@ -991,6 +1006,10 @@ const AdminPanel = () => {
             <TabsTrigger value="semana" className="data-[state=active]:bg-purple-600">
               <Calendar className="w-4 h-4 mr-2" />
               Rituais da Semana
+            </TabsTrigger>
+            <TabsTrigger value="usuarios" className="data-[state=active]:bg-purple-600">
+              <Users className="w-4 h-4 mr-2" />
+              Usuários ({usuarios.length})
             </TabsTrigger>
             <TabsTrigger value="config" className="data-[state=active]:bg-purple-600">
               <Settings className="w-4 h-4 mr-2" />
