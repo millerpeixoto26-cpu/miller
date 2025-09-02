@@ -125,12 +125,9 @@ backend:
     priority: "high"
     needs_retesting: false
     status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Sistema completo implementado: modelos TipoConsulta/HorarioDisponivel/Consulta, endpoints CRUD completos, API pública para agendamento, funções startup para dados padrão (3 tipos consulta + horários seg-sex 9h-18h), integração com pagamentos"
       - working: true
-        agent: "testing"
-        comment: "🎉 SISTEMA DE AGENDAMENTO TESTADO COM SUCESSO! Todos os 14 endpoints principais funcionando: CONFIGURAÇÃO ADMIN: GET/POST/PUT/DELETE tipos-consulta ✅, GET/POST/PUT/DELETE horarios-disponiveis ✅. AGENDAMENTO PÚBLICO: GET tipos-consulta ✅, GET horarios-disponiveis/{data} ✅. GESTÃO ADMIN: GET agenda/{data} ✅. Dados padrão criados corretamente: 4 tipos de consulta (incluindo Tarot R$80, Mapa Astral R$120, Consulta Espiritual R$100), horários seg-sex 9h-18h com intervalos 60min. Autenticação JWT funcionando, CRUD completo operacional, integração com pagamentos validada. Taxa de sucesso: 91.2% (31/34 testes). Sistema pronto para agendamentos online!"
+        agent: "backend_testing"
+        comment: "Todos os 14 endpoints testados com 91.2% de sucesso: CRUD tipos/horários, agendamento público, gestão admin, dados padrão criados corretamente, integração com pagamentos funcionando"
 
   - task: "Sistema de Agendamento - Frontend"
     implemented: true
