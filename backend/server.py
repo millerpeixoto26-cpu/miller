@@ -346,6 +346,44 @@ class MetaMensalCreate(BaseModel):
 class MetaMensalUpdate(BaseModel):
     valor_meta: float
 
+# Modelos para WhatsApp
+class WhatsAppTemplate(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nome: str
+    template: str  # Template da mensagem com variáveis {nome}, {data}, etc
+    ativo: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class WhatsAppTemplateCreate(BaseModel):
+    nome: str
+    template: str
+    ativo: bool = True
+
+class WhatsAppTemplateUpdate(BaseModel):
+    nome: Optional[str] = None
+    template: Optional[str] = None
+    ativo: Optional[bool] = None
+
+class WhatsAppMessage(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    to: str  # Número do telefone
+    message: str
+    status: str = "pending"  # "pending", "sent", "delivered", "failed"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    sent_at: Optional[datetime] = None
+
+class WhatsAppConfig(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    api_url: str = ""
+    api_token: str = ""
+    ativo: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class WhatsAppConfigCreate(BaseModel):
+    api_url: str
+    api_token: str
+    ativo: bool = True
+
 class InstagramProfileCreate(BaseModel):
     username: str
     display_name: str
