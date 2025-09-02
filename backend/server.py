@@ -163,6 +163,11 @@ async def get_ritual(ritual_id: str):
             if r["id"] == ritual_id:
                 return r
         raise HTTPException(status_code=404, detail="Ritual não encontrado")
+    
+    # Remove o _id do MongoDB
+    if "_id" in ritual:
+        del ritual["_id"]
+    
     return ritual
 
 @api_router.post("/checkout")
