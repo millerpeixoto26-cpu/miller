@@ -797,6 +797,12 @@ const AdminPanel = () => {
   const [consultasVendas, setConsultasVendas] = useState([]);
   const [metaMensal, setMetaMensal] = useState(null);
   const [showMetaForm, setShowMetaForm] = useState(false);
+  const [tiposConsulta, setTiposConsulta] = useState([]);
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState([]);
+  const [showAddTipoConsulta, setShowAddTipoConsulta] = useState(false);
+  const [showAddHorario, setShowAddHorario] = useState(false);
+  const [editingTipoConsulta, setEditingTipoConsulta] = useState(null);
+  const [editingHorario, setEditingHorario] = useState(null);
   const [configuracao, setConfiguracao] = useState(null);
   const [rituaisSemana, setRituaisSemana] = useState([]);
   const [loading, setLoading] = useState(true);
