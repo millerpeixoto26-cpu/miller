@@ -412,6 +412,18 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Seção Agendamento de Consultas */}
+      <div className="container mx-auto px-4 py-16 bg-gradient-to-br from-purple-900/20 to-pink-900/20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-white mb-4">Agende sua Consulta</h2>
+            <p className="text-purple-200 text-lg">Orientação espiritual personalizada • Pagamento antecipado • Confirmação imediata</p>
+          </div>
+          
+          <AgendamentoPublico />
+        </div>
+      </div>
+
       {/* Seção Instagram */}
       {instagramProfile && instagramProfile.is_active && (
         <div className="container mx-auto px-4 py-16 bg-black/10">
