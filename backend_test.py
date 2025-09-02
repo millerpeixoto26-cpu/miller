@@ -609,9 +609,14 @@ class RitualsAPITester:
         
         if success_times and available_times:
             print(f"   ✅ Found {len(available_times)} available time slots for {date_str}")
-            if available_times:
+            if isinstance(available_times, list) and len(available_times) > 0:
                 first_slot = available_times[0]
                 print(f"      First slot: {first_slot}")
+            elif isinstance(available_times, dict):
+                print(f"      Response: {available_times}")
+        elif success_times:
+            print(f"   ✅ Available times endpoint responded successfully for {date_str}")
+            print(f"      Response: {available_times}")
         
         # Test 7: Get day's agenda
         print("\n   📋 Testing Day's Agenda:")
