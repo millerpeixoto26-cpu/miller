@@ -1185,6 +1185,288 @@ async def delete_instagram_post(
     
     return {"message": "Post removido com sucesso"}
 
+# Novas APIs para Instagram API Integration
+@api_router.get("/admin/instagram/api/config")
+async def get_instagram_api_config(current_user: User = Depends(get_current_active_user)):
+    """Retorna configuração da API do Instagram"""
+    config = await db.instagram_api_config.find_one()
+    if not config:
+        return {"message": "Configuração não encontrada", "config": None}
+    
+    if "_id" in config:
+        del config["_id"]
+    
+    # Não retornar app_secret por segurança
+    if "app_secret" in config:
+        config["app_secret"] = "***" if config["app_secret"] else ""
+    
+    return config
+
+@api_router.post("/admin/instagram/api/config")
+async def create_or_update_instagram_api_config(
+    config_data: InstagramApiConfigCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Cria ou atualiza configuração da API do Instagram"""
+    existing_config = await db.instagram_api_config.find_one()
+    
+    config_dict = config_data.dict()
+    config_dict["id"] = str(uuid.uuid4()) if not existing_config else existing_config["id"]
+    config_dict["created_at"] = datetime.now(timezone.utc)
+    
+    if existing_config:
+        # Atualiza configuração existente
+        await db.instagram_api_config.replace_one(
+            {"id": existing_config["id"]},
+            config_dict
+        )
+    else:
+        # Cria nova configuração
+        await db.instagram_api_config.insert_one(config_dict)
+    
+    # Remove app_secret da resposta
+    config_dict["app_secret"] = "***"
+    if "_id" in config_dict:
+        del config_dict["_id"]
+    
+    return config_dict
+
+@api_router.get("/admin/instagram/api/connect")
+async def instagram_api_connect(current_user: User = Depends(get_current_active_user)):
+    """Inicia processo de conexão com Instagram API"""
+    config = await db.instagram_api_config.find_one({"is_active": True})
+    if not config or not config.get("app_id") or not config.get("app_secret"):
+        raise HTTPException(
+            status_code=400, 
+            detail="Configuração da API do Instagram não encontrada ou incompleta"
+        )
+    
+    # Gerar state para CSRF protection
+    state = secrets.token_urlsafe(32)
+    
+    # Salvar state no banco temporariamente (expira em 10 minutos)
+    await db.instagram_oauth_states.insert_one({
+        "state": state,
+        "user_id": current_user.id,
+        "created_at": datetime.now(timezone.utc),
+        "expires_at": datetime.now(timezone.utc) + timedelta(minutes=10)
+    })
+    
+    # URL de autorização do Instagram
+    auth_url = (
+        "https://api.instagram.com/oauth/authorize"
+        f"?client_id={config['app_id']}"
+        f"&redirect_uri={config['redirect_uri']}"
+        "&scope=user_profile,user_media"
+        "&response_type=code"
+        f"&state={state}"
+    )
+    
+    return {
+        "auth_url": auth_url,
+        "message": "Redirecione o usuário para auth_url para completar a autenticação"
+    }
+
+@api_router.get("/admin/instagram/api/status")
+async def instagram_api_status(current_user: User = Depends(get_current_active_user)):
+    """Verifica status da conexão com Instagram API"""
+    token = await db.instagram_api_tokens.find_one({
+        "user_id": current_user.id,
+        "is_active": True
+    })
+    
+    if not token:
+        return {
+            "connected": False,
+            "message": "Conta Instagram não conectada"
+        }
+    
+    # Verificar se token ainda é válido fazendo uma chamada para a API
+    try:
+        user_url = f"https://graph.instagram.com/me?fields=id,username&access_token={token['access_token']}"
+        response = requests.get(user_url)
+        
+        if response.status_code == 200:
+            user_data = response.json()
+            return {
+                "connected": True,
+                "instagram_user_id": user_data.get('id'),
+                "instagram_username": user_data.get('username'),
+                "connected_at": token['created_at']
+            }
+        else:
+            # Token inválido, marcar como inativo
+            await db.instagram_api_tokens.update_one(
+                {"id": token["id"]},
+                {"$set": {"is_active": False}}
+            )
+            return {
+                "connected": False,
+                "message": "Token expirado ou inválido"
+            }
+            
+    except Exception as e:
+        return {
+            "connected": False,
+            "message": f"Erro ao verificar conexão: {str(e)}"
+        }
+
+@api_router.post("/admin/instagram/api/sync")
+async def instagram_api_sync(
+    sync_type: str = "both",  # "profile", "posts", "both"
+    current_user: User = Depends(get_current_active_user)
+):
+    """Sincroniza dados do Instagram via API"""
+    
+    # Verificar se há token ativo
+    token = await db.instagram_api_tokens.find_one({
+        "user_id": current_user.id,
+        "is_active": True
+    })
+    
+    if not token:
+        raise HTTPException(
+            status_code=400,
+            detail="Conta Instagram não conectada"
+        )
+    
+    # Criar registro de sincronização
+    sync_record = InstagramApiSync(
+        sync_type=sync_type,
+        status="in_progress"
+    )
+    sync_result = await db.instagram_api_syncs.insert_one(sync_record.dict())
+    sync_id = sync_result.inserted_id
+    
+    try:
+        items_synced = 0
+        
+        # Sincronizar perfil
+        if sync_type in ["profile", "both"]:
+            user_url = f"https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token={token['access_token']}"
+            response = requests.get(user_url)
+            response.raise_for_status()
+            
+            user_data = response.json()
+            
+            # Atualizar perfil no banco
+            profile_data = {
+                "username": user_data.get('username', ''),
+                "display_name": user_data.get('username', ''),
+                "bio": f"Conta conectada via API - {user_data.get('account_type', 'PERSONAL')}",
+                "profile_image_url": f"https://via.placeholder.com/150?text={user_data.get('username', 'IG')}",
+                "instagram_url": f"https://instagram.com/{user_data.get('username', '')}",
+                "followers_count": None,  # Basic Display API não fornece followers
+                "is_active": True
+            }
+            
+            # Remover perfil existente e criar novo
+            await db.instagram_profile.delete_many({})
+            profile_obj = InstagramProfile(**profile_data)
+            await db.instagram_profile.insert_one(profile_obj.dict())
+            items_synced += 1
+        
+        # Sincronizar posts
+        if sync_type in ["posts", "both"]:
+            media_url = f"https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,permalink,thumbnail_url,timestamp&access_token={token['access_token']}"
+            response = requests.get(media_url)
+            response.raise_for_status()
+            
+            media_data = response.json()
+            
+            # Remover posts existentes
+            await db.instagram_posts.delete_many({})
+            
+            # Inserir novos posts
+            for i, item in enumerate(media_data.get('data', [])[:6]):  # Limitar a 6 posts
+                post_data = {
+                    "image_url": item.get('media_url', item.get('thumbnail_url', '')),
+                    "caption": item.get('caption', '')[:200] if item.get('caption') else '',  # Limitar caption
+                    "post_url": item.get('permalink', ''),
+                    "is_active": True,
+                    "order": i
+                }
+                
+                post_obj = InstagramPost(**post_data)
+                await db.instagram_posts.insert_one(post_obj.dict())
+                items_synced += 1
+        
+        # Atualizar registro de sincronização
+        await db.instagram_api_syncs.update_one(
+            {"_id": sync_id},
+            {
+                "$set": {
+                    "status": "completed",
+                    "items_synced": items_synced,
+                    "completed_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        return {
+            "message": f"Sincronização concluída com sucesso",
+            "sync_type": sync_type,
+            "items_synced": items_synced,
+            "completed_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except requests.RequestException as e:
+        # Atualizar registro com erro
+        await db.instagram_api_syncs.update_one(
+            {"_id": sync_id},
+            {
+                "$set": {
+                    "status": "failed",
+                    "error_message": str(e),
+                    "completed_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao sincronizar com Instagram: {str(e)}"
+        )
+    except Exception as e:
+        # Atualizar registro com erro
+        await db.instagram_api_syncs.update_one(
+            {"_id": sync_id},
+            {
+                "$set": {
+                    "status": "failed",
+                    "error_message": str(e),
+                    "completed_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro interno: {str(e)}"
+        )
+
+@api_router.delete("/admin/instagram/api/disconnect")
+async def instagram_api_disconnect(current_user: User = Depends(get_current_active_user)):
+    """Desconecta conta Instagram"""
+    result = await db.instagram_api_tokens.update_many(
+        {"user_id": current_user.id},
+        {"$set": {"is_active": False}}
+    )
+    
+    return {
+        "message": "Conta Instagram desconectada com sucesso",
+        "tokens_deactivated": result.modified_count
+    }
+
+@api_router.get("/admin/instagram/api/sync/history")
+async def instagram_api_sync_history(current_user: User = Depends(get_current_active_user)):
+    """Retorna histórico de sincronizações"""
+    syncs = await db.instagram_api_syncs.find().sort("started_at", -1).limit(10).to_list(10)
+    
+    for sync in syncs:
+        if "_id" in sync:
+            del sync["_id"]
+    
+    return syncs
+
 # Configuração CORS
 app.add_middleware(
     CORSMiddleware,
