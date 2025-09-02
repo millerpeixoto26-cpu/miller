@@ -583,6 +583,28 @@ const AdminPanel = () => {
     try {
       const response = await axios.get(`${API}/rituais-semana`);
       setRituaisSemana(response.data);
+      
+      // Atualiza o form com os dados existentes
+      const formData = {
+        segunda: { ritual_id: "", ativo: false },
+        terca: { ritual_id: "", ativo: false },
+        quarta: { ritual_id: "", ativo: false },
+        quinta: { ritual_id: "", ativo: false },
+        sexta: { ritual_id: "", ativo: false },
+        sabado: { ritual_id: "", ativo: false },
+        domingo: { ritual_id: "", ativo: false }
+      };
+      
+      response.data.forEach(rs => {
+        if (formData[rs.dia_semana]) {
+          formData[rs.dia_semana] = {
+            ritual_id: rs.ritual_id,
+            ativo: rs.ativo
+          };
+        }
+      });
+      
+      setRituaisSemanaForm(formData);
     } catch (error) {
       console.error("Erro ao buscar rituais da semana:", error);
       toast.error("Erro ao carregar rituais da semana");
