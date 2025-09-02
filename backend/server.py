@@ -172,6 +172,32 @@ class Token(BaseModel):
     token_type: str
     user: UserResponse
 
+# Modelos de Gateway de Pagamento
+class PaymentGateway(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str  # stripe, pagbank, mercadopago
+    display_name: str  # Nome amigável
+    is_active: bool = False
+    is_default: bool = False
+    config: Dict[str, str] = Field(default_factory=dict)  # API keys, etc
+    supported_methods: List[str] = Field(default_factory=list)  # credit_card, pix, boleto
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PaymentGatewayCreate(BaseModel):
+    name: str
+    display_name: str
+    is_active: bool = True
+    is_default: bool = False
+    config: Dict[str, str] = Field(default_factory=dict)
+    supported_methods: List[str] = Field(default_factory=list)
+
+class PaymentGatewayUpdate(BaseModel):
+    display_name: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_default: Optional[bool] = None
+    config: Optional[Dict[str, str]] = None
+    supported_methods: Optional[List[str]] = None
+
 class PaymentTransaction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     amount: float
