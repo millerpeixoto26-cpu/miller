@@ -1036,48 +1036,58 @@ const AdminPanel = () => {
             </TabsList>
           </div>
 
-          {/* Navigation - Mobile (Grid 2x3) */}
+          {/* Navigation - Mobile (Vertical Stack) */}
           <div className="block md:hidden">
-            <TabsList className="grid grid-cols-2 gap-2 bg-white/10 backdrop-blur-sm p-3 rounded-lg">
+            <div className="space-y-3 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
               <TabsTrigger 
                 value="pedidos" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex flex-col items-center justify-center px-3 py-4 text-xs font-medium h-16"
+                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium min-h-[60px]"
               >
-                <Phone className="w-5 h-5 mb-1" />
-                <span>Pedidos</span>
-                <span className="text-xs opacity-75">({pedidos.length})</span>
+                <Phone className="w-5 h-5 mr-3" />
+                <span className="flex-1 text-left">Pedidos</span>
+                <Badge className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
+                  {pedidos.length}
+                </Badge>
               </TabsTrigger>
+              
               <TabsTrigger 
                 value="rituais" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex flex-col items-center justify-center px-3 py-4 text-xs font-medium h-16"
+                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium min-h-[60px]"
               >
-                <Sparkles className="w-5 h-5 mb-1" />
-                <span>Rituais</span>
-                <span className="text-xs opacity-75">({rituais.length})</span>
+                <Sparkles className="w-5 h-5 mr-3" />
+                <span className="flex-1 text-left">Rituais</span>
+                <Badge className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
+                  {rituais.length}
+                </Badge>
               </TabsTrigger>
+              
               <TabsTrigger 
                 value="semana" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex flex-col items-center justify-center px-3 py-4 text-xs font-medium h-16"
+                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium min-h-[60px]"
               >
-                <Calendar className="w-5 h-5 mb-1" />
-                <span>Semana</span>
+                <Calendar className="w-5 h-5 mr-3" />
+                <span className="flex-1 text-left">Rituais da Semana</span>
               </TabsTrigger>
+              
               <TabsTrigger 
                 value="usuarios" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex flex-col items-center justify-center px-3 py-4 text-xs font-medium h-16"
+                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium min-h-[60px]"
               >
-                <Users className="w-5 h-5 mb-1" />
-                <span>Usuários</span>
-                <span className="text-xs opacity-75">({usuarios.length})</span>
+                <Users className="w-5 h-5 mr-3" />
+                <span className="flex-1 text-left">Usuários</span>
+                <Badge className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
+                  {usuarios.length}
+                </Badge>
               </TabsTrigger>
+              
               <TabsTrigger 
                 value="config" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex flex-col items-center justify-center px-3 py-4 text-xs font-medium h-16 col-span-2"
+                className="w-full data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-lg flex items-center px-4 py-4 text-sm font-medium min-h-[60px]"
               >
-                <Settings className="w-5 h-5 mb-1" />
-                <span>Configurações</span>
+                <Settings className="w-5 h-5 mr-3" />
+                <span className="flex-1 text-left">Configurações</span>
               </TabsTrigger>
-            </TabsList>
+            </div>
           </div>
 
           <TabsContent value="pedidos" className="mt-6">
