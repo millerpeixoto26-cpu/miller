@@ -619,17 +619,65 @@ const AdminPanel = () => {
   const handleAddRitual = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/rituais`, {
+      const ritualData = {
         ...novoRitual,
-        preco: parseFloat(novoRitual.preco)
-      });
-      toast.success("Ritual adicionado com sucesso!");
+        preco: parseFloat(novoRitual.preco),
+        desconto_valor: novoRitual.desconto_valor ? parseFloat(novoRitual.desconto_valor) : null,
+        desconto_percentual: novoRitual.desconto_percentual ? parseFloat(novoRitual.desconto_percentual) : null
+      };
+
+      if (editingRitual) {
+        await axios.put(`${API}/rituais/${editingRitual.id}`, ritualData);
+        toast.success("Ritual atualizado com sucesso!");
+        setEditingRitual(null);
+      } else {
+        await axios.post(`${API}/rituais`, ritualData);
+        toast.success("Ritual adicionado com sucesso!");
+      }
+      
       setShowAddRitual(false);
-      setNovoRitual({ nome: "", descricao: "", preco: "", imagem_url: "" });
+      setNovoRitual({ 
+        nome: "", 
+        descricao: "", 
+        preco: "", 
+        imagem_url: "",
+        visivel: true,
+        tem_desconto: false,
+        desconto_valor: "",
+        desconto_percentual: ""
+      });
       fetchRituais();
     } catch (error) {
-      console.error("Erro ao adicionar ritual:", error);
-      toast.error("Erro ao adicionar ritual");
+      console.error("Erro ao salvar ritual:", error);
+      toast.error("Erro ao salvar ritual");
+    }
+  };
+
+  const handleEditRitual = (ritual) => {
+    setEditingRitual(ritual);
+    setNovoRitual({
+      nome: ritual.nome,
+      descricao: ritual.descricao,
+      preco: ritual.preco.toString(),
+      imagem_url: ritual.imagem_url || "",
+      visivel: ritual.visivel,
+      tem_desconto: ritual.tem_desconto || false,
+      desconto_valor: ritual.desconto_valor ? ritual.desconto_valor.toString() : "",
+      desconto_percentual: ritual.desconto_percentual ? ritual.desconto_percentual.toString() : ""
+    });
+    setShowAddRitual(true);
+  };
+
+  const handleDeleteRitual = async (ritualId) => {
+    if (window.confirm("Tem certeza que deseja excluir este ritual?")) {
+      try {
+        await axios.delete(`${API}/rituais/${ritualId}`);
+        toast.success("Ritual excluído com sucesso!");
+        fetchRituais();
+      } catch (error) {
+        console.error("Erro ao excluir ritual:", error);
+        toast.error("Erro ao excluir ritual");
+      }
     }
   };
 
