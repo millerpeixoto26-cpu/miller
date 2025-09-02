@@ -903,6 +903,40 @@ const AdminPanel = () => {
     }
   };
 
+  const fetchDashboardVendas = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/dashboard/vendas`);
+      setDashboardVendas(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar dashboard de vendas:", error);
+    }
+  };
+
+  const fetchConsultasVendas = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/dashboard/vendas/consultas`);
+      setConsultasVendas(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar consultas:", error);
+    }
+  };
+
+  const handleUpdateMeta = async (mes, ano, valorMeta) => {
+    try {
+      await axios.post(`${API}/admin/metas`, {
+        mes: mes,
+        ano: ano,
+        valor_meta: parseFloat(valorMeta)
+      });
+      toast.success("Meta atualizada com sucesso!");
+      fetchDashboardVendas();
+      setShowMetaForm(false);
+    } catch (error) {
+      console.error("Erro ao atualizar meta:", error);
+      toast.error("Erro ao atualizar meta");
+    }
+  };
+
   const fetchGateways = async () => {
     try {
       const response = await axios.get(`${API}/payment-gateways`);
