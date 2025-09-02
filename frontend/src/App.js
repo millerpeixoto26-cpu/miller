@@ -683,12 +683,15 @@ const FormularioCliente = ({ sessionId }) => {
 
 // Componente para Admin Panel
 const AdminPanel = () => {
+  const { user, logout } = useAuth();
   const [pedidos, setPedidos] = useState([]);
   const [rituais, setRituais] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [configuracao, setConfiguracao] = useState(null);
   const [rituaisSemana, setRituaisSemana] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddRitual, setShowAddRitual] = useState(false);
+  const [showAddUser, setShowAddUser] = useState(false);
   const [editingRitual, setEditingRitual] = useState(null);
   const [novoRitual, setNovoRitual] = useState({
     nome: "",
@@ -699,6 +702,11 @@ const AdminPanel = () => {
     tem_desconto: false,
     desconto_valor: "",
     desconto_percentual: ""
+  });
+  const [novoUsuario, setNovoUsuario] = useState({
+    username: "",
+    email: "",
+    password: ""
   });
   const [configForm, setConfigForm] = useState({
     logo_url: "",
