@@ -1018,6 +1018,129 @@ async def test_payment_gateway(
         "message": f"Configurações do {gateway['display_name']} validadas com sucesso"
     }
 
+# APIs Instagram
+@api_router.get("/instagram/profile", response_model=dict)
+async def get_instagram_profile():
+    """Retorna o perfil Instagram (público)"""
+    profile = await db.instagram_profile.find_one({"is_active": True})
+    if not profile:
+        return None
+    
+    if "_id" in profile:
+        del profile["_id"]
+    
+    return profile
+
+@api_router.get("/admin/instagram/profile", response_model=dict)
+async def get_instagram_profile_admin(current_user: User = Depends(get_current_active_user)):
+    """Retorna o perfil Instagram para admin"""
+    profile = await db.instagram_profile.find_one()
+    if not profile:
+        return None
+    
+    if "_id" in profile:
+        del profile["_id"]
+    
+    return profile
+
+@api_router.post("/admin/instagram/profile", response_model=dict)
+async def create_or_update_instagram_profile(
+    profile_data: InstagramProfileCreate, 
+    current_user: User = Depends(get_current_active_user)
+):
+    """Cria ou atualiza o perfil Instagram"""
+    existing_profile = await db.instagram_profile.find_one()
+    
+    profile_dict = profile_data.dict()
+    
+    if existing_profile:
+        # Atualiza perfil existente
+        await db.instagram_profile.update_one(
+            {"id": existing_profile["id"]},
+            {"$set": profile_dict}
+        )
+        profile_dict["id"] = existing_profile["id"]
+    else:
+        # Cria novo perfil
+        profile_obj = InstagramProfile(**profile_dict)
+        await db.instagram_profile.insert_one(profile_obj.dict())
+        profile_dict = profile_obj.dict()
+    
+    return profile_dict
+
+@api_router.get("/instagram/posts", response_model=List[dict])
+async def get_instagram_posts():
+    """Retorna posts Instagram ativos (público)"""
+    posts = await db.instagram_posts.find(
+        {"is_active": True}
+    ).sort("order", 1).limit(9).to_list(9)
+    
+    for post in posts:
+        if "_id" in post:
+            del post["_id"]
+    
+    return posts
+
+@api_router.get("/admin/instagram/posts", response_model=List[dict])
+async def get_instagram_posts_admin(current_user: User = Depends(get_current_active_user)):
+    """Retorna todos os posts Instagram para admin"""
+    posts = await db.instagram_posts.find().sort("order", 1).to_list(1000)
+    
+    for post in posts:
+        if "_id" in post:
+            del post["_id"]
+    
+    return posts
+
+@api_router.post("/admin/instagram/posts", response_model=dict)
+async def create_instagram_post(
+    post_data: InstagramPostCreate, 
+    current_user: User = Depends(get_current_active_user)
+):
+    """Cria um novo post Instagram"""
+    post_dict = post_data.dict()
+    post_obj = InstagramPost(**post_dict)
+    
+    await db.instagram_posts.insert_one(post_obj.dict())
+    
+    return post_obj.dict()
+
+@api_router.put("/admin/instagram/posts/{post_id}", response_model=dict)
+async def update_instagram_post(
+    post_id: str, 
+    post_update: InstagramPostUpdate, 
+    current_user: User = Depends(get_current_active_user)
+):
+    """Atualiza um post Instagram"""
+    existing_post = await db.instagram_posts.find_one({"id": post_id})
+    if not existing_post:
+        raise HTTPException(status_code=404, detail="Post não encontrado")
+    
+    update_data = post_update.dict(exclude_unset=True)
+    
+    await db.instagram_posts.update_one(
+        {"id": post_id},
+        {"$set": update_data}
+    )
+    
+    updated_post = await db.instagram_posts.find_one({"id": post_id})
+    if "_id" in updated_post:
+        del updated_post["_id"]
+    
+    return updated_post
+
+@api_router.delete("/admin/instagram/posts/{post_id}")
+async def delete_instagram_post(
+    post_id: str, 
+    current_user: User = Depends(get_current_active_user)
+):
+    """Remove um post Instagram"""
+    result = await db.instagram_posts.delete_one({"id": post_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Post não encontrado")
+    
+    return {"message": "Post removido com sucesso"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
