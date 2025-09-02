@@ -602,7 +602,7 @@ async def create_cliente(cliente: ClienteCreate, session_id: str):
     return cliente_obj
 
 @api_router.get("/admin/pedidos", response_model=List[dict])
-async def get_pedidos():
+async def get_pedidos(current_user: User = Depends(get_current_active_user)):
     """Retorna todos os pedidos para o painel admin"""
     pipeline = [
         {
