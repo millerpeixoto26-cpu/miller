@@ -1229,12 +1229,12 @@ async def shutdown_db_client():
     client.close()
 
 # Novas APIs para Instagram API Integration
-@api_router.get("/admin/instagram/api/config", response_model=dict)
+@api_router.get("/admin/instagram/api/config")
 async def get_instagram_api_config(current_user: User = Depends(get_current_active_user)):
     """Retorna configuração da API do Instagram"""
     config = await db.instagram_api_config.find_one()
     if not config:
-        return None
+        return {"message": "Configuração não encontrada", "config": None}
     
     if "_id" in config:
         del config["_id"]
