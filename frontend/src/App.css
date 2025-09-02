@@ -254,11 +254,72 @@ body {
   }
 }
 
-/* Print styles */
-@media print {
-  * {
-    background: white !important;
-    color: black !important;
+/* Custom Tab Styles */
+.tabs-trigger {
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.375rem;
+  font-weight: 500;
+}
+
+.tabs-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.tabs-trigger[data-state="active"] {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 768px) {
+  .tabs-list {
+    gap: 0.25rem;
+    padding: 0.5rem;
+  }
+  
+  .tabs-trigger {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    min-height: 2.5rem;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .tabs-trigger .icon {
+    margin-bottom: 0.125rem;
+  }
+  
+  .admin-header {
+    padding: 1rem 0;
+  }
+  
+  .admin-title {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Improved card layouts for mobile */
+@media (max-width: 640px) {
+  .admin-card {
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  
+  .admin-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .button-group button {
+    width: 100%;
   }
 }
 
