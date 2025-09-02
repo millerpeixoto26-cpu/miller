@@ -140,6 +140,38 @@ class RitualSemanaCreate(BaseModel):
     imagem_destaque: Optional[str] = None
     ativo: bool = True
 
+# Modelos de Autenticação
+class User(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    username: str
+    email: str
+    hashed_password: str
+    is_active: bool = True
+    is_admin: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    email: str
+    is_active: bool
+    is_admin: bool
+    created_at: datetime
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: UserResponse
+
 class PaymentTransaction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     amount: float
