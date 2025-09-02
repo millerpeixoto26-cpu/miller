@@ -166,6 +166,18 @@ backend:
         comment: "Versão manual do Instagram já está implementada e funcionando - modelos InstagramProfile e InstagramPost existem"
 
 frontend:
+  - task: "WhatsApp Business API - Frontend"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Nova aba WhatsApp implementada: configuração API, gerenciamento de templates, teste de mensagens, histórico de envios, modais para edição, integração completa com backend"
+
   - task: "Instagram API Integration - Admin Panel UI"
     implemented: true
     working: "NA"
