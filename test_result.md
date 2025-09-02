@@ -217,7 +217,7 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "FASE 5 - Sistema de Agendamento implementado com sucesso! Backend: modelos completos (TipoConsulta, HorarioDisponivel, Consulta), 15+ endpoints para CRUD e agendamento público, integração com pagamentos, dados padrão criados. Frontend: nova aba Agendamentos com 3 sub-abas, componente dedicado AgendamentosTab, formulários completos, interface visual moderna. Sistema pronto para permitir que clientes agendem consultas online!"
+    message: "FASE 6 - WhatsApp Business API implementado com sucesso! Backend: modelos completos (WhatsAppTemplate, WhatsAppMessage, WhatsAppConfig), endpoints CRUD para templates, sistema de envio de mensagens, notificações automáticas para rituais/consultas, 4 templates padrão criados. Frontend: nova aba WhatsApp com configuração API, gerenciamento templates, teste mensagens, histórico envios. Sistema pronto para notificações automáticas via WhatsApp!"
   - agent: "testing"
     message: "🎉 TESTES DA INSTAGRAM API CONCLUÍDOS COM SUCESSO! Todos os 7 endpoints testados e funcionando: 1) GET /api/admin/instagram/api/config ✅ 2) POST /api/admin/instagram/api/config ✅ 3) GET /api/admin/instagram/api/status ✅ 4) GET /api/admin/instagram/api/connect ✅ 5) POST /api/admin/instagram/api/sync ✅ 6) DELETE /api/admin/instagram/api/disconnect ✅ 7) GET /api/admin/instagram/api/sync/history ✅. Autenticação JWT funcionando, validações corretas, OAuth2 implementado. Sistema pronto para produção! Taxa de sucesso: 90.5% (19/21 testes passaram)."
   - agent: "testing"
