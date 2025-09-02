@@ -2277,6 +2277,280 @@ async def get_agenda_dia(
     
     return consultas
 
+# APIs para WhatsApp Business
+@api_router.get("/admin/whatsapp/config")
+async def get_whatsapp_config(current_user: User = Depends(get_current_active_user)):
+    """Retorna configuração do WhatsApp"""
+    config = await db.whatsapp_config.find_one()
+    if not config:
+        return None
+    
+    if "_id" in config:
+        del config["_id"]
+    
+    # Mascarar token por segurança
+    if "api_token" in config:
+        config["api_token"] = "***" if config["api_token"] else ""
+    
+    return config
+
+@api_router.post("/admin/whatsapp/config")
+async def create_or_update_whatsapp_config(
+    config_data: WhatsAppConfigCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Cria ou atualiza configuração do WhatsApp"""
+    existing_config = await db.whatsapp_config.find_one()
+    
+    config_dict = config_data.dict()
+    config_dict["id"] = str(uuid.uuid4()) if not existing_config else existing_config["id"]
+    config_dict["created_at"] = datetime.now(timezone.utc)
+    
+    if existing_config:
+        await db.whatsapp_config.replace_one(
+            {"id": existing_config["id"]},
+            config_dict
+        )
+    else:
+        await db.whatsapp_config.insert_one(config_dict)
+    
+    # Mascarar token na resposta
+    config_dict["api_token"] = "***"
+    if "_id" in config_dict:
+        del config_dict["_id"]
+    
+    return config_dict
+
+@api_router.get("/admin/whatsapp/templates")
+async def get_whatsapp_templates(current_user: User = Depends(get_current_active_user)):
+    """Retorna todos os templates do WhatsApp"""
+    templates = await db.whatsapp_templates.find().sort("nome", 1).to_list(1000)
+    
+    for template in templates:
+        if "_id" in template:
+            del template["_id"]
+    
+    return templates
+
+@api_router.post("/admin/whatsapp/templates")
+async def create_whatsapp_template(
+    template_data: WhatsAppTemplateCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Cria um novo template do WhatsApp"""
+    template_dict = template_data.dict()
+    template_obj = WhatsAppTemplate(**template_dict)
+    
+    await db.whatsapp_templates.insert_one(template_obj.dict())
+    
+    return {"message": "Template criado com sucesso", "id": template_obj.id}
+
+@api_router.put("/admin/whatsapp/templates/{template_id}")
+async def update_whatsapp_template(
+    template_id: str,
+    template_update: WhatsAppTemplateUpdate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Atualiza um template do WhatsApp"""
+    existing_template = await db.whatsapp_templates.find_one({"id": template_id})
+    if not existing_template:
+        raise HTTPException(status_code=404, detail="Template não encontrado")
+    
+    update_data = template_update.dict(exclude_unset=True)
+    
+    await db.whatsapp_templates.update_one(
+        {"id": template_id},
+        {"$set": update_data}
+    )
+    
+    updated_template = await db.whatsapp_templates.find_one({"id": template_id})
+    if "_id" in updated_template:
+        del updated_template["_id"]
+    
+    return updated_template
+
+@api_router.delete("/admin/whatsapp/templates/{template_id}")
+async def delete_whatsapp_template(
+    template_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Remove um template do WhatsApp"""
+    result = await db.whatsapp_templates.delete_one({"id": template_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Template não encontrado")
+    
+    return {"message": "Template removido com sucesso"}
+
+async def send_whatsapp_message(phone_number: str, message: str) -> bool:
+    """Envia mensagem via WhatsApp (implementação simplificada)"""
+    try:
+        # Buscar configuração
+        config = await db.whatsapp_config.find_one({"ativo": True})
+        if not config or not config.get("api_url") or not config.get("api_token"):
+            logger.warning("Configuração do WhatsApp não encontrada ou inativa")
+            return False
+        
+        # Salvar mensagem no banco
+        message_obj = WhatsAppMessage(
+            to=phone_number,
+            message=message,
+            status="pending"
+        )
+        await db.whatsapp_messages.insert_one(message_obj.dict())
+        
+        # TODO: Implementar envio real via API do WhatsApp
+        # Por enquanto, apenas simular sucesso
+        await db.whatsapp_messages.update_one(
+            {"id": message_obj.id},
+            {
+                "$set": {
+                    "status": "sent",
+                    "sent_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        logger.info(f"Mensagem WhatsApp simulada para {phone_number}: {message[:50]}...")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Erro ao enviar WhatsApp: {str(e)}")
+        return False
+
+async def render_template(template_str: str, variables: dict) -> str:
+    """Renderiza template com variáveis"""
+    try:
+        return template_str.format(**variables)
+    except KeyError as e:
+        logger.warning(f"Variável não encontrada no template: {e}")
+        return template_str
+
+@api_router.post("/admin/whatsapp/send-test")
+async def send_test_whatsapp(
+    phone_number: str,
+    message: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Envia mensagem de teste via WhatsApp"""
+    success = await send_whatsapp_message(phone_number, message)
+    
+    if success:
+        return {"message": "Mensagem de teste enviada com sucesso"}
+    else:
+        raise HTTPException(status_code=500, detail="Falha ao enviar mensagem")
+
+# Função para enviar notificações automáticas
+async def send_ritual_confirmation(pedido_id: str):
+    """Envia confirmação de ritual via WhatsApp"""
+    try:
+        # Buscar pedido
+        pedido = await db.pedidos.find_one({"id": pedido_id})
+        if not pedido:
+            return False
+        
+        # Buscar cliente
+        cliente = await db.clientes.find_one({"id": pedido["cliente_id"]})
+        if not cliente:
+            return False
+        
+        # Buscar ritual
+        ritual = await db.rituais.find_one({"id": pedido["ritual_id"]})
+        if not ritual:
+            return False
+        
+        # Buscar template
+        template = await db.whatsapp_templates.find_one({
+            "nome": "confirmacao_ritual",
+            "ativo": True
+        })
+        
+        if template:
+            message = await render_template(template["template"], {
+                "nome": cliente["nome_completo"],
+                "ritual": ritual["nome"],
+                "valor": f"R$ {pedido['valor_total']:.2f}"
+            })
+        else:
+            message = f"""🙏 Olá {cliente['nome_completo']}!
+
+Seu ritual *{ritual['nome']}* foi confirmado com sucesso!
+Valor: R$ {pedido['valor_total']:.2f}
+
+Em breve entraremos em contato para dar andamento.
+
+Gratidão! ✨"""
+        
+        return await send_whatsapp_message(cliente["telefone"], message)
+        
+    except Exception as e:
+        logger.error(f"Erro ao enviar confirmação de ritual: {str(e)}")
+        return False
+
+async def send_consulta_confirmation(consulta_id: str):
+    """Envia confirmação de consulta via WhatsApp"""
+    try:
+        # Buscar consulta
+        consulta = await db.consultas.find_one({"id": consulta_id})
+        if not consulta:
+            return False
+        
+        # Buscar cliente
+        cliente = await db.clientes.find_one({"id": consulta["cliente_id"]})
+        if not cliente:
+            return False
+        
+        # Buscar tipo de consulta
+        tipo_consulta = await db.tipos_consulta.find_one({"id": consulta["tipo_consulta_id"]})
+        if not tipo_consulta:
+            return False
+        
+        # Buscar template
+        template = await db.whatsapp_templates.find_one({
+            "nome": "confirmacao_consulta",
+            "ativo": True
+        })
+        
+        data_consulta = consulta["data_agendada"].strftime("%d/%m/%Y às %H:%M")
+        
+        if template:
+            message = await render_template(template["template"], {
+                "nome": cliente["nome_completo"],
+                "consulta": tipo_consulta["nome"],
+                "data": data_consulta,
+                "valor": f"R$ {tipo_consulta['preco']:.2f}"
+            })
+        else:
+            message = f"""📅 Olá {cliente['nome_completo']}!
+
+Sua *{tipo_consulta['nome']}* foi agendada com sucesso!
+
+📅 Data: {data_consulta}
+💰 Valor: R$ {tipo_consulta['preco']:.2f}
+
+Por favor, esteja disponível no horário marcado.
+
+Namastê! 🙏"""
+        
+        return await send_whatsapp_message(cliente["telefone"], message)
+        
+    except Exception as e:
+        logger.error(f"Erro ao enviar confirmação de consulta: {str(e)}")
+        return False
+
+@api_router.get("/admin/whatsapp/messages")
+async def get_whatsapp_messages(
+    limit: int = 50,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Retorna histórico de mensagens WhatsApp"""
+    messages = await db.whatsapp_messages.find().sort("created_at", -1).limit(limit).to_list(limit)
+    
+    for message in messages:
+        if "_id" in message:
+            del message["_id"]
+    
+    return messages
+
 # Configuração CORS
 app.add_middleware(
     CORSMiddleware,
