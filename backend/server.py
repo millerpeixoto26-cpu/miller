@@ -3731,7 +3731,16 @@ async def startup_event():
     await create_default_tipos_consulta()
     await create_default_horarios()
     await create_default_whatsapp_templates()
+    
+    # Iniciar scheduler
+    setup_scheduled_tasks()
+    scheduler.start()
+    logger.info("Sistema iniciado com sucesso! ✨")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    # Parar scheduler
+    if scheduler.running:
+        scheduler.shutdown()
     client.close()
+    logger.info("Sistema finalizado")
