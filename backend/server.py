@@ -346,6 +346,99 @@ class MetaMensalCreate(BaseModel):
 class MetaMensalUpdate(BaseModel):
     valor_meta: float
 
+# Modelos para Sistema de Cupons e Fidelidade
+class Cupom(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    codigo: str
+    descricao: str
+    tipo: str  # "percentual", "valor_fixo"
+    valor_desconto: float
+    percentual_desconto: Optional[float] = None
+    valor_minimo: Optional[float] = None
+    data_inicio: datetime
+    data_fim: datetime
+    uso_maximo: Optional[int] = None  # None = infinito
+    uso_atual: int = 0
+    ativo: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CupomCreate(BaseModel):
+    codigo: str
+    descricao: str
+    tipo: str
+    valor_desconto: float
+    percentual_desconto: Optional[float] = None
+    valor_minimo: Optional[float] = None
+    data_inicio: datetime
+    data_fim: datetime
+    uso_maximo: Optional[int] = None
+    ativo: bool = True
+
+class ProgramaFidelidade(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    cliente_id: str
+    consultas_realizadas: int = 0
+    consultas_gratis_disponiveis: int = 0
+    pontos_acumulados: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class IndicacaoAmigo(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    cliente_indicador_id: str
+    cliente_indicado_id: Optional[str] = None
+    nome_indicado: str
+    telefone_indicado: str
+    codigo_indicacao: str
+    desconto_usado: bool = False
+    desconto_indicador_usado: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class IndicacaoCreate(BaseModel):
+    nome_indicado: str
+    telefone_indicado: str
+
+# Modelos para Backup e Sistema
+class BackupSistema(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tipo: str  # "manual", "automatico"
+    status: str  # "em_progresso", "concluido", "falhou"
+    tamanho_bytes: Optional[int] = None
+    arquivo_path: Optional[str] = None
+    erro_mensagem: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: Optional[datetime] = None
+
+# Modelos para Automações WhatsApp
+class AutomacaoWhatsApp(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tipo: str  # "lembrete_24h", "lembrete_1h", "followup", "relatorio_diario", "remarketing"
+    consulta_id: Optional[str] = None
+    cliente_id: Optional[str] = None
+    agendado_para: datetime
+    status: str = "pendente"  # "pendente", "enviado", "falhou"
+    template_usado: Optional[str] = None
+    mensagem_enviada: Optional[str] = None
+    tentativas: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    sent_at: Optional[datetime] = None
+
+# Modelos para Avaliações
+class Avaliacao(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    consulta_id: str
+    cliente_id: str
+    nota: int  # 1-5 estrelas
+    comentario: Optional[str] = None
+    recomendaria: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AvaliacaoCreate(BaseModel):
+    consulta_id: str
+    nota: int
+    comentario: Optional[str] = None
+    recomendaria: bool = True
+
 # Modelos para WhatsApp
 class WhatsAppTemplate(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
