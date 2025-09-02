@@ -280,6 +280,19 @@ class InstagramPostUpdate(BaseModel):
     is_active: Optional[bool] = None
     order: Optional[int] = None
 
+# Novos modelos para API Integration
+class InstagramApiConfigCreate(BaseModel):
+    app_id: str
+    app_secret: str
+    redirect_uri: str
+    is_active: bool = True
+
+class InstagramApiConfigUpdate(BaseModel):
+    app_id: Optional[str] = None
+    app_secret: Optional[str] = None
+    redirect_uri: Optional[str] = None
+    is_active: Optional[bool] = None
+
 class PaymentTransaction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     amount: float
