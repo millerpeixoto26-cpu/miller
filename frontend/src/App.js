@@ -924,14 +924,13 @@ const AdminPanel = () => {
                              dia === "domingo" ? "Domingo" : "Segunda"}
                           </div>
                           <Select
-                            value={rituaisSemanaForm[dia]?.ritual_id || ""}
+                            value={rituaisSemanaForm[dia]?.ritual_id || undefined}
                             onValueChange={(value) => updateRitualSemana(dia, 'ritual_id', value)}
                           >
                             <SelectTrigger className="w-60 bg-white/5 border-purple-300/30 text-white">
                               <SelectValue placeholder="Escolher ritual..." />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Nenhum ritual</SelectItem>
                               {rituais.map((ritual) => (
                                 <SelectItem key={ritual.id} value={ritual.id}>
                                   {ritual.nome} - R$ {ritual.preco.toFixed(2)}
