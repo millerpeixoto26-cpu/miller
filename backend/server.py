@@ -876,6 +876,7 @@ logger = logging.getLogger(__name__)
 async def startup_event():
     await create_default_admin()
     await create_default_gateways()
+    await create_default_gateways()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
