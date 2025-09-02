@@ -2659,6 +2659,308 @@ const AdminPanel = () => {
             )}
           </TabsContent>
 
+          <TabsContent value="whatsapp" className="mt-6">
+            <div className="space-y-6">
+              {/* Configuração WhatsApp */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Phone className="w-5 h-5 mr-2" />
+                    Configuração WhatsApp Business
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Configure a API do WhatsApp para envio automático de notificações
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleUpdateWhatsappConfig} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="api_url" className="text-white">URL da API</Label>
+                        <Input
+                          id="api_url"
+                          name="api_url"
+                          defaultValue={whatsappConfig?.api_url || ''}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="https://api.whatsapp.com/send"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="api_token" className="text-white">Token da API</Label>
+                        <Input
+                          id="api_token"
+                          name="api_token"
+                          type="password"
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder={whatsappConfig?.api_token ? "***" : "Seu token de acesso"}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="ativo"
+                        name="ativo"
+                        defaultChecked={whatsappConfig?.ativo}
+                      />
+                      <Label htmlFor="ativo" className="text-white">WhatsApp ativo</Label>
+                    </div>
+
+                    <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                      Salvar Configuração
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Templates de Mensagem */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-white flex items-center">
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Templates de Mensagem
+                      </CardTitle>
+                      <CardDescription className="text-purple-200">
+                        Configure mensagens automáticas personalizadas
+                      </CardDescription>
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        setEditingTemplate(null);
+                        setShowAddTemplate(true);
+                      }}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Novo Template
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {whatsappTemplates.map((template) => (
+                      <Card key={template.id} className="bg-white/5 border-purple-400/20">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <h4 className="font-semibold text-white">{template.nome}</h4>
+                              <Badge className={`text-xs ${template.ativo ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                                {template.ativo ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setEditingTemplate(template);
+                                  setShowAddTemplate(true);
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleDeleteTemplate(template.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="bg-black/20 rounded-lg p-3">
+                            <pre className="text-purple-200 text-sm whitespace-pre-wrap font-mono">
+                              {template.template}
+                            </pre>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+
+                    {whatsappTemplates.length === 0 && (
+                      <div className="text-center py-8">
+                        <Phone className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-white mb-2">Nenhum template configurado</h3>
+                        <p className="text-purple-200">Clique em "Novo Template" para começar</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Teste de Mensagem */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <TestTube className="w-5 h-5 mr-2" />
+                    Teste de Mensagem
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Envie uma mensagem de teste para verificar a integração
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    handleSendTestMessage(
+                      formData.get('phone'),
+                      formData.get('message')
+                    );
+                  }} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="phone" className="text-white">Número WhatsApp</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="5511999999999"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="message" className="text-white">Mensagem</Label>
+                        <Input
+                          id="message"
+                          name="message"
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="Mensagem de teste..."
+                          required
+                        />
+                      </div>
+                    </div>
+                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                      Enviar Teste
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Histórico de Mensagens */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Phone className="w-5 h-5 mr-2" />
+                    Histórico de Mensagens
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Últimas mensagens enviadas via WhatsApp
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {whatsappMessages.map((message) => (
+                      <div key={message.id} className="bg-white/5 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white font-medium">{message.to}</span>
+                          <div className="flex items-center gap-2">
+                            <Badge className={`text-xs ${
+                              message.status === 'sent' ? 'bg-green-500/20 text-green-300' :
+                              message.status === 'delivered' ? 'bg-blue-500/20 text-blue-300' :
+                              message.status === 'failed' ? 'bg-red-500/20 text-red-300' :
+                              'bg-yellow-500/20 text-yellow-300'
+                            }`}>
+                              {message.status}
+                            </Badge>
+                            <span className="text-purple-300 text-xs">
+                              {new Date(message.created_at).toLocaleString('pt-BR')}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-purple-200 text-sm bg-black/20 rounded p-2">
+                          {message.message}
+                        </p>
+                      </div>
+                    ))}
+
+                    {whatsappMessages.length === 0 && (
+                      <div className="text-center py-8">
+                        <Phone className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-white mb-2">Nenhuma mensagem enviada</h3>
+                        <p className="text-purple-200">As mensagens enviadas aparecerão aqui</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Modal para Adicionar/Editar Template */}
+            {showAddTemplate && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <CardHeader>
+                    <CardTitle className="text-white">
+                      {editingTemplate ? 'Editar Template' : 'Novo Template'}
+                    </CardTitle>
+                    <CardDescription className="text-purple-200">
+                      Use variáveis como {"{nome}"}, {"{valor}"}, {"{data}"} para personalizar
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleAddTemplate} className="space-y-4">
+                      <div>
+                        <Label htmlFor="nome" className="text-white">Nome do Template</Label>
+                        <Input
+                          id="nome"
+                          name="nome"
+                          defaultValue={editingTemplate?.nome || ''}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="confirmacao_ritual"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="template" className="text-white">Mensagem Template</Label>
+                        <Textarea
+                          id="template"
+                          name="template"
+                          defaultValue={editingTemplate?.template || ''}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          placeholder="🙏 Olá {nome}! Seu ritual foi confirmado..."
+                          rows={8}
+                          required
+                        />
+                        <p className="text-purple-300 text-xs mt-1">
+                          Variáveis disponíveis: {"{nome}, {ritual}, {consulta}, {valor}, {data}, {horario}"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="ativo"
+                          name="ativo"
+                          defaultChecked={editingTemplate?.ativo !== false}
+                        />
+                        <Label htmlFor="ativo" className="text-white">Template ativo</Label>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button type="submit" className="bg-green-600 hover:bg-green-700 flex-1">
+                          {editingTemplate ? 'Atualizar' : 'Criar'} Template
+                        </Button>
+                        <Button 
+                          type="button" 
+                          onClick={() => {
+                            setShowAddTemplate(false);
+                            setEditingTemplate(null);
+                          }}
+                          className="bg-gray-600 hover:bg-gray-700 flex-1"
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </TabsContent>
+
           <TabsContent value="instagram" className="mt-6">
             <div className="space-y-6">
               {/* Configuração da API Instagram */}
