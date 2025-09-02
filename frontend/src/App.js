@@ -512,11 +512,16 @@ const AdminPanel = () => {
   const [rituaisSemana, setRituaisSemana] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddRitual, setShowAddRitual] = useState(false);
+  const [editingRitual, setEditingRitual] = useState(null);
   const [novoRitual, setNovoRitual] = useState({
     nome: "",
     descricao: "",
     preco: "",
-    imagem_url: ""
+    imagem_url: "",
+    visivel: true,
+    tem_desconto: false,
+    desconto_valor: "",
+    desconto_percentual: ""
   });
   const [configForm, setConfigForm] = useState({
     logo_url: "",
