@@ -3060,6 +3060,321 @@ async def get_avaliacoes_publicas(limit: int = 6):
     
     return avaliacoes_publicas
 
+# Sistema de Automações WhatsApp
+async def schedule_whatsapp_automation(tipo: str, consulta_id: str = None, cliente_id: str = None, delay_hours: int = 0):
+    """Agenda automação WhatsApp"""
+    agendado_para = datetime.now(timezone.utc) + timedelta(hours=delay_hours)
+    
+    automacao = AutomacaoWhatsApp(
+        tipo=tipo,
+        consulta_id=consulta_id,
+        cliente_id=cliente_id,
+        agendado_para=agendado_para
+    )
+    
+    await db.automacoes_whatsapp.insert_one(automacao.dict())
+    return automacao.id
+
+async def process_whatsapp_automations():
+    """Processa automações WhatsApp pendentes"""
+    now = datetime.now(timezone.utc)
+    
+    # Buscar automações pendentes que devem ser executadas
+    automacoes = await db.automacoes_whatsapp.find({
+        "status": "pendente",
+        "agendado_para": {"$lte": now}
+    }).to_list(1000)
+    
+    for automacao in automacoes:
+        try:
+            success = await execute_whatsapp_automation(automacao)
+            
+            status = "enviado" if success else "falhou"
+            await db.automacoes_whatsapp.update_one(
+                {"id": automacao["id"]},
+                {
+                    "$set": {
+                        "status": status,
+                        "sent_at": datetime.now(timezone.utc),
+                        "tentativas": automacao["tentativas"] + 1
+                    }
+                }
+            )
+            
+        except Exception as e:
+            logger.error(f"Erro ao processar automação {automacao['id']}: {e}")
+            await db.automacoes_whatsapp.update_one(
+                {"id": automacao["id"]},
+                {
+                    "$set": {
+                        "status": "falhou",
+                        "tentativas": automacao["tentativas"] + 1
+                    }
+                }
+            )
+
+async def execute_whatsapp_automation(automacao: dict) -> bool:
+    """Executa uma automação específica"""
+    try:
+        if automacao["tipo"] == "lembrete_24h":
+            return await send_lembrete_consulta(automacao["consulta_id"], "24h")
+        elif automacao["tipo"] == "lembrete_1h":
+            return await send_lembrete_consulta(automacao["consulta_id"], "1h")
+        elif automacao["tipo"] == "followup":
+            return await send_followup_consulta(automacao["consulta_id"])
+        elif automacao["tipo"] == "relatorio_diario":
+            return await send_relatorio_diario()
+        elif automacao["tipo"] == "remarketing":
+            return await send_remarketing_cliente(automacao["cliente_id"])
+        
+        return False
+    except Exception as e:
+        logger.error(f"Erro ao executar automação {automacao['tipo']}: {e}")
+        return False
+
+async def send_lembrete_consulta(consulta_id: str, timing: str) -> bool:
+    """Envia lembrete de consulta"""
+    try:
+        consulta = await db.consultas.find_one({"id": consulta_id})
+        if not consulta:
+            return False
+        
+        cliente = await db.clientes.find_one({"id": consulta["cliente_id"]})
+        tipo_consulta = await db.tipos_consulta.find_one({"id": consulta["tipo_consulta_id"]})
+        
+        if not cliente or not tipo_consulta:
+            return False
+        
+        template_name = "lembrete_consulta"
+        template = await db.whatsapp_templates.find_one({"nome": template_name, "ativo": True})
+        
+        data_consulta = consulta["data_agendada"].strftime("%d/%m/%Y")
+        horario_consulta = consulta["data_agendada"].strftime("%H:%M")
+        
+        if template:
+            message = await render_template(template["template"], {
+                "nome": cliente["nome_completo"],
+                "consulta": tipo_consulta["nome"],
+                "data": data_consulta,
+                "horario": horario_consulta,
+                "timing": timing
+            })
+        else:
+            if timing == "24h":
+                message = f"""⏰ Lembrete: {cliente['nome_completo']}
+
+Sua {tipo_consulta['nome']} está agendada para AMANHÃ ({data_consulta}) às {horario_consulta}.
+
+Por favor, esteja disponível no horário marcado.
+
+Até amanhã! 🙏"""
+            else:
+                message = f"""⏰ Lembrete: {cliente['nome_completo']}
+
+Sua {tipo_consulta['nome']} está agendada para HOJE daqui a 1 hora ({horario_consulta}).
+
+Estarei aguardando você!
+
+Namastê! 🙏"""
+        
+        return await send_whatsapp_message(cliente["telefone"], message)
+        
+    except Exception as e:
+        logger.error(f"Erro ao enviar lembrete: {e}")
+        return False
+
+async def send_followup_consulta(consulta_id: str) -> bool:
+    """Envia follow-up pós-consulta"""
+    try:
+        consulta = await db.consultas.find_one({"id": consulta_id})
+        if not consulta:
+            return False
+        
+        cliente = await db.clientes.find_one({"id": consulta["cliente_id"]})
+        if not cliente:
+            return False
+        
+        # Verificar se já foi avaliada
+        avaliacao = await db.avaliacoes.find_one({"consulta_id": consulta_id})
+        
+        if avaliacao:
+            # Follow-up para próxima consulta
+            message = f"""🌟 Olá {cliente['nome_completo']}!
+
+Espero que nossa consulta tenha te ajudado! ✨
+
+Que tal agendar uma nova consulta para continuar sua jornada espiritual?
+
+Link para agendar: [SEU_SITE]
+
+Gratidão! 🙏"""
+        else:
+            # Solicitar avaliação
+            message = f"""⭐ Olá {cliente['nome_completo']}!
+
+Como foi nossa consulta? Sua opinião é muito importante!
+
+Avalie em: [LINK_AVALIACAO]?consulta={consulta_id}
+
+• ⭐⭐⭐⭐⭐ (5 estrelas = excelente)
+• Deixe um comentário se desejar
+
+Gratidão! 🙏"""
+        
+        return await send_whatsapp_message(cliente["telefone"], message)
+        
+    except Exception as e:
+        logger.error(f"Erro ao enviar follow-up: {e}")
+        return False
+
+async def send_relatorio_diario() -> bool:
+    """Envia relatório diário para o mentor"""
+    try:
+        hoje = date.today()
+        inicio_dia = datetime.combine(hoje, datetime.min.time())
+        fim_dia = datetime.combine(hoje, datetime.max.time())
+        
+        # Buscar dados do dia
+        consultas_dia = await db.consultas.find({
+            "data_agendada": {"$gte": inicio_dia, "$lte": fim_dia}
+        }).to_list(1000)
+        
+        # Buscar vendas do dia
+        vendas_dia = await db.pedidos.find({
+            "created_at": {"$gte": inicio_dia, "$lte": fim_dia},
+            "status_pagamento": "paid"
+        }).to_list(1000)
+        
+        consultas_total = len(consultas_dia)
+        consultas_realizadas = len([c for c in consultas_dia if c["status"] == "realizada"])
+        consultas_pendentes = len([c for c in consultas_dia if c["status"] in ["agendada", "confirmada"]])
+        
+        faturamento_rituais = sum(p["valor_total"] for p in vendas_dia)
+        faturamento_consultas = sum(consultas_dia[i].get("preco", 0) for i in range(len(consultas_dia)) if consultas_dia[i]["status_pagamento"] == "paid")
+        faturamento_total = faturamento_rituais + faturamento_consultas
+        
+        # Buscar número do WhatsApp do admin (configuração)
+        config = await db.configuracao.find_one()
+        whatsapp_mentor = config.get("whatsapp_numero") if config else None
+        
+        if not whatsapp_mentor:
+            logger.warning("WhatsApp do mentor não configurado")
+            return False
+        
+        template = await db.whatsapp_templates.find_one({"nome": "relatorio_diario", "ativo": True})
+        
+        detalhes = ""
+        if consultas_pendentes > 0:
+            detalhes += f"\n⏳ PENDENTES HOJE:\n"
+            for consulta in [c for c in consultas_dia if c["status"] in ["agendada", "confirmada"]]:
+                horario = consulta["data_agendada"].strftime("%H:%M")
+                detalhes += f"• {horario} - Consulta\n"
+        
+        if template:
+            message = await render_template(template["template"], {
+                "data": hoje.strftime("%d/%m/%Y"),
+                "faturamento": f"R$ {faturamento_total:.2f}",
+                "consultas_total": consultas_total,
+                "consultas_realizadas": consultas_realizadas,
+                "consultas_pendentes": consultas_pendentes,
+                "detalhes": detalhes
+            })
+        else:
+            message = f"""📊 Relatório do Dia - {hoje.strftime("%d/%m/%Y")}
+
+💰 Faturamento: R$ {faturamento_total:.2f}
+📅 Consultas: {consultas_total}
+✅ Realizadas: {consultas_realizadas}
+⏳ Pendentes: {consultas_pendentes}
+
+{detalhes}
+
+Tenha um ótimo dia! 🙏"""
+        
+        return await send_whatsapp_message(whatsapp_mentor, message)
+        
+    except Exception as e:
+        logger.error(f"Erro ao enviar relatório diário: {e}")
+        return False
+
+async def send_remarketing_cliente(cliente_id: str) -> bool:
+    """Envia campanha de remarketing para cliente inativo"""
+    try:
+        cliente = await db.clientes.find_one({"id": cliente_id})
+        if not cliente:
+            return False
+        
+        # Verificar última consulta
+        ultima_consulta = await db.consultas.find_one(
+            {"cliente_id": cliente_id},
+            sort=[("created_at", -1)]
+        )
+        
+        if ultima_consulta:
+            days_since = (datetime.now(timezone.utc) - ultima_consulta["created_at"]).days
+            
+        message = f"""🌟 Olá {cliente['nome_completo']}!
+
+Sinto sua falta por aqui! ✨
+
+Que tal uma nova consulta espiritual para renovar suas energias?
+
+🎁 OFERTA ESPECIAL: 15% OFF para você!
+Código: VOLTEI15
+
+Link para agendar: [SEU_SITE]
+
+Válido por 7 dias. Namastê! 🙏"""
+        
+        return await send_whatsapp_message(cliente["telefone"], message)
+        
+    except Exception as e:
+        logger.error(f"Erro ao enviar remarketing: {e}")
+        return False
+
+# APIs para gerenciar automações
+@api_router.get("/admin/automacoes")
+async def get_automacoes(current_user: User = Depends(get_current_active_user)):
+    """Lista automações WhatsApp"""
+    automacoes = await db.automacoes_whatsapp.find().sort("created_at", -1).limit(100).to_list(100)
+    
+    for automacao in automacoes:
+        if "_id" in automacao:
+            del automacao["_id"]
+    
+    return automacoes
+
+@api_router.post("/admin/automacoes/process")
+async def process_automacoes_manual(current_user: User = Depends(get_current_active_user)):
+    """Processa automações manualmente (para teste)"""
+    await process_whatsapp_automations()
+    return {"message": "Automações processadas"}
+
+# Função para agendar automações quando consulta é criada
+async def schedule_consulta_automations(consulta_id: str):
+    """Agenda automações para uma consulta"""
+    consulta = await db.consultas.find_one({"id": consulta_id})
+    if not consulta:
+        return
+    
+    data_consulta = consulta["data_agendada"]
+    now = datetime.now(timezone.utc)
+    
+    # Lembrete 24h antes
+    hours_until_24h_before = (data_consulta - timedelta(hours=24) - now).total_seconds() / 3600
+    if hours_until_24h_before > 0:
+        await schedule_whatsapp_automation("lembrete_24h", consulta_id=consulta_id, delay_hours=int(hours_until_24h_before))
+    
+    # Lembrete 1h antes
+    hours_until_1h_before = (data_consulta - timedelta(hours=1) - now).total_seconds() / 3600
+    if hours_until_1h_before > 0:
+        await schedule_whatsapp_automation("lembrete_1h", consulta_id=consulta_id, delay_hours=int(hours_until_1h_before))
+    
+    # Follow-up 24h depois
+    hours_until_followup = (data_consulta + timedelta(hours=24) - now).total_seconds() / 3600
+    if hours_until_followup > 0:
+        await schedule_whatsapp_automation("followup", consulta_id=consulta_id, delay_hours=int(hours_until_followup))
+
 # Configuração CORS
 app.add_middleware(
     CORSMiddleware,
