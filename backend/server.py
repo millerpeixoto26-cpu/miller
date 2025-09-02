@@ -1862,6 +1862,383 @@ async def create_consulta(consulta: ConsultaCreate, session_id: str):
     
     return consulta_obj
 
+# APIs para Sistema de Agendamento
+@api_router.get("/admin/tipos-consulta")
+async def get_tipos_consulta(current_user: User = Depends(get_current_active_user)):
+    """Retorna todos os tipos de consulta para admin"""
+    tipos = await db.tipos_consulta.find().sort("ordem", 1).to_list(1000)
+    
+    for tipo in tipos:
+        if "_id" in tipo:
+            del tipo["_id"]
+    
+    return tipos
+
+@api_router.get("/tipos-consulta")
+async def get_tipos_consulta_publico():
+    """Retorna tipos de consulta ativos (público)"""
+    tipos = await db.tipos_consulta.find({"ativo": True}).sort("ordem", 1).to_list(1000)
+    
+    for tipo in tipos:
+        if "_id" in tipo:
+            del tipo["_id"]
+    
+    return tipos
+
+@api_router.post("/admin/tipos-consulta")
+async def create_tipo_consulta(
+    tipo_data: TipoConsultaCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Cria um novo tipo de consulta"""
+    tipo_dict = tipo_data.dict()
+    tipo_obj = TipoConsulta(**tipo_dict)
+    
+    await db.tipos_consulta.insert_one(tipo_obj.dict())
+    
+    return {"message": "Tipo de consulta criado com sucesso", "id": tipo_obj.id}
+
+@api_router.put("/admin/tipos-consulta/{tipo_id}")
+async def update_tipo_consulta(
+    tipo_id: str,
+    tipo_update: TipoConsultaUpdate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Atualiza um tipo de consulta"""
+    existing_tipo = await db.tipos_consulta.find_one({"id": tipo_id})
+    if not existing_tipo:
+        raise HTTPException(status_code=404, detail="Tipo de consulta não encontrado")
+    
+    update_data = tipo_update.dict(exclude_unset=True)
+    
+    await db.tipos_consulta.update_one(
+        {"id": tipo_id},
+        {"$set": update_data}
+    )
+    
+    updated_tipo = await db.tipos_consulta.find_one({"id": tipo_id})
+    if "_id" in updated_tipo:
+        del updated_tipo["_id"]
+    
+    return updated_tipo
+
+@api_router.delete("/admin/tipos-consulta/{tipo_id}")
+async def delete_tipo_consulta(
+    tipo_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Remove um tipo de consulta"""
+    result = await db.tipos_consulta.delete_one({"id": tipo_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Tipo de consulta não encontrado")
+    
+    return {"message": "Tipo de consulta removido com sucesso"}
+
+@api_router.get("/admin/horarios-disponiveis")
+async def get_horarios_disponiveis(current_user: User = Depends(get_current_active_user)):
+    """Retorna horários disponíveis para admin"""
+    horarios = await db.horarios_disponiveis.find().sort("dia_semana", 1).to_list(1000)
+    
+    for horario in horarios:
+        if "_id" in horario:
+            del horario["_id"]
+    
+    return horarios
+
+@api_router.post("/admin/horarios-disponiveis")
+async def create_horario_disponivel(
+    horario_data: HorarioDisponivelCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Cria um novo horário disponível"""
+    # Verifica se já existe horário para o mesmo dia
+    existing = await db.horarios_disponiveis.find_one({"dia_semana": horario_data.dia_semana})
+    if existing:
+        raise HTTPException(
+            status_code=400, 
+            detail="Já existe horário configurado para este dia da semana"
+        )
+    
+    horario_dict = horario_data.dict()
+    horario_obj = HorarioDisponivel(**horario_dict)
+    
+    await db.horarios_disponiveis.insert_one(horario_obj.dict())
+    
+    return {"message": "Horário disponível criado com sucesso", "id": horario_obj.id}
+
+@api_router.put("/admin/horarios-disponiveis/{horario_id}")
+async def update_horario_disponivel(
+    horario_id: str,
+    horario_update: HorarioDisponivelUpdate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Atualiza um horário disponível"""
+    existing_horario = await db.horarios_disponiveis.find_one({"id": horario_id})
+    if not existing_horario:
+        raise HTTPException(status_code=404, detail="Horário não encontrado")
+    
+    update_data = horario_update.dict(exclude_unset=True)
+    
+    await db.horarios_disponiveis.update_one(
+        {"id": horario_id},
+        {"$set": update_data}
+    )
+    
+    updated_horario = await db.horarios_disponiveis.find_one({"id": horario_id})
+    if "_id" in updated_horario:
+        del updated_horario["_id"]
+    
+    return updated_horario
+
+@api_router.delete("/admin/horarios-disponiveis/{horario_id}")
+async def delete_horario_disponivel(
+    horario_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Remove um horário disponível"""
+    result = await db.horarios_disponiveis.delete_one({"id": horario_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Horário não encontrado")
+    
+    return {"message": "Horário removido com sucesso"}
+
+@api_router.get("/horarios-disponiveis/{data}")
+async def get_horarios_livres(data: str):
+    """Retorna horários livres para uma data específica (público)"""
+    from datetime import datetime, timedelta
+    import calendar
+    
+    try:
+        # Parse da data (formato: YYYY-MM-DD)
+        data_obj = datetime.strptime(data, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Formato de data inválido. Use YYYY-MM-DD")
+    
+    # Não permitir agendamento em datas passadas
+    from datetime import date
+    if data_obj < date.today():
+        return {"horarios_livres": []}
+    
+    # Obter dia da semana (0=segunda, 6=domingo)
+    dia_semana = data_obj.weekday()
+    
+    # Buscar horário configurado para este dia
+    horario_config = await db.horarios_disponiveis.find_one({
+        "dia_semana": dia_semana,
+        "ativo": True
+    })
+    
+    if not horario_config:
+        return {"horarios_livres": []}
+    
+    # Gerar slots de horário baseado na configuração
+    hora_inicio = datetime.strptime(horario_config["hora_inicio"], "%H:%M").time()
+    hora_fim = datetime.strptime(horario_config["hora_fim"], "%H:%M").time()
+    intervalo = timedelta(minutes=horario_config["intervalo_minutos"])
+    
+    # Criar lista de horários possíveis
+    horarios_possiveis = []
+    current_time = datetime.combine(data_obj, hora_inicio)
+    end_time = datetime.combine(data_obj, hora_fim)
+    
+    while current_time < end_time:
+        horarios_possiveis.append(current_time.strftime("%H:%M"))
+        current_time += intervalo
+    
+    # Buscar consultas já agendadas para esta data
+    inicio_dia = datetime.combine(data_obj, datetime.min.time())
+    fim_dia = datetime.combine(data_obj, datetime.max.time())
+    
+    consultas_agendadas = await db.consultas.find({
+        "data_agendada": {
+            "$gte": inicio_dia,
+            "$lte": fim_dia
+        },
+        "status": {"$in": ["agendada", "confirmada"]}
+    }).to_list(1000)
+    
+    # Remover horários ocupados
+    horarios_ocupados = []
+    for consulta in consultas_agendadas:
+        hora_consulta = consulta["data_agendada"].strftime("%H:%M")
+        horarios_ocupados.append(hora_consulta)
+    
+    horarios_livres = [h for h in horarios_possiveis if h not in horarios_ocupados]
+    
+    return {"horarios_livres": horarios_livres}
+
+@api_router.post("/agendamento")
+async def criar_agendamento_publico(agendamento_data: AgendamentoPublico):
+    """Endpoint público para cliente agendar consulta (antes do pagamento)"""
+    consulta_data = agendamento_data.consulta
+    cliente_data = agendamento_data.cliente
+    
+    # Validar tipo de consulta
+    tipo_consulta = await db.tipos_consulta.find_one({
+        "id": consulta_data.tipo_consulta_id,
+        "ativo": True
+    })
+    
+    if not tipo_consulta:
+        raise HTTPException(status_code=404, detail="Tipo de consulta não encontrado")
+    
+    # Verificar se horário ainda está disponível
+    data_agendada = consulta_data.data_agendada
+    data_str = data_agendada.strftime("%Y-%m-%d")
+    hora_str = data_agendada.strftime("%H:%M")
+    
+    horarios_livres_response = await get_horarios_livres(data_str)
+    if hora_str not in horarios_livres_response["horarios_livres"]:
+        raise HTTPException(status_code=400, detail="Horário não está mais disponível")
+    
+    # Criar cliente
+    cliente_obj = Cliente(**cliente_data.dict())
+    await db.clientes.insert_one(cliente_obj.dict())
+    
+    # Criar sessão de pagamento temporária
+    session_id = f"consulta_{str(uuid.uuid4())}"
+    
+    # Criar transação de pagamento
+    payment_transaction = PaymentTransaction(
+        amount=tipo_consulta["preco"],
+        currency="brl",
+        metadata={
+            "tipo": "consulta",
+            "tipo_consulta_id": consulta_data.tipo_consulta_id,
+            "tipo_consulta_nome": tipo_consulta["nome"],
+            "cliente_id": cliente_obj.id,
+            "data_agendada": data_agendada.isoformat()
+        },
+        session_id=session_id,
+        ritual_id="consulta"  # Identificador especial para consultas
+    )
+    
+    await db.payment_transactions.insert_one(payment_transaction.dict())
+    
+    return {
+        "message": "Dados salvos temporariamente. Proceda com o pagamento.",
+        "session_id": session_id,
+        "valor": tipo_consulta["preco"],
+        "tipo_consulta": tipo_consulta["nome"],
+        "data_agendada": data_agendada.isoformat(),
+        "cliente_id": cliente_obj.id
+    }
+
+@api_router.post("/consultas/confirmar")
+async def confirmar_consulta_pos_pagamento(session_id: str):
+    """Confirma consulta após pagamento aprovado"""
+    # Verificar pagamento
+    transaction = await db.payment_transactions.find_one({"session_id": session_id})
+    if not transaction or transaction["payment_status"] != "paid":
+        raise HTTPException(status_code=400, detail="Pagamento não confirmado")
+    
+    metadata = transaction["metadata"]
+    
+    # Criar consulta confirmada
+    consulta = Consulta(
+        cliente_id=metadata["cliente_id"],
+        tipo_consulta_id=metadata["tipo_consulta_id"],
+        data_agendada=datetime.fromisoformat(metadata["data_agendada"]),
+        status="confirmada",
+        status_pagamento="paid",
+        session_id=session_id
+    )
+    
+    await db.consultas.insert_one(consulta.dict())
+    
+    return {
+        "message": "Consulta confirmada com sucesso!",
+        "consulta_id": consulta.id,
+        "data_agendada": consulta.data_agendada.isoformat()
+    }
+
+@api_router.put("/admin/consultas/{consulta_id}/status")
+async def update_status_consulta(
+    consulta_id: str,
+    novo_status: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Atualiza status de uma consulta"""
+    status_validos = ["agendada", "confirmada", "realizada", "cancelada"]
+    if novo_status not in status_validos:
+        raise HTTPException(status_code=400, detail=f"Status deve ser um de: {status_validos}")
+    
+    result = await db.consultas.update_one(
+        {"id": consulta_id},
+        {"$set": {"status": novo_status}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Consulta não encontrada")
+    
+    return {"message": f"Status da consulta atualizado para: {novo_status}"}
+
+@api_router.get("/admin/consultas/agenda/{data}")
+async def get_agenda_dia(
+    data: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Retorna agenda do dia para admin"""
+    try:
+        data_obj = datetime.strptime(data, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Formato de data inválido. Use YYYY-MM-DD")
+    
+    inicio_dia = datetime.combine(data_obj, datetime.min.time())
+    fim_dia = datetime.combine(data_obj, datetime.max.time())
+    
+    pipeline = [
+        {
+            "$match": {
+                "data_agendada": {
+                    "$gte": inicio_dia,
+                    "$lte": fim_dia
+                },
+                "status": {"$in": ["agendada", "confirmada", "realizada"]}
+            }
+        },
+        {
+            "$lookup": {
+                "from": "clientes",
+                "localField": "cliente_id",
+                "foreignField": "id",
+                "as": "cliente"
+            }
+        },
+        {
+            "$lookup": {
+                "from": "tipos_consulta",
+                "localField": "tipo_consulta_id",
+                "foreignField": "id",
+                "as": "tipo_consulta"
+            }
+        },
+        {
+            "$unwind": "$cliente"
+        },
+        {
+            "$unwind": "$tipo_consulta"
+        },
+        {
+            "$sort": {
+                "data_agendada": 1
+            }
+        }
+    ]
+    
+    consultas = await db.consultas.aggregate(pipeline).to_list(1000)
+    
+    # Remove _id do MongoDB
+    for consulta in consultas:
+        if "_id" in consulta:
+            del consulta["_id"]
+        if "_id" in consulta.get("cliente", {}):
+            del consulta["cliente"]["_id"]
+        if "_id" in consulta.get("tipo_consulta", {}):
+            del consulta["tipo_consulta"]["_id"]
+    
+    return consultas
+
 # Configuração CORS
 app.add_middleware(
     CORSMiddleware,
