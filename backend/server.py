@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -14,6 +14,8 @@ from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 import jwt
 from passlib.context import CryptContext
+import requests
+import secrets
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
