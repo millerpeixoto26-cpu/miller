@@ -854,6 +854,117 @@ async def get_rituais_hoje():
     
     return rituais_hoje
 
+# APIs de Gateways de Pagamento
+@api_router.get("/payment-gateways", response_model=List[dict])
+async def get_payment_gateways(current_user: User = Depends(get_current_active_user)):
+    """Retorna todos os gateways de pagamento"""
+    gateways = await db.payment_gateways.find().to_list(1000)
+    
+    # Remove o _id do MongoDB
+    for gateway in gateways:
+        if "_id" in gateway:
+            del gateway["_id"]
+    
+    return gateways
+
+@api_router.get("/payment-gateways/active", response_model=List[dict])
+async def get_active_payment_gateways():
+    """Retorna apenas gateways ativos (para uso público)"""
+    gateways = await db.payment_gateways.find({"is_active": True}).to_list(1000)
+    
+    # Remove dados sensíveis e _id
+    for gateway in gateways:
+        if "_id" in gateway:
+            del gateway["_id"]
+        # Remove config para não expor chaves de API
+        if "config" in gateway:
+            del gateway["config"]
+    
+    return gateways
+
+@api_router.get("/payment-gateways/default", response_model=dict)
+async def get_default_payment_gateway():
+    """Retorna o gateway padrão"""
+    gateway = await db.payment_gateways.find_one({"is_default": True, "is_active": True})
+    
+    if not gateway:
+        # Se não há gateway padrão, pega o primeiro ativo
+        gateway = await db.payment_gateways.find_one({"is_active": True})
+    
+    if not gateway:
+        raise HTTPException(status_code=404, detail="Nenhum gateway de pagamento ativo encontrado")
+    
+    # Remove _id
+    if "_id" in gateway:
+        del gateway["_id"]
+    
+    return gateway
+
+@api_router.put("/payment-gateways/{gateway_id}", response_model=dict)
+async def update_payment_gateway(
+    gateway_id: str, 
+    gateway_update: PaymentGatewayUpdate, 
+    current_user: User = Depends(get_current_active_user)
+):
+    """Atualiza um gateway de pagamento"""
+    existing_gateway = await db.payment_gateways.find_one({"id": gateway_id})
+    if not existing_gateway:
+        raise HTTPException(status_code=404, detail="Gateway não encontrado")
+    
+    update_data = gateway_update.dict(exclude_unset=True)
+    
+    # Se está definindo como padrão, remove o padrão dos outros
+    if update_data.get("is_default") == True:
+        await db.payment_gateways.update_many(
+            {"id": {"$ne": gateway_id}},
+            {"$set": {"is_default": False}}
+        )
+    
+    # Atualiza o gateway
+    await db.payment_gateways.update_one(
+        {"id": gateway_id},
+        {"$set": update_data}
+    )
+    
+    # Retorna o gateway atualizado
+    updated_gateway = await db.payment_gateways.find_one({"id": gateway_id})
+    if "_id" in updated_gateway:
+        del updated_gateway["_id"]
+    
+    return updated_gateway
+
+@api_router.post("/payment-gateways/{gateway_id}/test", response_model=dict)
+async def test_payment_gateway(
+    gateway_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Testa conexão com o gateway de pagamento"""
+    gateway = await db.payment_gateways.find_one({"id": gateway_id})
+    if not gateway:
+        raise HTTPException(status_code=404, detail="Gateway não encontrado")
+    
+    # Aqui você implementaria a lógica de teste para cada gateway
+    # Por enquanto, vamos simular um teste básico
+    
+    gateway_name = gateway["name"]
+    config = gateway.get("config", {})
+    
+    # Verifica se as configurações básicas estão preenchidas
+    if gateway_name == "stripe":
+        if not config.get("api_key"):
+            return {"success": False, "message": "API Key do Stripe não configurada"}
+    elif gateway_name == "pagbank":
+        if not config.get("client_id") or not config.get("client_secret"):
+            return {"success": False, "message": "Client ID ou Client Secret do PagBank não configurados"}
+    elif gateway_name == "mercadopago":
+        if not config.get("access_token"):
+            return {"success": False, "message": "Access Token do Mercado Pago não configurado"}
+    
+    return {
+        "success": True, 
+        "message": f"Configurações do {gateway['display_name']} validadas com sucesso"
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
