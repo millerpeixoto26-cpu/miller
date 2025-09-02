@@ -105,6 +105,18 @@
 user_problem_statement: Sistema de venda de rituais espirituais com painel administrativo. Usuario solicitou adicionar integração com API real do Instagram no painel administrativo, além da versão manual já implementada.
 
 backend:
+  - task: "WhatsApp Business API - Backend"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Sistema WhatsApp completo implementado: modelos WhatsAppTemplate/WhatsAppMessage/WhatsAppConfig, endpoints CRUD para templates, configuração API, sistema de envio de mensagens, notificações automáticas para rituais/consultas, templates padrão criados"
+
   - task: "Sistema de Agendamento - Backend"
     implemented: true
     working: true
