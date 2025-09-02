@@ -10,7 +10,7 @@ import { Badge } from "./components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import { Switch } from "./components/ui/switch";
-import { Loader2, Heart, Shield, Sparkles, Star, Phone, Settings, Palette, Layout, Calendar, Edit, Trash2, Eye, EyeOff, LogOut, Users } from "lucide-react";
+import { Loader2, Heart, Shield, Sparkles, Star, Phone, Settings, Palette, Layout, Calendar, Edit, Trash2, Eye, EyeOff, LogOut, Users, CreditCard, TestTube } from "lucide-react";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
 import "./App.css";
