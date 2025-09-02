@@ -251,15 +251,62 @@ class InstagramApiSync(BaseModel):
     completed_at: Optional[datetime] = None
 
 # Modelos para Consultas/Agendamentos
+class TipoConsulta(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nome: str
+    descricao: str
+    preco: float
+    duracao_minutos: int = 60
+    cor_tema: str = "#8b5cf6"  # Cor para exibição no calendário
+    ativo: bool = True
+    ordem: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TipoConsultaCreate(BaseModel):
+    nome: str
+    descricao: str
+    preco: float
+    duracao_minutos: int = 60
+    cor_tema: str = "#8b5cf6"
+    ativo: bool = True
+    ordem: int = 0
+
+class TipoConsultaUpdate(BaseModel):
+    nome: Optional[str] = None
+    descricao: Optional[str] = None
+    preco: Optional[float] = None
+    duracao_minutos: Optional[int] = None
+    cor_tema: Optional[str] = None
+    ativo: Optional[bool] = None
+    ordem: Optional[int] = None
+
+class HorarioDisponivel(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    dia_semana: int  # 0=segunda, 1=terça, ..., 6=domingo
+    hora_inicio: str  # "09:00"
+    hora_fim: str     # "18:00"
+    intervalo_minutos: int = 60  # Intervalo entre consultas
+    ativo: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class HorarioDisponivelCreate(BaseModel):
+    dia_semana: int
+    hora_inicio: str
+    hora_fim: str
+    intervalo_minutos: int = 60
+    ativo: bool = True
+
+class HorarioDisponivelUpdate(BaseModel):
+    hora_inicio: Optional[str] = None
+    hora_fim: Optional[str] = None
+    intervalo_minutos: Optional[int] = None
+    ativo: Optional[bool] = None
+
 class Consulta(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     cliente_id: str
-    tipo_consulta: str  # "tarot", "mapa_astral", "consulta_espiritual", etc
-    titulo: str
-    descricao: str
-    preco: float
+    tipo_consulta_id: str
     data_agendada: datetime
-    duracao_minutos: int = 60
     status: str = "agendada"  # "agendada", "confirmada", "realizada", "cancelada"
     status_pagamento: str = "paid"  # "pending", "paid", "failed"
     observacoes: Optional[str] = None
@@ -268,13 +315,20 @@ class Consulta(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ConsultaCreate(BaseModel):
-    tipo_consulta: str
-    titulo: str
-    descricao: str
-    preco: float
+    tipo_consulta_id: str
     data_agendada: datetime
-    duracao_minutos: int = 60
     observacoes: Optional[str] = None
+
+class ConsultaPublicCreate(BaseModel):
+    tipo_consulta_id: str
+    data_agendada: datetime
+    observacoes: Optional[str] = None
+    # Dados do cliente serão enviados separadamente
+
+# Modelo para agendamento público (cliente)
+class AgendamentoPublico(BaseModel):
+    consulta: ConsultaPublicCreate
+    cliente: ClienteCreate
 
 # Modelos para Dashboard de Vendas
 class MetaMensal(BaseModel):
