@@ -2047,15 +2047,47 @@ const AdminPanel = () => {
 
           <TabsContent value="instagram" className="mt-6">
             <div className="space-y-6">
-              {/* Perfil Instagram */}
+              {/* Configuração da API Instagram */}
               <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
                     <Instagram className="w-5 h-5 mr-2" />
-                    Perfil Instagram
+                    Configuração da API Instagram
                   </CardTitle>
                   <CardDescription className="text-purple-200">
-                    Configure seu perfil Instagram que aparecerá na página inicial
+                    Configure as credenciais da sua aplicação Instagram para sincronização automática
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <InstagramApiConfigSection />
+                </CardContent>
+              </Card>
+
+              {/* Status da Conexão Instagram */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Instagram className="w-5 h-5 mr-2" />
+                    Conta Instagram Conectada
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Status da conexão com sua conta Instagram
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <InstagramApiStatusSection />
+                </CardContent>
+              </Card>
+
+              {/* Perfil Instagram (Manual) */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Instagram className="w-5 h-5 mr-2" />
+                    Perfil Instagram (Manual)
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Configure seu perfil Instagram manualmente (alternativa à sincronização automática)
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
