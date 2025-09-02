@@ -860,7 +860,9 @@ const AdminPanel = () => {
             {showAddRitual && (
               <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm mb-6">
                 <CardHeader>
-                  <CardTitle className="text-white">Novo Ritual</CardTitle>
+                  <CardTitle className="text-white">
+                    {editingRitual ? "Editar Ritual" : "Novo Ritual"}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAddRitual} className="space-y-4">
@@ -888,6 +890,7 @@ const AdminPanel = () => {
                         />
                       </div>
                     </div>
+                    
                     <div>
                       <Label htmlFor="descricao" className="text-white">Descrição</Label>
                       <Textarea
@@ -898,6 +901,7 @@ const AdminPanel = () => {
                         required
                       />
                     </div>
+                    
                     <div>
                       <Label htmlFor="imagem_url" className="text-white">URL da Imagem (opcional)</Label>
                       <Input
@@ -908,13 +912,78 @@ const AdminPanel = () => {
                         placeholder="https://exemplo.com/imagem.jpg"
                       />
                     </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="visivel"
+                        checked={novoRitual.visivel}
+                        onCheckedChange={(checked) => setNovoRitual({...novoRitual, visivel: checked})}
+                      />
+                      <Label htmlFor="visivel" className="text-white">Visível no site</Label>
+                    </div>
+
+                    <div className="space-y-4 border-t border-purple-300/20 pt-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="tem_desconto"
+                          checked={novoRitual.tem_desconto}
+                          onCheckedChange={(checked) => setNovoRitual({...novoRitual, tem_desconto: checked})}
+                        />
+                        <Label htmlFor="tem_desconto" className="text-white">Tem desconto</Label>
+                      </div>
+
+                      {novoRitual.tem_desconto && (
+                        <div className="grid md:grid-cols-2 gap-4 ml-6">
+                          <div>
+                            <Label htmlFor="desconto_valor" className="text-white">Desconto em R$ (opcional)</Label>
+                            <Input
+                              id="desconto_valor"
+                              type="number"
+                              step="0.01"
+                              value={novoRitual.desconto_valor}
+                              onChange={(e) => setNovoRitual({...novoRitual, desconto_valor: e.target.value})}
+                              className="bg-white/5 border-purple-300/30 text-white"
+                              placeholder="10.00"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="desconto_percentual" className="text-white">Desconto em % (opcional)</Label>
+                            <Input
+                              id="desconto_percentual"
+                              type="number"
+                              step="0.1"
+                              min="0"
+                              max="100"
+                              value={novoRitual.desconto_percentual}
+                              onChange={(e) => setNovoRitual({...novoRitual, desconto_percentual: e.target.value})}
+                              className="bg-white/5 border-purple-300/30 text-white"
+                              placeholder="15"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
                     <div className="flex gap-2">
                       <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                        Salvar Ritual
+                        {editingRitual ? "Atualizar Ritual" : "Salvar Ritual"}
                       </Button>
                       <Button 
                         type="button" 
-                        onClick={() => setShowAddRitual(false)}
+                        onClick={() => {
+                          setShowAddRitual(false);
+                          setEditingRitual(null);
+                          setNovoRitual({ 
+                            nome: "", 
+                            descricao: "", 
+                            preco: "", 
+                            imagem_url: "",
+                            visivel: true,
+                            tem_desconto: false,
+                            desconto_valor: "",
+                            desconto_percentual: ""
+                          });
+                        }}
                         className="bg-gray-600 hover:bg-gray-700"
                       >
                         Cancelar
