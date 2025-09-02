@@ -1036,41 +1036,48 @@ const AdminPanel = () => {
         <Tabs defaultValue="pedidos" className="w-full">
           {/* Navigation - Desktop */}
           <div className="hidden md:block">
-            <TabsList className="grid w-full grid-cols-5 bg-white/10 backdrop-blur-sm p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-6 bg-white/10 backdrop-blur-sm p-1 rounded-lg">
               <TabsTrigger 
                 value="pedidos" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-4 py-3 text-sm font-medium"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-3 text-sm font-medium"
               >
                 <Phone className="w-4 h-4 mr-2" />
                 Pedidos ({pedidos.length})
               </TabsTrigger>
               <TabsTrigger 
                 value="rituais" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-4 py-3 text-sm font-medium"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-3 text-sm font-medium"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Rituais ({rituais.length})
               </TabsTrigger>
               <TabsTrigger 
                 value="semana" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-4 py-3 text-sm font-medium"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-3 text-sm font-medium"
               >
                 <Calendar className="w-4 h-4 mr-2" />
-                Rituais da Semana
+                Semana
               </TabsTrigger>
               <TabsTrigger 
                 value="usuarios" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-4 py-3 text-sm font-medium"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-3 text-sm font-medium"
               >
                 <Users className="w-4 h-4 mr-2" />
                 Usuários ({usuarios.length})
               </TabsTrigger>
               <TabsTrigger 
+                value="pagamentos" 
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-3 text-sm font-medium"
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Pagamentos
+              </TabsTrigger>
+              <TabsTrigger 
                 value="config" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-4 py-3 text-sm font-medium"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 hover:bg-white/10 transition-all duration-200 rounded-md flex items-center justify-center px-3 py-3 text-sm font-medium"
               >
                 <Settings className="w-4 h-4 mr-2" />
-                Configurações
+                Config
               </TabsTrigger>
             </TabsList>
           </div>
