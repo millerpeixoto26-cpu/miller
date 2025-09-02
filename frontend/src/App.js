@@ -496,76 +496,211 @@ const AdminPanel = () => {
       <div className="container mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Painel Administrativo</h1>
-          <p className="text-purple-200">Gerencie todos os pedidos confirmados</p>
+          <p className="text-purple-200">Gerencie pedidos e rituais</p>
         </div>
 
-        <div className="grid gap-6">
-          {pedidos.length === 0 ? (
-            <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm p-8">
-              <div className="text-center">
-                <h3 className="text-xl font-semibold text-white mb-2">Nenhum pedido encontrado</h3>
-                <p className="text-purple-200">Aguardando novos pedidos...</p>
-              </div>
-            </Card>
-          ) : (
-            pedidos.map((pedido) => (
-              <Card key={pedido.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-white text-xl">{pedido.cliente.nome_completo}</CardTitle>
-                      <CardDescription className="text-purple-200">
-                        Ritual: {pedido.ritual.nome} • R$ {pedido.valor_total.toFixed(2)}
-                      </CardDescription>
+        {/* Tabs */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-1">
+            <Button
+              onClick={() => setActiveTab("pedidos")}
+              className={`mr-2 ${activeTab === "pedidos" 
+                ? "bg-purple-600 text-white" 
+                : "bg-transparent text-purple-200 hover:bg-white/10"}`}
+            >
+              Pedidos ({pedidos.length})
+            </Button>
+            <Button
+              onClick={() => setActiveTab("rituais")}
+              className={`${activeTab === "rituais" 
+                ? "bg-purple-600 text-white" 
+                : "bg-transparent text-purple-200 hover:bg-white/10"}`}
+            >
+              Gerenciar Rituais ({rituais.length})
+            </Button>
+          </div>
+        </div>
+
+        {/* Conteúdo das Tabs */}
+        {activeTab === "pedidos" && (
+          <div className="grid gap-6">
+            {pedidos.length === 0 ? (
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm p-8">
+                <div className="text-center">
+                  <h3 className="text-xl font-semibold text-white mb-2">Nenhum pedido encontrado</h3>
+                  <p className="text-purple-200">Aguardando novos pedidos...</p>
+                </div>
+              </Card>
+            ) : (
+              pedidos.map((pedido) => (
+                <Card key={pedido.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-white text-xl">{pedido.cliente.nome_completo}</CardTitle>
+                        <CardDescription className="text-purple-200">
+                          Ritual: {pedido.ritual.nome} • R$ {pedido.valor_total.toFixed(2)}
+                        </CardDescription>
+                      </div>
+                      <Badge className="bg-green-500/20 text-green-300 border-green-400/30">
+                        Pago
+                      </Badge>
                     </div>
-                    <Badge className="bg-green-500/20 text-green-300 border-green-400/30">
-                      Pago
-                    </Badge>
-                  </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-purple-200 text-sm">Email:</p>
+                        <p className="text-white">{pedido.cliente.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-purple-200 text-sm">WhatsApp:</p>
+                        <p className="text-white">{pedido.cliente.telefone}</p>
+                      </div>
+                      <div>
+                        <p className="text-purple-200 text-sm">Pessoa Amada:</p>
+                        <p className="text-white">{pedido.cliente.nome_pessoa_amada}</p>
+                      </div>
+                      <div>
+                        <p className="text-purple-200 text-sm">Data de Nascimento:</p>
+                        <p className="text-white">{pedido.cliente.data_nascimento}</p>
+                      </div>
+                    </div>
+                    
+                    {pedido.cliente.informacoes_adicionais && (
+                      <div className="mb-4">
+                        <p className="text-purple-200 text-sm">Informações Adicionais:</p>
+                        <p className="text-white bg-black/20 p-3 rounded-lg">{pedido.cliente.informacoes_adicionais}</p>
+                      </div>
+                    )}
+
+                    <Button
+                      onClick={() => abrirWhatsApp(
+                        pedido.cliente.telefone,
+                        pedido.cliente.nome_completo,
+                        pedido.ritual.nome
+                      )}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+                    >
+                      <Phone className="w-4 h-4" />
+                      Contatar via WhatsApp
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
+
+        {activeTab === "rituais" && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">Rituais Cadastrados</h2>
+              <Button
+                onClick={() => setShowAddRitual(true)}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Adicionar Ritual
+              </Button>
+            </div>
+
+            {/* Formulário para adicionar ritual */}
+            {showAddRitual && (
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm mb-6">
+                <CardHeader>
+                  <CardTitle className="text-white">Novo Ritual</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p className="text-purple-200 text-sm">Email:</p>
-                      <p className="text-white">{pedido.cliente.email}</p>
+                  <form onSubmit={handleAddRitual} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="nome" className="text-white">Nome do Ritual</Label>
+                        <Input
+                          id="nome"
+                          value={novoRitual.nome}
+                          onChange={(e) => setNovoRitual({...novoRitual, nome: e.target.value})}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="preco" className="text-white">Preço (R$)</Label>
+                        <Input
+                          id="preco"
+                          type="number"
+                          step="0.01"
+                          value={novoRitual.preco}
+                          onChange={(e) => setNovoRitual({...novoRitual, preco: e.target.value})}
+                          className="bg-white/5 border-purple-300/30 text-white"
+                          required
+                        />
+                      </div>
                     </div>
                     <div>
-                      <p className="text-purple-200 text-sm">WhatsApp:</p>
-                      <p className="text-white">{pedido.cliente.telefone}</p>
+                      <Label htmlFor="descricao" className="text-white">Descrição</Label>
+                      <Textarea
+                        id="descricao"
+                        value={novoRitual.descricao}
+                        onChange={(e) => setNovoRitual({...novoRitual, descricao: e.target.value})}
+                        className="bg-white/5 border-purple-300/30 text-white"
+                        required
+                      />
                     </div>
                     <div>
-                      <p className="text-purple-200 text-sm">Pessoa Amada:</p>
-                      <p className="text-white">{pedido.cliente.nome_pessoa_amada}</p>
+                      <Label htmlFor="imagem_url" className="text-white">URL da Imagem (opcional)</Label>
+                      <Input
+                        id="imagem_url"
+                        value={novoRitual.imagem_url}
+                        onChange={(e) => setNovoRitual({...novoRitual, imagem_url: e.target.value})}
+                        className="bg-white/5 border-purple-300/30 text-white"
+                        placeholder="https://exemplo.com/imagem.jpg"
+                      />
                     </div>
-                    <div>
-                      <p className="text-purple-200 text-sm">Data de Nascimento:</p>
-                      <p className="text-white">{pedido.cliente.data_nascimento}</p>
+                    <div className="flex gap-2">
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                        Salvar Ritual
+                      </Button>
+                      <Button 
+                        type="button" 
+                        onClick={() => setShowAddRitual(false)}
+                        className="bg-gray-600 hover:bg-gray-700"
+                      >
+                        Cancelar
+                      </Button>
                     </div>
-                  </div>
-                  
-                  {pedido.cliente.informacoes_adicionais && (
-                    <div className="mb-4">
-                      <p className="text-purple-200 text-sm">Informações Adicionais:</p>
-                      <p className="text-white bg-black/20 p-3 rounded-lg">{pedido.cliente.informacoes_adicionais}</p>
-                    </div>
-                  )}
-
-                  <Button
-                    onClick={() => abrirWhatsApp(
-                      pedido.cliente.telefone,
-                      pedido.cliente.nome_completo,
-                      pedido.ritual.nome
-                    )}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
-                  >
-                    <Phone className="w-4 h-4" />
-                    Contatar via WhatsApp
-                  </Button>
+                  </form>
                 </CardContent>
               </Card>
-            ))
-          )}
-        </div>
+            )}
+
+            {/* Lista de rituais */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {rituais.map((ritual) => (
+                <Card key={ritual.id} className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-purple-500/20 rounded-lg text-purple-300">
+                          {getIconForRitual(ritual.nome)}
+                        </div>
+                        <div>
+                          <CardTitle className="text-white text-lg">{ritual.nome}</CardTitle>
+                          <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
+                            R$ {ritual.preco.toFixed(2)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-purple-100 text-sm">{ritual.descricao}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
