@@ -337,6 +337,7 @@ GATEWAYS_PADRAO = [
         "supported_methods": ["credit_card", "pix", "boleto"]
     }
 ]
+# Função para criar usuário admin padrão
 async def create_default_admin():
     admin_exists = await db.users.find_one({"username": "admin"})
     if not admin_exists:
@@ -349,6 +350,14 @@ async def create_default_admin():
         )
         await db.users.insert_one(default_admin.dict())
         print("✅ Usuário admin padrão criado - Login: admin / Senha: admin123")
+
+# Função para criar gateways padrão
+async def create_default_gateways():
+    existing_gateways = await db.payment_gateways.count_documents({})
+    if existing_gateways == 0:
+        for gateway_data in GATEWAYS_PADRAO:
+            await db.payment_gateways.insert_one(gateway_data)
+        print("✅ Gateways de pagamento padrão criados")
 @api_router.get("/")
 async def root():
     return {"message": "Sistema de Rituais API"}
