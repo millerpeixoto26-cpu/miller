@@ -115,6 +115,49 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Rituais de Hoje */}
+      {rituaisHoje.length > 0 && (
+        <div className="container mx-auto px-4 py-8 bg-black/20">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-white mb-2">Rituais de Hoje</h2>
+            <p className="text-purple-200">Especiais para hoje, com energia ainda mais poderosa</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {rituaisHoje.map((rs) => rs.ritual && (
+              <Card key={rs.id} className="bg-white/15 border-yellow-300/30 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-400/30 text-xs">
+                      DESTAQUE HOJE
+                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <div className="p-1 bg-yellow-500/20 rounded-full text-yellow-300">
+                        {getIconForRitual(rs.ritual.nome)}
+                      </div>
+                    </div>
+                  </div>
+                  <CardTitle className="text-white text-lg">{rs.ritual.nome}</CardTitle>
+                  <Badge variant="secondary" className="bg-purple-500/20 text-purple-200 border-purple-400/30 w-fit">
+                    R$ {rs.ritual.preco.toFixed(2)}
+                  </Badge>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-purple-100 mb-4 text-sm">
+                    {rs.ritual.descricao}
+                  </CardDescription>
+                  <Button 
+                    onClick={() => handleSelectRitual(rs.ritual.id)}
+                    className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white border-0 font-semibold py-2 rounded-lg transition-all duration-300"
+                  >
+                    Solicitar Hoje
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Rituais */}
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
