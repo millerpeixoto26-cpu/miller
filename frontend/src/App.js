@@ -3719,6 +3719,49 @@ const AdminPanel = () => {
             )}
           </TabsContent>
 
+          <TabsContent value="editor" className="mt-6">
+            <div className="space-y-6">
+              {/* Editor de Site */}
+              <Card className="bg-white/10 border-purple-300/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Paintbrush className="w-5 h-5 mr-2" />
+                    Editor de Site
+                  </CardTitle>
+                  <CardDescription className="text-purple-200">
+                    Personalize a aparência e conteúdo do seu site
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12">
+                    <Paintbrush className="w-16 h-16 text-purple-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-white mb-2">Editor de Site</h3>
+                    <p className="text-purple-200 mb-6">
+                      Funcionalidade em desenvolvimento. Em breve você poderá personalizar completamente seu site.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                      <div className="bg-white/5 p-4 rounded-lg">
+                        <Type className="w-8 h-8 text-purple-300 mx-auto mb-2" />
+                        <h4 className="text-white font-medium mb-1">Textos</h4>
+                        <p className="text-purple-200 text-sm">Edite títulos e descrições</p>
+                      </div>
+                      <div className="bg-white/5 p-4 rounded-lg">
+                        <Palette className="w-8 h-8 text-purple-300 mx-auto mb-2" />
+                        <h4 className="text-white font-medium mb-1">Cores</h4>
+                        <p className="text-purple-200 text-sm">Personalize a paleta de cores</p>
+                      </div>
+                      <div className="bg-white/5 p-4 rounded-lg">
+                        <Layout className="w-8 h-8 text-purple-300 mx-auto mb-2" />
+                        <h4 className="text-white font-medium mb-1">Layout</h4>
+                        <p className="text-purple-200 text-sm">Organize seções e elementos</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="instagram" className="mt-6">
             <div className="space-y-6">
               {/* Configuração da API Instagram */}
