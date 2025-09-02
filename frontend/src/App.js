@@ -1260,27 +1260,27 @@ const AdminPanel = () => {
               </Card>
             )}
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 admin-grid">
               {rituais.map((ritual) => (
-                <Card key={ritual.id} className={`bg-white/10 border-purple-300/30 backdrop-blur-sm ${!ritual.visivel ? 'opacity-60' : ''}`}>
+                <Card key={ritual.id} className={`bg-white/10 border-purple-300/30 backdrop-blur-sm admin-card ${!ritual.visivel ? 'opacity-60' : ''}`}>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
                       <div className="flex items-center space-x-3">
                         <div className="p-2 bg-purple-500/20 rounded-lg text-purple-300">
                           {getIconForRitual(ritual.nome)}
                         </div>
                         <div>
                           <div className="flex items-center space-x-2">
-                            <CardTitle className="text-white text-lg">{ritual.nome}</CardTitle>
+                            <CardTitle className="text-white text-base md:text-lg">{ritual.nome}</CardTitle>
                             {!ritual.visivel && <EyeOff className="w-4 h-4 text-gray-400" />}
                             {ritual.visivel && <Eye className="w-4 h-4 text-green-400" />}
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30 text-xs">
                               R$ {ritual.preco.toFixed(2)}
                             </Badge>
                             {ritual.tem_desconto && (
-                              <Badge className="bg-red-500/20 text-red-300 border-red-400/30">
+                              <Badge className="bg-red-500/20 text-red-300 border-red-400/30 text-xs">
                                 {ritual.desconto_percentual ? `${ritual.desconto_percentual}% OFF` : 
                                  ritual.desconto_valor ? `R$ ${ritual.desconto_valor.toFixed(2)} OFF` : 'DESCONTO'}
                               </Badge>
@@ -1288,18 +1288,18 @@ const AdminPanel = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 button-group">
                         <Button
                           size="sm"
                           onClick={() => handleEditRitual(ritual)}
-                          className="bg-blue-600 hover:bg-blue-700 p-2"
+                          className="bg-blue-600 hover:bg-blue-700 p-2 flex-shrink-0"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           size="sm"
                           onClick={() => handleDeleteRitual(ritual.id)}
-                          className="bg-red-600 hover:bg-red-700 p-2"
+                          className="bg-red-600 hover:bg-red-700 p-2 flex-shrink-0"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -1307,7 +1307,7 @@ const AdminPanel = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-purple-100 text-sm">{ritual.descricao}</p>
+                    <p className="text-purple-100 text-sm line-clamp-2">{ritual.descricao}</p>
                   </CardContent>
                 </Card>
               ))}
