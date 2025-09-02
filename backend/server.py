@@ -699,7 +699,7 @@ async def update_configuracao(config_update: ConfiguracaoUpdate, current_user: U
 
 # APIs de Rituais da Semana
 @api_router.get("/rituais-semana", response_model=List[dict])
-async def get_rituais_semana():
+async def get_rituais_semana(current_user: User = Depends(get_current_active_user)):
     """Retorna os rituais configurados para cada dia da semana"""
     rituais_semana = await db.rituais_semana.find({"ativo": True}).to_list(1000)
     
@@ -723,7 +723,7 @@ async def get_rituais_semana():
     return rituais_semana
 
 @api_router.post("/rituais-semana", response_model=dict)
-async def create_ritual_semana(ritual_semana: RitualSemanaCreate):
+async def create_ritual_semana(ritual_semana: RitualSemanaCreate, current_user: User = Depends(get_current_active_user)):
     """Cria ou atualiza ritual da semana para um dia específico"""
     # Remove ritual existente para o mesmo dia
     await db.rituais_semana.delete_many({"dia_semana": ritual_semana.dia_semana})
