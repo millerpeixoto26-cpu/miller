@@ -793,6 +793,10 @@ const AdminPanel = () => {
   const [instagramApiConfig, setInstagramApiConfig] = useState(null);
   const [instagramApiStatus, setInstagramApiStatus] = useState(null);
   const [instagramSyncHistory, setInstagramSyncHistory] = useState([]);
+  const [dashboardVendas, setDashboardVendas] = useState(null);
+  const [consultasVendas, setConsultasVendas] = useState([]);
+  const [metaMensal, setMetaMensal] = useState(null);
+  const [showMetaForm, setShowMetaForm] = useState(false);
   const [configuracao, setConfiguracao] = useState(null);
   const [rituaisSemana, setRituaisSemana] = useState([]);
   const [loading, setLoading] = useState(true);
